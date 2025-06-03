@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML 实时预览工具</title>
+    <style>
+        /* 稍后在这里添加 CSS 样式 */
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: column; /* 让按钮在文本域下方 */
+            width: 50%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #codeInput {
+            flex-grow: 1; /* 占据剩余空间 */
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            resize: none; /* 禁止用户调整大小 */
+            margin-bottom: 10px; /* 与按钮间距 */
+        }
+        #previewFrame {
+            width: 50%;
+            height: 100%;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        #clearButton {
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <textarea id="codeInput" placeholder="在此输入 HTML, CSS, JavaScript 代码..."></textarea>
+        <button id="clearButton">清空</button>
+    </div>
+    <iframe id="previewFrame" title="预览区"></iframe>
+
+    <script>
+        const codeInput = document.getElementById('codeInput');
+        const previewFrame = document.getElementById('previewFrame');
+        const clearButton = document.getElementById('clearButton');
+
+        // 实时更新预览
+        function updatePreview() {
+            const code = codeInput.value;
+            // 使用 srcdoc 来渲染 HTML 内容，这样可以执行其中的脚本和样式
+            // 对于简单的预览，这是比较安全和方便的方式
+            previewFrame.srcdoc = code;
+        }
+
+        // 监听输入事件
+        codeInput.addEventListener('input', updatePreview);
+
+        // 清空功能
+        clearButton.addEventListener('click', () => {
+            codeInput.value = ''; // 清空文本域
+            previewFrame.srcdoc = ''; // 清空 iframe
+        });
+
+        // 初始加载时也更新一次预览（如果 textarea 有默认值）
+        updatePreview();
+    </script>
+</body>
+</html>

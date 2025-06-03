@@ -1,0 +1,599 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f8ff; /* 淡蓝色背景 */
+    overflow: hidden; /* 防止滚动条出现 */
+    /* 尝试使用更圆润的字体，如果系统没有则回退 */
+    font-family: "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif;
+}
+
+#game-container {
+    box-sizing: border-box; /* 明确盒模型 */
+    border-radius: 15px; /* 给游戏容器添加圆角 */
+    position: relative;
+    width: 800px; /* 游戏区域宽度 */
+    height: 600px; /* 游戏区域高度 */
+    border: 2px solid #ccc;
+    background-color: #fff; /* Fallback color */
+    background-image: url('assets/background.png'); /* 添加背景图片 */
+    background-size: cover; /* 背景图片覆盖整个容器 */
+    background-position: center;
+    overflow: hidden; /* 隐藏超出边界的元素 */
+}
+
+#score-board, #timer {
+    position: absolute;
+    top: 15px; /* 稍微下移一点 */
+    font-size: 22px; /* 稍微增大字体 */
+    color: #555; /* 深灰色字体 */
+    background-color: rgba(255, 255, 255, 0.7); /* 半透明白色背景 */
+    padding: 5px 12px; /* 内边距 */
+    border-radius: 10px; /* 圆角 */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* 轻微阴影 */
+}
+
+#score-board {
+    left: 10px;
+}
+
+#timer {
+    /* right: 10px; */ /* 移除右对齐 */
+    left: 50%; /* 水平居中 */
+    transform: translateX(-50%); /* 精确居中 */
+    color: #e74c3c; /* 可爱的红色 */
+    font-weight: bold; /* 加粗字体 */
+    /* 继承上面的背景、圆角等样式 */
+}
+
+#catcher {
+    box-sizing: border-box; /* 明确盒模型 */
+    position: absolute;
+    bottom: 10px;
+    /* left: 50%; */ /* JS 会设置初始位置 */
+    /* transform: translateX(-50%); */ /* 移除 transform，完全由 JS 控制 left */
+    width: 108px; /* 放大接盘宽度 (54 * 2) */
+    height: 46px; /* 放大接盘高度 (23 * 2) */
+    background-image: url('assets/catcher.png'); /* 使用图片作为接盘 */
+    background-size: contain; /* 图片适应容器 */
+    background-repeat: no-repeat;
+    background-position: center;
+    /* background-color: transparent; */ /* 可以设置透明背景 */
+    /* border-radius: 0; */ /* 如果图片自带圆角，可以移除 */
+    cursor: pointer; /* 鼠标样式 */
+}
+
+.falling-item {
+    position: absolute;
+    width: 70px; /* 进一步增大掉落物宽度 */
+    height: 70px; /* 进一步增大掉落物高度 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* 可以在这里为不同的掉落物设置不同的背景图片 */
+.zongzi {
+    background-image: url('assets/zongzi.png'); /* 假设有粽子图片 */
+}
+
+.dragon-boat {
+    background-image: url('assets/dragon_boat.png'); /* 假设有龙舟图片 */
+}
+
+#game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 182, 193, 0.9); /* 可爱的粉色背景，稍透明 */
+    color: #5d4037; /* 深棕色文字 */
+    padding: 30px 40px;
+    border-radius: 20px; /* 更大的圆角 */
+    text-align: center;
+    font-size: 28px; /* 稍大字体 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* 更明显的阴影 */
+}
+
+#game-over h2 {
+    margin-bottom: 20px;
+    color: #d35400; /* 橙色标题 */
+}
+
+#restart-button {
+    padding: 12px 25px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 25px;
+    background-color: #f1c40f; /* 黄色按钮 */
+    color: #7b5b1a; /* 深黄色文字 */
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+#restart-button:hover {
+    background-color: #f39c12; /* 深一点的黄色 */
+    transform: translateY(-1px);
+}
+
+#restart-button:active {
+    transform: translateY(0px);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+/* 得分提示动画 */
+.score-popup {
+    position: absolute;
+    color: #ff4500; /* 橙红色 */
+    font-size: 20px;
+    font-weight: bold;
+    animation: floatUp 0.8s ease-out forwards;
+    pointer-events: none; /* 防止干扰鼠标事件 */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* 文字阴影 */
+    z-index: 10; /* 确保在掉落物之上 */
+    /* 使其基于父元素（gameContainer）定位，并居中 */
+    left: 50%;
+    transform: translateX(-50%); /* 水平居中 */
+}
+
+@keyframes floatUp {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0); /* 保持水平居中 */
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -40px); /* 向上漂浮40px，保持水平居中 */
+    }
+}
+/* 控制按钮区域样式 - 移到顶部 */
+#controls {
+    /* margin-top: 20px; */ /* 移除底部间距 */
+    position: absolute; /* 绝对定位 */
+    top: 60px; /* 调整距离顶部的距离，避免与得分/计时重叠 */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20; /* 确保在其他元素之上 */
+    /* text-align: center; */ /* 通过定位居中，不再需要 */
+    background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+    padding: 8px 15px;
+    border-radius: 20px; /* 圆角 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 轻微阴影 */
+}
+
+#controls button {
+    /* 可爱风格调整 */
+    background-color: #ffb6c1; /* 淡粉色 */
+    color: white;
+    border: none;
+    border-radius: 15px; /* 圆角 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 按钮阴影 */
+    transition: background-color 0.3s ease, transform 0.1s ease; /* 过渡效果 */
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 0 10px; /* 按钮之间的间距 */
+    cursor: pointer;
+}
+
+#controls button:hover:not(:disabled) {
+    background-color: #ff99ac; /* 悬停时深一点的粉色 */
+    transform: translateY(-1px); /* 轻微上移 */
+}
+
+#controls button:active:not(:disabled) {
+    transform: translateY(0px); /* 点击时复原 */
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); /* 内阴影 */
+}
+
+
+#controls button:disabled {
+    cursor: not-allowed;
+    background-color: #cccccc; /* 禁用时灰色 */
+    opacity: 0.7;
+    box-shadow: none; /* 移除阴影 */
+}
+
+/* --- 名称输入覆盖层样式 --- */
+#name-input-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* 半透明黑色背景 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 30; /* 确保在最上层 */
+    color: white;
+    text-align: center;
+    border-radius: 15px; /* 与 game-container 一致 */
+}
+
+#name-input-overlay h2 {
+    margin-bottom: 20px;
+}
+
+#name-input-overlay input[type="text"] {
+    padding: 10px;
+    font-size: 18px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 250px;
+    text-align: center;
+}
+
+#name-input-overlay button {
+    padding: 12px 25px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #2ecc71; /* 绿色按钮 */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+#name-input-overlay button:hover {
+    background-color: #27ae60;
+}
+
+
+/* --- 排行榜按钮样式 --- */
+#leaderboard-button {
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    font-size: 24px; /* 图标大小 */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 25; /* 在控制按钮之上，但在覆盖层之下 */
+    color: #555;
+    transition: transform 0.2s ease;
+}
+#leaderboard-button:hover {
+    transform: scale(1.1);
+}
+
+
+/* --- 排行榜覆盖层样式 --- */
+#leaderboard-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 350px;
+    max-height: 80%;
+    background-color: rgba(255, 255, 255, 0.95); /* 更不透明的白色背景 */
+    color: #333;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 40; /* 比名称输入更高，确保能覆盖 */
+    text-align: center;
+    overflow-y: auto; /* 如果内容过多则滚动 */
+}
+
+#leaderboard-overlay h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #3498db; /* 蓝色标题 */
+}
+
+#leaderboard-list {
+    list-style-position: inside; /* 序号在内部 */
+    padding-left: 0;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+#leaderboard-list li {
+    font-size: 18px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+#leaderboard-list li:last-child {
+    border-bottom: none;
+}
+
+#leaderboard-list li span {
+    font-weight: bold;
+    margin-left: 10px;
+    color: #e74c3c; /* 分数用红色 */
+}
+
+
+#close-leaderboard-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #95a5a6; /* 灰色按钮 */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+#close-leaderboard-button:hover {
+    background-color: #7f8c8d;
+}
+/* --- 物品图例样式 --- */
+#item-legend {
+    position: absolute;
+    top: 15px; /* 与计时器和排行榜按钮顶部对齐 */
+    right: 60px; /* 定位到右侧，给排行榜按钮留出空间 */
+    /* left: 50%; */ /* 移除左侧定位 */
+    /* transform: translateX(-50%); */ /* 移除水平居中变换 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px; /* 图例项之间的间距 - 第三次减小 */
+    padding: 8px 15px;
+    background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    z-index: 15; /* 确保在游戏元素之上，但在控制按钮之下 */
+}
+
+.legend-item {
+    display: flex;
+    flex-direction: column; /* 图片在上，分数在下 */
+    align-items: center;
+    font-size: 8px; /* 第三次减小字体 */
+    color: #333;
+}
+
+.legend-item img {
+    width: 15px; /* 图例图片大小 - 第三次减小 */
+    height: 15px; /* 图例图片大小 - 第三次减小 */
+    object-fit: contain; /* 保持图片比例 */
+    margin-bottom: 3px; /* 图片和分数之间的间距 */
+}
+
+.legend-item span {
+    font-weight: bold;
+    color: #e74c3c; /* 分数颜色与计时器一致 */
+}
+/* --- 移动端响应式样式 (屏幕宽度 <= 768px) --- */
+@media (max-width: 768px) {
+    #game-container {
+        width: 95vw; /* 适应屏幕宽度 */
+        height: 80vh; /* 调整高度 */
+        border-width: 1px;
+    }
+
+    #score-board, #timer {
+        font-size: 14px; /* 缩小字体 */
+        padding: 4px 8px; /* 减小内边距 */
+        top: 10px; /* 稍微上移 */
+    }
+
+    #timer {
+        /* 保持居中 */
+    }
+
+    #leaderboard-button {
+        font-size: 20px; /* 缩小图标 */
+        top: 10px;
+        right: 5px; /* 更靠近边缘 */
+        padding: 3px;
+    }
+
+    #item-legend {
+        top: 50px; /* 移动到控制按钮下方 */
+        right: auto; /* 移除右侧定位 */
+        left: 50%; /* 居中 */
+        transform: translateX(-50%);
+        gap: 8px; /* 调整间距 */
+        padding: 5px 10px; /* 减小内边距 */
+        flex-wrap: wrap; /* 允许换行 */
+        max-width: 90%; /* 限制最大宽度 */
+    }
+
+    .legend-item img {
+        width: 18px; /* 保持上次调整的大小 */
+        height: 18px;
+    }
+
+    .legend-item {
+        font-size: 9px; /* 保持上次调整的大小 */
+    }
+
+    #controls {
+        top: 10px; /* 移到最顶部 */
+        padding: 6px 10px; /* 减小内边距 */
+        width: auto; /* 宽度自适应 */
+    }
+
+    #controls button {
+        font-size: 11px; /* 缩小按钮字体 */
+        padding: 5px 10px; /* 减小按钮内边距 */
+        margin: 0 4px; /* 减小按钮间距 */
+        border-radius: 10px;
+    }
+
+    #catcher {
+        width: 80px; /* 缩小接盘 */
+        height: 34px;
+        bottom: 5px; /* 稍微上移 */
+    }
+
+    .falling-item {
+        width: 45px; /* 缩小掉落物 */
+        height: 45px;
+    }
+
+    #game-over {
+        font-size: 18px; /* 缩小字体 */
+        padding: 15px 25px; /* 减小内边距 */
+        border-radius: 15px;
+        width: 80%; /* 调整宽度 */
+    }
+     #game-over h2 {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+
+    #restart-button {
+        font-size: 14px; /* 缩小字体 */
+        padding: 8px 16px; /* 减小内边距 */
+        margin-top: 15px;
+        border-radius: 10px;
+    }
+
+     /* 得分提示动画 */
+    .score-popup {
+        font-size: 16px;
+    }
+
+    /* 名称输入 */
+    #name-input-overlay {
+         padding: 10px;
+    }
+    #name-input-overlay h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    #name-input-overlay input[type="text"] {
+        font-size: 14px;
+        width: 80%;
+        padding: 8px;
+        margin-bottom: 15px;
+    }
+    #name-input-overlay button {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    /* 排行榜 */
+    #leaderboard-overlay {
+        width: 85%; /* 调整宽度 */
+        padding: 15px;
+    }
+     #leaderboard-overlay h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    #leaderboard-list li {
+        font-size: 14px;
+        padding: 6px 0;
+    }
+     #leaderboard-list li span {
+        margin-left: 5px;
+    }
+    #close-leaderboard-button {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+}
+/* --- 窄屏竖屏优化 (屏幕宽度 <= 480px) --- */
+@media (max-width: 480px) {
+    #game-container {
+        height: 85vh; /* 调整高度以适应竖屏 */
+    }
+
+    #score-board, #timer {
+        font-size: 11px; /* 进一步缩小字体 */
+        padding: 3px 5px;
+        top: 8px; /* 调整位置 */
+    }
+
+     #leaderboard-button {
+        font-size: 18px; /* 进一步缩小图标 */
+        top: 8px;
+    }
+
+    #controls {
+        top: 35px; /* 移到得分/计时下方 */
+        padding: 5px 8px;
+        /* 让按钮在空间不足时换行 */
+        /* display: flex; */ /* 默认是 flex */
+        /* flex-wrap: wrap; */ /* 允许换行 */
+        /* justify-content: center; */ /* 居中对齐 */
+        /* width: 90%; */ /* 限制宽度防止过于分散 */
+        /* left: 5%; */ /* 配合宽度居中 */
+        /* transform: none; */ /* 移除之前的 transform */
+        /* 或者强制单行，进一步缩小按钮 */
+         white-space: nowrap; /* 防止按钮换行 */
+    }
+
+    #controls button {
+        font-size: 9px; /* 大幅缩小按钮字体 */
+        padding: 4px 6px; /* 大幅减小按钮内边距 */
+        margin: 0 2px; /* 大幅减小按钮间距 */
+        min-width: auto; /* 允许按钮变得更窄 */
+    }
+
+    #item-legend {
+        top: 65px; /* 移到控制按钮下方 */
+        gap: 4px; /* 进一步缩小间距 */
+        padding: 4px 8px;
+        /* 可能需要进一步缩小或隐藏 */
+        /* display: none; */ /* 如果实在放不下，可以考虑隐藏 */
+    }
+
+    .legend-item img {
+        width: 15px; /* 进一步缩小图片 */
+        height: 15px;
+    }
+
+    .legend-item {
+        font-size: 8px; /* 进一步缩小字体 */
+    }
+
+     #catcher {
+        width: 65px; /* 进一步缩小接盘 */
+        height: 28px;
+    }
+
+    .falling-item {
+        width: 38px; /* 进一步缩小掉落物 */
+        height: 38px;
+    }
+
+     #game-over {
+        font-size: 14px;
+        padding: 12px 20px;
+    }
+     #game-over h2 {
+        font-size: 16px;
+    }
+    #restart-button {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    /* 进一步缩小覆盖层字体/内边距 */
+     #name-input-overlay h2 {
+        font-size: 16px;
+    }
+    #name-input-overlay input[type="text"] {
+        font-size: 12px;
+        padding: 6px;
+    }
+    #name-input-overlay button {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+     #leaderboard-overlay {
+         width: 90%;
+         padding: 12px;
+     }
+     #leaderboard-overlay h2 {
+        font-size: 18px;
+    }
+    #leaderboard-list li {
+        font-size: 11px;
+    }
+    #close-leaderboard-button {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+}

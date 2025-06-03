@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>端午节接粽子</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 名称输入覆盖层 -->
+        <div id="name-input-overlay">
+            <h2>请输入你的名字</h2>
+            <input type="text" id="player-name-input" maxlength="10" placeholder="最多10个字符">
+            <button id="submit-name-button">开始游戏</button>
+        </div>
+
+        <!-- 排行榜按钮 -->
+        <button id="leaderboard-button">🏆</button>
+
+        <!-- 物品图例 -->
+        <div id="item-legend"></div>
+
+        <div id="controls">
+            <button id="start-button" disabled>开始游戏</button> <!-- 初始禁用，由名称提交触发 -->
+            <button id="pause-button" disabled>暂停</button>
+            <button id="end-button" disabled>结束游戏</button>
+        </div>
+        <div id="score-board">
+            得分: <span id="score">0</span>
+        </div>
+        <div id="timer">
+            时间: <span id="time-left">60</span>s
+        </div>
+        <div id="catcher"></div>
+        <div id="game-over" style="display: none;">
+            <h2>游戏结束!</h2>
+            <p>你的得分是: <span id="final-score">0</span></p>
+            <button id="restart-button">重新开始</button>
+        </div>
+        <!-- 排行榜覆盖层 -->
+        <div id="leaderboard-overlay" style="display: none;">
+            <h2>排行榜</h2>
+            <ol id="leaderboard-list"></ol>
+            <button id="close-leaderboard-button">关闭</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

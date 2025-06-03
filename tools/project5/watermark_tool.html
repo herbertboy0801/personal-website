@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片水印工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .controls, .preview {
+            flex: 1;
+            min-width: 300px;
+        }
+        .controls h2, .preview h2 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input[type="file"],
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="color"],
+        .form-group select,
+        .form-group textarea {
+            width: calc(100% - 12px);
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group input[type="range"] {
+            width: 100%;
+            padding: 0;
+        }
+        .form-group button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .preview-area {
+            border: 1px solid #ddd;
+            min-height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #e9e9e9;
+            overflow: hidden;
+            position: relative;
+        }
+        .preview-area canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        .download-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .download-btn:hover {
+            background-color: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>图片水印工具</h1>
+    <div class="container">
+        <div class="controls">
+            <h2>上传图片</h2>
+            <div class="form-group">
+                <label for="imageUpload">选择图片:</label>
+                <input type="file" id="imageUpload" accept="image/*">
+            </div>
+
+            <h2>文字水印设置</h2>
+            <div class="form-group">
+                <label for="textWatermarkContent">文字内容:</label>
+                <input type="text" id="textWatermarkContent" value="您的水印文字">
+            </div>
+            <div class="form-group">
+                <label for="textWatermarkFont">字体:</label>
+                <select id="textWatermarkFont">
+                    <option value="Arial">Arial</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="宋体">宋体</option>
+                    <option value="黑体">黑体</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="textWatermarkSize">大小:</label>
+                <input type="number" id="textWatermarkSize" value="30" min="10" max="200">
+            </div>
+            <div class="form-group">
+                <label for="textWatermarkColor">颜色:</label>
+                <input type="color" id="textWatermarkColor" value="#000000">
+            </div>
+            <div class="form-group">
+                <label for="textWatermarkPosition">位置:</label>
+                <select id="textWatermarkPosition">
+                    <option value="topLeft">左上角</option>
+                    <option value="topRight">右上角</option>
+                    <option value="bottomLeft">左下角</option>
+                    <option value="bottomRight" selected>右下角</option>
+                    <option value="center">中心</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="textWatermarkOpacity">透明度:</label>
+                <input type="range" id="textWatermarkOpacity" min="0" max="1" step="0.01" value="0.5">
+                <span id="textWatermarkOpacityValue">50%</span>
+            </div>
+
+            <h2>图片水印设置</h2>
+            <div class="form-group">
+                <label for="imageWatermarkUpload">选择图片水印 (Logo):</label>
+                <input type="file" id="imageWatermarkUpload" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label for="imageWatermarkSize">大小 (百分比):</label>
+                <input type="number" id="imageWatermarkSize" value="20" min="1" max="100">
+            </div>
+            <div class="form-group">
+                <label for="imageWatermarkPosition">位置:</label>
+                <select id="imageWatermarkPosition">
+                    <option value="topLeft">左上角</option>
+                    <option value="topRight">右上角</option>
+                    <option value="bottomLeft">左下角</option>
+                    <option value="bottomRight" selected>右下角</option>
+                    <option value="center">中心</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="imageWatermarkOpacity">透明度:</label>
+                <input type="range" id="imageWatermarkOpacity" min="0" max="1" step="0.01" value="0.7">
+                <span id="imageWatermarkOpacityValue">70%</span>
+            </div>
+        </div>
+
+        <div class="preview">
+            <h2>水印预览</h2>
+            <div class="preview-area">
+                <canvas id="watermarkCanvas"></canvas>
+            </div>
+            <button class="download-btn" id="downloadImage">下载处理后的图片</button>
+        </div>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const textWatermarkContent = document.getElementById('textWatermarkContent');
+        const textWatermarkFont = document.getElementById('textWatermarkFont');
+        const textWatermarkSize = document.getElementById('textWatermarkSize');
+        const textWatermarkColor = document.getElementById('textWatermarkColor');
+        const textWatermarkPosition = document.getElementById('textWatermarkPosition');
+        const textWatermarkOpacity = document.getElementById('textWatermarkOpacity');
+        const textWatermarkOpacityValue = document.getElementById('textWatermarkOpacityValue');
+
+        const imageWatermarkUpload = document.getElementById('imageWatermarkUpload');
+        const imageWatermarkSize = document.getElementById('imageWatermarkSize');
+        const imageWatermarkPosition = document.getElementById('imageWatermarkPosition');
+        const imageWatermarkOpacity = document.getElementById('imageWatermarkOpacity');
+        const imageWatermarkOpacityValue = document.getElementById('imageWatermarkOpacityValue');
+
+        const watermarkCanvas = document.getElementById('watermarkCanvas');
+        const ctx = watermarkCanvas.getContext('2d');
+        const downloadImageBtn = document.getElementById('downloadImage');
+
+        let originalImage = null;
+        let watermarkImage = null;
+
+        // 更新透明度显示
+        textWatermarkOpacity.addEventListener('input', () => {
+            textWatermarkOpacityValue.textContent = `${Math.round(textWatermarkOpacity.value * 100)}%`;
+            drawWatermark();
+        });
+        imageWatermarkOpacity.addEventListener('input', () => {
+            imageWatermarkOpacityValue.textContent = `${Math.round(imageWatermarkOpacity.value * 100)}%`;
+            drawWatermark();
+        });
+
+        // 图片上传
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        originalImage = img;
+                        drawWatermark();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 图片水印上传
+        imageWatermarkUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        watermarkImage = img;
+                        drawWatermark();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 监听所有设置变化，实时预览
+        [
+            textWatermarkContent,
+            textWatermarkFont,
+            textWatermarkSize,
+            textWatermarkColor,
+            textWatermarkPosition,
+            textWatermarkOpacity,
+            imageWatermarkSize,
+            imageWatermarkPosition,
+            imageWatermarkOpacity
+        ].forEach(element => {
+            element.addEventListener('input', drawWatermark);
+            element.addEventListener('change', drawWatermark); // For select elements
+        });
+
+        function drawWatermark() {
+            if (!originalImage) {
+                ctx.clearRect(0, 0, watermarkCanvas.width, watermarkCanvas.height);
+                return;
+            }
+
+            // 设置Canvas尺寸与原图一致，保证质量
+            watermarkCanvas.width = originalImage.naturalWidth;
+            watermarkCanvas.height = originalImage.naturalHeight;
+
+            // 绘制原图
+            ctx.clearRect(0, 0, watermarkCanvas.width, watermarkCanvas.height);
+            ctx.drawImage(originalImage, 0, 0);
+
+            // 绘制文字水印
+            const text = textWatermarkContent.value;
+            const fontSize = parseInt(textWatermarkSize.value);
+            const font = `${fontSize}px ${textWatermarkFont.value}`;
+            const color = textWatermarkColor.value;
+            const opacity = parseFloat(textWatermarkOpacity.value);
+            const position = textWatermarkPosition.value;
+
+            ctx.font = font;
+            ctx.fillStyle = color;
+            ctx.globalAlpha = opacity;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            let x, y;
+            const textMetrics = ctx.measureText(text);
+            const textWidth = textMetrics.width;
+            const textHeight = fontSize; // 近似文字高度
+
+            switch (position) {
+                case 'topLeft':
+                    x = 10;
+                    y = 10;
+                    break;
+                case 'topRight':
+                    x = watermarkCanvas.width - textWidth - 10;
+                    y = 10;
+                    break;
+                case 'bottomLeft':
+                    x = 10;
+                    y = watermarkCanvas.height - textHeight - 10;
+                    break;
+                case 'bottomRight':
+                    x = watermarkCanvas.width - textWidth - 10;
+                    y = watermarkCanvas.height - textHeight - 10;
+                    break;
+                case 'center':
+                    x = (watermarkCanvas.width - textWidth) / 2;
+                    y = (watermarkCanvas.height - textHeight) / 2;
+                    break;
+            }
+            ctx.fillText(text, x, y);
+
+            // 绘制图片水印
+            if (watermarkImage) {
+                const imgWatermarkSize = parseInt(imageWatermarkSize.value) / 100;
+                const imgWatermarkOpacity = parseFloat(imageWatermarkOpacity.value);
+                const imgWatermarkPosition = imageWatermarkPosition.value;
+
+                let wmWidth = watermarkImage.naturalWidth * imgWatermarkSize;
+                let wmHeight = watermarkImage.naturalHeight * imgWatermarkSize;
+
+                // 确保水印图片不会超出画布
+                if (wmWidth > watermarkCanvas.width) {
+                    wmWidth = watermarkCanvas.width;
+                    wmHeight = watermarkImage.naturalHeight * (wmWidth / watermarkImage.naturalWidth);
+                }
+                if (wmHeight > watermarkCanvas.height) {
+                    wmHeight = watermarkCanvas.height;
+                    wmWidth = watermarkImage.naturalWidth * (wmHeight / watermarkImage.naturalHeight);
+                }
+
+                let wmX, wmY;
+                switch (imgWatermarkPosition) {
+                    case 'topLeft':
+                        wmX = 10;
+                        wmY = 10;
+                        break;
+                    case 'topRight':
+                        wmX = watermarkCanvas.width - wmWidth - 10;
+                        wmY = 10;
+                        break;
+                    case 'bottomLeft':
+                        wmX = 10;
+                        wmY = watermarkCanvas.height - wmHeight - 10;
+                        break;
+                    case 'bottomRight':
+                        wmX = watermarkCanvas.width - wmWidth - 10;
+                        wmY = watermarkCanvas.height - wmHeight - 10;
+                        break;
+                    case 'center':
+                        wmX = (watermarkCanvas.width - wmWidth) / 2;
+                        wmY = (watermarkCanvas.height - wmHeight) / 2;
+                        break;
+                }
+                ctx.globalAlpha = imgWatermarkOpacity;
+                ctx.drawImage(watermarkImage, wmX, wmY, wmWidth, wmHeight);
+            }
+
+            // 重置globalAlpha，避免影响后续操作
+            ctx.globalAlpha = 1;
+        }
+
+        // 下载图片
+        downloadImageBtn.addEventListener('click', () => {
+            if (originalImage) {
+                const link = document.createElement('a');
+                link.download = 'watermarked_image.png'; // 默认下载为PNG，保持透明度
+                link.href = watermarkCanvas.toDataURL('image/png');
+                link.click();
+            } else {
+                alert('请先上传图片！');
+            }
+        });
+
+        // 初始绘制（如果页面加载时有默认图片或设置）
+        drawWatermark();
+    </script>
+</body>
+</html>

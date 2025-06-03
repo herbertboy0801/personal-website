@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>货币换算工具</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #555;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"], select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #5cb85c;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #4cae4c;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #dff0d8;
+            border: 1px solid #d0e9c6;
+            border-radius: 4px;
+            color: #3c763d;
+            word-break: break-all; /* Prevent overflow */
+        }
+        .result button {
+            margin-top: 10px;
+            background: #0275d8;
+        }
+         .result button:hover {
+            background: #025aa5;
+        }
+        .history {
+            margin-top: 20px;
+        }
+        .history ul {
+            list-style: none;
+            padding: 0;
+        }
+        .history li {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .chart-container {
+            margin-top: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            input[type="number"], select, button {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>货币换算工具</h1>
+
+        <div class="form-group">
+            <label for="amount">金额:</label>
+            <input type="number" id="amount" value="100" min="0">
+        </div>
+
+        <div class="form-group">
+            <label for="from-currency">从:</label>
+            <select id="from-currency"></select>
+        </div>
+
+        <div class="form-group">
+            <label for="to-currency">到:</label>
+            <select id="to-currency"></select>
+        </div>
+
+        <button id="convert-btn">换算</button>
+
+        <div class="result" id="conversion-result" style="display: none;">
+            <h2>换算结果</h2>
+            <p id="result-text"></p>
+            <p id="exchange-rate-text"></p>
+            <button id="copy-result-btn">复制结果</button>
+        </div>
+
+        <div class="history">
+            <h2>最近换算记录</h2>
+            <ul id="history-list">
+                <!-- History items will be added here -->
+            </ul>
+        </div>
+
+        <div class="chart-container">
+            <h2>近一周汇率趋势 (模拟数据)</h2>
+            <canvas id="exchangeRateChart"></canvas>
+            <p style="font-size: 0.8rem; color: #666;">注意：此图表使用模拟数据，非实时汇率。</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 模拟的汇率数据 (以USD为基准)
+        // 注意：实际应用中需要从API获取实时数据
+        const exchangeRates = {
+            "CNY": { rate: 7.2, symbol: "¥" },
+            "USD": { rate: 1, symbol: "$" },
+            "EUR": { rate: 0.92, symbol: "€" },
+            "GBP": { rate: 0.79, symbol: "£" },
+            "JPY": { rate: 156.5, symbol: "¥" },
+            "TWD": { rate: 32.3, symbol: "NT$" },
+            "VND": { rate: 25450, symbol: "₫" }
+        };
+
+        // 模拟的近一周历史汇率数据
+        // 格式: "FROM_TO": [day1, day2, ..., day7]
+        // 注意：实际应用中需要从API获取历史数据
+        const historicalRates = {
+            "USD_CNY": [7.18, 7.19, 7.20, 7.21, 7.20, 7.22, 7.23],
+            "CNY_USD": [0.139, 0.138, 0.138, 0.137, 0.138, 0.137, 0.137],
+            "USD_EUR": [0.91, 0.92, 0.92, 0.91, 0.92, 0.93, 0.92],
+            "EUR_USD": [1.09, 1.08, 1.08, 1.09, 1.08, 1.07, 1.08],
+            "USD_GBP": [0.78, 0.79, 0.79, 0.78, 0.79, 0.80, 0.79],
+            "GBP_USD": [1.28, 1.27, 1.27, 1.28, 1.27, 1.25, 1.27],
+            "USD_JPY": [155.0, 156.0, 156.5, 157.0, 156.8, 157.5, 156.5],
+            "JPY_USD": [0.00645, 0.00641, 0.00639, 0.00637, 0.00638, 0.00635, 0.00639],
+            "USD_TWD": [32.0, 32.1, 32.3, 32.2, 32.4, 32.5, 32.3],
+            "TWD_USD": [0.03125, 0.03115, 0.03096, 0.03105, 0.03086, 0.03077, 0.03096],
+            "USD_VND": [25300, 25400, 25450, 25500, 25480, 25550, 25450],
+            "VND_USD": [0.0000395, 0.0000394, 0.0000393, 0.0000392, 0.0000392, 0.0000391, 0.0000393],
+            // 添加其他货币对的模拟历史数据...
+            // 例如 CNY_EUR, EUR_CNY 等，可以通过基准汇率计算或直接模拟
+            "CNY_EUR": [0.128, 0.128, 0.127, 0.126, 0.127, 0.127, 0.127],
+            "EUR_CNY": [7.8, 7.8, 7.85, 7.9, 7.87, 7.85, 7.85],
+            // ... 确保所有常用货币对都有模拟历史数据
+        };
+
+
+        const historyKey = 'currencyConverterHistory';
+        const maxHistory = 5;
+        let exchangeRateChart; // Chart.js 实例
+
+        // 获取货币列表
+        const currencies = Object.keys(exchangeRates);
+
+        // 初始化下拉选择框
+        function populateCurrencySelects() {
+            const fromSelect = document.getElementById('from-currency');
+            const toSelect = document.getElementById('to-currency');
+
+            currencies.forEach(currency => {
+                const option1 = document.createElement('option');
+                option1.value = currency;
+                option1.textContent = `${currency} (${exchangeRates[currency].symbol})`;
+                fromSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = currency;
+                option2.textContent = `${currency} (${exchangeRates[currency].symbol})`;
+                toSelect.appendChild(option2);
+            });
+
+            // 设置默认值
+            fromSelect.value = 'USD';
+            toSelect.value = 'CNY';
+        }
+
+        // 获取汇率
+        function getExchangeRate(from, to) {
+            if (from === to) {
+                return 1;
+            }
+            // 使用USD作为中介进行换算
+            const rateFromUSD = exchangeRates[from].rate;
+            const rateToUSD = exchangeRates[to].rate;
+
+            // Rate(From -> To) = (1 / Rate(Base -> From)) * Rate(Base -> To)
+            // 如果Base是USD: Rate(From -> To) = (1 / Rate(USD -> From)) * Rate(USD -> To)
+            // 这里的 exchangeRates[currency].rate 存储的是 USD -> currency 的汇率
+            // 所以 Rate(From -> To) = (1 / exchangeRates[to].rate) * exchangeRates[from].rate 是错误的
+            // 应该是 Rate(From -> To) = (1 / Rate(From -> USD)) * Rate(USD -> To)
+            // Rate(From -> USD) = 1 / exchangeRates[From].rate (如果exchangeRates存的是USD->Currency)
+            // 或者 Rate(From -> USD) = exchangeRates[From].rate (如果exchangeRates存的是Currency->USD)
+
+            // 假设 exchangeRates[currency].rate 存储的是 USD -> currency 的汇率
+            // 那么 Rate(From -> USD) = 1 / exchangeRates[From].rate
+            // Rate(USD -> To) = exchangeRates[To].rate
+            // Rate(From -> To) = Rate(From -> USD) * Rate(USD -> To) = (1 / exchangeRates[From].rate) * exchangeRates[To].rate 是错误的
+
+            // 假设 exchangeRates[currency].rate 存储的是 currency -> USD 的汇率
+            // 那么 Rate(From -> USD) = exchangeRates[From].rate
+            // Rate(USD -> To) = 1 / exchangeRates[To].rate
+            // Rate(From -> To) = Rate(From -> USD) * Rate(USD -> To) = exchangeRates[From].rate * (1 / exchangeRates[To].rate)
+
+            // 重新检查 exchangeRates 结构，它是以USD为基准，存储的是 USD -> currency 的汇率
+            // USD -> CNY 是 7.2
+            // USD -> EUR 是 0.92
+            // 要计算 CNY -> EUR:
+            // CNY -> USD = 1 / (USD -> CNY) = 1 / 7.2
+            // USD -> EUR = 0.92
+            // CNY -> EUR = (CNY -> USD) * (USD -> EUR) = (1 / 7.2) * 0.92
+
+            // 所以正确的计算方式是：
+            // Rate(From -> To) = (1 / Rate(USD -> From)) * Rate(USD -> To)
+            // Rate(From -> To) = (1 / exchangeRates[From].rate) * exchangeRates[To].rate
+
+            return (1 / rateFromUSD) * rateToUSD;
+        }
+
+
+        // 执行换算
+        function performConversion() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const fromCurrency = document.getElementById('from-currency').value;
+            const toCurrency = document.getElementById('to-currency').value;
+            const resultDiv = document.getElementById('conversion-result');
+            const resultText = document.getElementById('result-text');
+            const exchangeRateText = document.getElementById('exchange-rate-text');
+
+            if (isNaN(amount) || amount <= 0) {
+                resultText.textContent = "请输入有效的金额。";
+                exchangeRateText.textContent = "";
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            const rate = getExchangeRate(fromCurrency, toCurrency);
+            const convertedAmount = amount * rate;
+
+            const fromSymbol = exchangeRates[fromCurrency].symbol;
+            const toSymbol = exchangeRates[toCurrency].symbol;
+
+            resultText.textContent = `${amount} ${fromCurrency} (${fromSymbol}) = ${convertedAmount.toFixed(2)} ${toCurrency} (${toSymbol})`;
+            exchangeRateText.textContent = `当前汇率 (模拟): 1 ${fromCurrency} = ${rate.toFixed(4)} ${toCurrency}`;
+
+            resultDiv.style.display = 'block';
+
+            saveHistory(`${amount} ${fromCurrency} (${fromSymbol}) = ${convertedAmount.toFixed(2)} ${toCurrency} (${toSymbol})`);
+
+            // 更新图表
+            updateChart(fromCurrency, toCurrency);
+        }
+
+        // 保存换算记录到LocalStorage
+        function saveHistory(record) {
+            const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            history.unshift(record); // 添加到开头
+            if (history.length > maxHistory) {
+                history.pop(); // 移除最旧的记录
+            }
+            localStorage.setItem(historyKey, JSON.stringify(history));
+            displayHistory();
+        }
+
+        // 显示换算记录
+        function displayHistory() {
+            const historyList = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            historyList.innerHTML = ''; // 清空现有列表
+
+            history.forEach(record => {
+                const li = document.createElement('li');
+                li.textContent = record;
+                historyList.appendChild(li);
+            });
+        }
+
+        // 复制结果到剪贴板
+        function copyResult() {
+            const resultText = document.getElementById('result-text').textContent;
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert("换算结果已复制到剪贴板！");
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
+        }
+
+        // 绘制或更新汇率趋势图
+        function updateChart(from, to) {
+            const chartCanvas = document.getElementById('exchangeRateChart');
+            const ctx = chartCanvas.getContext('2d');
+
+            const dataKey = `${from}_${to}`;
+            const data = historicalRates[dataKey] || []; // 获取模拟历史数据
+
+            if (exchangeRateChart) {
+                exchangeRateChart.destroy(); // 销毁旧图表
+            }
+
+            exchangeRateChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], // 近一周日期标签
+                    datasets: [{
+                        label: `${from} 兑换 ${to} 汇率`,
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false // 汇率不一定从0开始
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(4); // 显示汇率，保留4位小数
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCurrencySelects();
+            displayHistory();
+
+            document.getElementById('convert-btn').addEventListener('click', performConversion);
+            document.getElementById('copy-result-btn').addEventListener('click', copyResult);
+
+            // 当选择的货币对改变时，更新图表
+            document.getElementById('from-currency').addEventListener('change', () => {
+                 const fromCurrency = document.getElementById('from-currency').value;
+                 const toCurrency = document.getElementById('to-currency').value;
+                 updateChart(fromCurrency, toCurrency);
+            });
+             document.getElementById('to-currency').addEventListener('change', () => {
+                 const fromCurrency = document.getElementById('from-currency').value;
+                 const toCurrency = document.getElementById('to-currency').value;
+                 updateChart(fromCurrency, toCurrency);
+            });
+
+            // 页面加载时显示默认货币对的图表
+            const defaultFrom = document.getElementById('from-currency').value;
+            const defaultTo = document.getElementById('to-currency').value;
+            updateChart(defaultFrom, defaultTo);
+        });
+
+        // 解释无法实时抓取汇率的原因
+        console.warn("注意：此工具使用的汇率和历史数据是模拟的。由于浏览器安全策略（跨域限制）和网站反爬机制，无法直接在客户端JavaScript中从Google等网站实时抓取汇率数据。实际应用中需要后端服务或第三方API支持。");
+
+    </script>
+</body>
+</html>

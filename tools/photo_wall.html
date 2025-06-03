@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情侣照片墙</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #fce4ec; /* 温馨的粉色背景 */
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background 0.5s ease; /* 为背景变化添加过渡 */
+        }
+
+        .bg-heart-pattern {
+            background-image: radial-gradient(circle, #ff8a80 10%, transparent 11%),
+                              radial-gradient(circle, #ff8a80 10%, transparent 11%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            background-color: #fce4ec; /* 保持一个基础背景色 */
+        }
+        .bg-gradient-love {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%);
+        }
+
+
+        h1 {
+            color: #e91e63; /* 主题粉色 */
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap; /* 允许控件换行 */
+            gap: 10px;
+            align-items: center;
+            justify-content: center; /* 居中控件 */
+        }
+
+        .controls label, .controls button, .controls select {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #e91e63;
+            background-color: #f8bbd0;
+            color: #ad1457;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .controls button:hover, .controls select:hover {
+            background-color: #f48fb1;
+        }
+
+        .photo-wall-container {
+            display: grid;
+            gap: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: grid-template-columns 0.5s ease-in-out; /* 平滑过渡 */
+            width: 90%;
+            max-width: 1000px; /* 限制最大宽度 */
+        }
+
+        .photo-item {
+            width: 100%;
+            padding-bottom: 100%; /* 保持1:1的宽高比 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.5s ease-out, box-shadow 0.3s ease, width 0.5s ease-in-out, padding-bottom 0.5s ease-in-out, border-radius 0.3s ease, clip-path 0.3s ease, opacity 0.5s ease-out; /* 添加 opacity 和调整 transform 过渡 */
+            cursor: pointer;
+            background-color: #eee; /* 给一个背景色，以防图片未加载或clip-path显示问题 */
+            opacity: 0; /* 初始透明 */
+            transform: scale(0.95); /* 初始略微缩小 */
+        }
+        .photo-item.photo-item-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05); /* 鼠标悬停放大 */
+            box-shadow: 0 0 15px rgba(233, 30, 99, 0.5);
+        }
+
+        .photo-item img { /* 隐藏原始img标签，我们用背景图 */
+            display: none;
+        }
+
+        .photo-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .photo-item:hover .photo-info {
+            opacity: 1;
+        }
+
+        /* 不同布局的特定样式 - 示例 */
+        .layout-grid {
+            /* 默认就是网格，但可以保留此类用于明确指定 */
+        }
+        .layout-carousel { /* TODO: 旋转相册样式 */
+            /* display: flex; perspective: 1000px; ... */
+        }
+        .layout-heart { /* TODO: 心形排列样式 */
+            /* position: relative; ... */
+        }
+
+        /* 照片边框样式 */
+        .photo-item.border-default { /* 默认就是8px圆角 */
+            border-radius: 8px;
+        }
+        .photo-item.border-square {
+            border-radius: 0;
+        }
+        .photo-item.border-circle {
+            border-radius: 50%;
+        }
+        .photo-item.border-heart {
+            /* 使用 clip-path 实现心形，需要图片内容配合 */
+            /* 这个心形路径比较简单，可以根据需要调整 */
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            border-radius: 0; /* clip-path 时圆角可能无效或表现不一 */
+        }
+
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column; /* 小屏幕上控件垂直排列 */
+                align-items: stretch; /* 使控件宽度一致 */
+            }
+            .controls label, .controls button, .controls select {
+                width: 100%; /* 控件占满可用宽度 */
+                box-sizing: border-box; /* 防止padding导致溢出 */
+                text-align: center;
+            }
+            .photo-wall-container {
+                width: 95%;
+                gap: 5px; /* 减小照片间距 */
+            }
+            /* 针对更小的屏幕，可以进一步调整宫格 */
+            /* 例如，如果当前是5x5，在小屏上可能显示为3x3或2x2 */
+            /* 这个逻辑也可以在JS中根据屏幕宽度动态调整gridSizeSelect的值并应用 */
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em; /* 稍微调整标题大小 */
+            }
+            .controls {
+                padding: 10px;
+            }
+            .controls label, .controls button, .controls select {
+                font-size: 13px; /* 调整控件字体大小 */
+                padding: 8px 10px;
+            }
+            .photo-item:hover .photo-info {
+                font-size: 10px; /* 调整悬停信息字体 */
+            }
+            .photo-wall-container {
+                gap: 3px; /* 进一步减小照片间距 */
+            }
+             /* 在非常小的屏幕上，强制减少列数，例如最多3列 */
+            .photo-wall-container.layout-grid {
+                /*  可以通过JS动态修改gridSizeSelect的值，然后applyGridSize会处理
+                    或者在这里用CSS覆盖，但JS控制更灵活
+                    例如: grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+                    这会让列数自动适应，但会覆盖JS的精确控制
+                */
+            }
+            .modal-nav { /* 调整模态框导航按钮大小和位置 */
+                font-size: 24px;
+                padding: 8px;
+            }
+            .prev-photo { left: 5px; }
+            .next-photo { right: 5px; }
+            .modal-content img {
+                 max-height: 70vh; /* 进一步减小图片高度 */
+            }
+            .photo-details-modal {
+                font-size: 0.8em;
+            }
+        }
+
+        /* 全屏查看模态框样式 */
+        .modal {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.85); /* 半透明黑色背景 */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 0;
+            width: auto;
+            max-width: 90vw; /* 最大宽度为视口的90% */
+            max-height: 90vh; /* 最大高度为视口的90% */
+            display: flex; /* 使用flex布局方便图片居中 */
+            flex-direction: column; /* 垂直排列内容 */
+            align-items: center;
+            justify-content: center;
+        }
+ 
+        .modal-content img {
+            max-width: 100%;
+            max-height: 75vh; /* 稍微减小图片高度以便为文字留空间 */
+            object-fit: contain; /* 保持图片比例 */
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .photo-details-modal {
+            color: #fff;
+            text-align: center;
+            font-size: 0.9em;
+            max-height: 15vh; /* 限制文本区域高度 */
+            overflow-y: auto; /* 如果内容过多则滚动 */
+            padding: 0 15px;
+        }
+        .photo-details-modal p {
+            margin: 5px 0;
+        }
+        .memory-section h4 {
+            margin: 10px 0 5px 0;
+            color: #f8bbd0; /* 粉色点缀 */
+        }
+
+        .slideshow-controls {
+            position: absolute;
+            bottom: 20px; /* 调整位置，避免与图片描述太近 */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.6);
+            padding: 10px 18px;
+            border-radius: 25px;
+            display: flex;
+            gap: 20px; /* 增大按钮间距 */
+            z-index: 1001;
+            align-items: center;
+        }
+        .slideshow-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 22px; /* 稍微增大图标 */
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1; /* 确保图标垂直居中 */
+        }
+        .slideshow-controls button:hover {
+            color: #f48fb1; /* 使用主题悬停色 */
+        }
+
+        /* 编辑表单样式 */
+        .edit-photo-form {
+            display: none; /* 默认隐藏 */
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            color: white;
+            width: 100%;
+            max-width: 400px; /* 限制表单宽度 */
+            margin-top: 10px;
+        }
+        .edit-photo-form label {
+            font-size: 0.9em;
+            margin-bottom: -5px;
+        }
+        .edit-photo-form input[type="text"],
+        .edit-photo-form input[type="date"],
+        .edit-photo-form textarea {
+            width: calc(100% - 16px); /* 减去padding */
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #333;
+        }
+        .edit-photo-form textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        .edit-form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .edit-form-buttons button {
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        .save-edit-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .cancel-edit-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: white;
+            background-color: rgba(0,0,0,0.3);
+            padding: 10px;
+            cursor: pointer;
+            user-select: none; /* 防止文本被选中 */
+            border-radius: 5px;
+        }
+        .modal-nav:hover {
+            background-color: rgba(0,0,0,0.6);
+        }
+        .prev-photo { left: 15px; }
+        .next-photo { right: 15px; }
+
+    </style>
+    <!-- 引入 html2canvas 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5rLesXWW/sGuWKz1VFNL8TR0g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <h1>💖 情侣照片墙 💖</h1>
+
+    <div class="controls">
+        <label for="photoUpload" class="upload-btn">上传照片</label>
+        <input type="file" id="photoUpload" multiple accept="image/*" style="display: none;">
+        
+        <label for="gridSize">宫格大小:</label>
+        <select id="gridSize">
+            <option value="1">1x1</option>
+            <option value="3" selected>3x3 (9宫格)</option>
+            <option value="4">4x4 (16宫格)</option>
+            <option value="5">5x5 (25宫格)</option>
+        </select>
+
+        <label for="layoutStyle">布局样式:</label>
+        <select id="layoutStyle">
+            <option value="grid" selected>网格式</option>
+            <option value="carousel">旋转相册 (待实现)</option>
+            <option value="heart">心形排列 (待实现)</option>
+        </select>
+
+        <label for="backgroundStyle">背景样式:</label>
+        <select id="backgroundStyle">
+            <option value="default" selected>默认粉色</option>
+            <option value="gradient-love">渐变爱心</option>
+            <option value="heart-pattern">爱心图案</option>
+            <option value="custom">自定义图片 (待实现)</option>
+        </select>
+
+        <label for="borderStyle">边框样式:</label>
+        <select id="borderStyle">
+            <option value="default" selected>圆角</option>
+            <option value="square">方形</option>
+            <option value="circle">圆形</option>
+            <option value="heart">心形 (实验性)</option>
+        </select>
+
+        <button id="clearPhotos">清空照片</button>
+        <button id="startSlideshowButton" title="播放幻灯片">🎬 播放幻灯片</button>
+        <button id="exportWallButton" title="导出为图片">🖼️ 导出图片</button>
+    </div>
+
+    <div id="photoWall" class="photo-wall-container layout-grid">
+        <!-- 照片将在这里显示 -->
+    </div>
+
+    <!-- 全屏查看模态框 -->
+    <div id="photoModal" class="modal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="全屏照片">
+            
+            <div id="photoDetailsView" class="photo-details-modal">
+                <p id="modalDate"></p>
+                <p id="modalLocation"></p>
+                <p id="modalDescription"></p>
+                <div class="memory-section">
+                    <h4>💌 爱的记忆</h4>
+                    <p id="modalMemory"></p>
+                </div>
+                <button id="editPhotoButton" class="controls-button" style="margin-top:10px; background-color: #673ab7; color:white; border-color: #673ab7;">编辑信息</button>
+            </div>
+
+            <form id="editPhotoForm" class="edit-photo-form">
+                <label for="editDate">日期:</label>
+                <input type="text" id="editDate" name="date">
+                
+                <label for="editLocation">地点:</label>
+                <input type="text" id="editLocation" name="location">
+                
+                <label for="editDescription">描述:</label>
+                <textarea id="editDescription" name="description"></textarea>
+                
+                <label for="editMemory">爱的记忆:</label>
+                <textarea id="editMemory" name="memory"></textarea>
+                
+                <div class="edit-form-buttons">
+                    <button type="button" id="saveEditButton" class="save-edit-btn">保存</button>
+                    <button type="button" id="cancelEditButton" class="cancel-edit-btn">取消</button>
+                </div>
+            </form>
+            <div id="slideshowControlsView" class="slideshow-controls" style="display: none;">
+                <button id="slideshowPrevButton" title="上一张">&#10094;</button>
+                <button id="slideshowPlayPauseButton" title="播放/暂停">❚❚</button>
+                <button id="slideshowNextButton" title="下一张">&#10095;</button>
+            </div>
+        </div>
+        <a class="modal-nav prev-photo">&#10094;</a>
+        <a class="modal-nav next-photo">&#10095;</a>
+    </div>
+    
+    <script>
+        const photoUpload = document.getElementById('photoUpload');
+        const photoWall = document.getElementById('photoWall');
+        const gridSizeSelect = document.getElementById('gridSize');
+        const clearPhotosButton = document.getElementById('clearPhotos');
+        const photoModal = document.getElementById('photoModal');
+        const modalImage = document.getElementById('modalImage');
+        // const modalCaption = document.getElementById('modalCaption'); // 不再直接使用单一caption
+        const modalDate = document.getElementById('modalDate');
+        const modalLocation = document.getElementById('modalLocation');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalMemory = document.getElementById('modalMemory');
+        const layoutStyleSelect = document.getElementById('layoutStyle');
+        const backgroundStyleSelect = document.getElementById('backgroundStyle');
+        const borderStyleSelect = document.getElementById('borderStyle');
+        
+        const photoDetailsView = document.getElementById('photoDetailsView');
+        const editPhotoForm = document.getElementById('editPhotoForm');
+        const editPhotoButton = document.getElementById('editPhotoButton');
+        const saveEditButton = document.getElementById('saveEditButton');
+        const cancelEditButton = document.getElementById('cancelEditButton');
+        
+        const startSlideshowButton = document.getElementById('startSlideshowButton');
+        const slideshowControlsView = document.getElementById('slideshowControlsView');
+        const slideshowPlayPauseButton = document.getElementById('slideshowPlayPauseButton');
+        const slideshowPrevButton = document.getElementById('slideshowPrevButton');
+        const slideshowNextButton = document.getElementById('slideshowNextButton');
+        const exportWallButton = document.getElementById('exportWallButton');
+    
+        const closeModalButton = photoModal.querySelector('.close-modal'); // 获取关闭按钮
+        const prevPhotoButton = photoModal.querySelector('.prev-photo'); // 获取模态框默认上一张按钮
+        const nextPhotoButton = photoModal.querySelector('.next-photo'); // 获取模态框默认下一张按钮
+    
+        const editDateInput = document.getElementById('editDate');
+        const editLocationInput = document.getElementById('editLocation');
+        const editDescriptionInput = document.getElementById('editDescription');
+        const editMemoryInput = document.getElementById('editMemory');
+
+        let photos = []; // 存储照片信息
+        let currentPhotoIndex = 0; // 当前在模态框中显示的照片索引
+        let currentLayout = 'grid';
+        let currentBackground = 'default';
+        let currentBorderStyle = 'default';
+        let slideshowInterval = null;
+        let isSlideshowPlaying = false;
+        const SLIDESHOW_INTERVAL_MS = 5000; // 5秒切换
+    
+        // 初始化时设置默认宫格、布局、背景和边框样式
+        // 这些会从localStorage加载（如果存在）
+
+        photoUpload.addEventListener('change', (event) => {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            // 限制一次最多上传25张，如果已有照片，则补充到25张
+            const remainingSlots = 25 - photos.length;
+            const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+            if (files.length > remainingSlots && remainingSlots > 0) {
+                alert(`最多还能上传 ${remainingSlots} 张照片。本次将上传前面 ${remainingSlots} 张。`);
+            } else if (remainingSlots <= 0) {
+                alert('照片墙已满25张，请先清空部分照片再上传。');
+                return;
+            }
+            
+            for (const file of filesToProcess) {
+                if (!file.type.startsWith('image/')) continue;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const photoData = {
+                        id: Date.now() + Math.random(), // 简单唯一ID
+                        src: e.target.result,
+                        name: file.name,
+                        date: new Date().toLocaleDateString(), // 默认日期
+                        description: '甜蜜瞬间', // 默认描述
+                        location: '秘密基地', // 新增：默认地点
+                        memory: '此刻永恒...' // 新增：默认爱的记忆
+                    };
+                    photos.push(photoData);
+                    if (photos.length > 25) { // 再次检查，理论上前面已限制
+                        photos = photos.slice(0, 25); 
+                    }
+                    renderPhotoWall();
+                    savePhotosToLocalStorage(); // 上传后保存
+                };
+                reader.readAsDataURL(file);
+            }
+            // 清空input的值，以便可以再次选择相同的文件
+            photoUpload.value = '';
+        });
+
+        gridSizeSelect.addEventListener('change', (event) => {
+            applyGridSize(event.target.value);
+            // 注意：宫格大小的保存应独立于照片数据，或作为配置项保存
+            saveConfiguration();
+        });
+
+        layoutStyleSelect.addEventListener('change', (event) => {
+            applyLayout(event.target.value);
+            saveConfiguration();
+        });
+
+        backgroundStyleSelect.addEventListener('change', (event) => {
+            applyBackground(event.target.value);
+            saveConfiguration();
+        });
+
+        borderStyleSelect.addEventListener('change', (event) => {
+            applyBorderStyle(event.target.value);
+            saveConfiguration();
+        });
+    
+        startSlideshowButton.addEventListener('click', () => {
+            if (photos.length === 0) {
+                alert('请先上传一些照片再开始幻灯片播放。');
+                return;
+            }
+            startSlideshow();
+        });
+        
+        slideshowPlayPauseButton.addEventListener('click', togglePlayPauseSlideshow);
+        slideshowPrevButton.addEventListener('click', () => changeSlideManually(-1));
+        slideshowNextButton.addEventListener('click', () => changeSlideManually(1));
+    
+        exportWallButton.addEventListener('click', exportPhotoWallAsImage);
+
+        clearPhotosButton.addEventListener('click', () => {
+            if (confirm('确定要清空所有照片吗？')) {
+                photos = [];
+                renderPhotoWall();
+                savePhotosToLocalStorage(); // 清空后保存
+            }
+        });
+
+        function applyGridSize(size) {
+            const wallSize = parseInt(size);
+            if (wallSize === 1) {
+                photoWall.style.gridTemplateColumns = '1fr';
+            } else {
+                photoWall.style.gridTemplateColumns = `repeat(${wallSize}, 1fr)`;
+            }
+            // 重新渲染以适应新的宫格大小，特别是单张照片时可能需要特殊处理
+            renderPhotoWall(); 
+        }
+
+        function renderPhotoWall() {
+            photoWall.innerHTML = ''; // 清空现有照片
+            const currentGridSize = parseInt(gridSizeSelect.value);
+            const photosToDisplay = currentGridSize === 1 ? photos.slice(0, 1) : photos;
+
+            photosToDisplay.forEach(photo => {
+                const photoItem = document.createElement('div');
+                photoItem.classList.add('photo-item');
+                // 应用当前激活的边框样式
+                if (currentBorderStyle && currentBorderStyle !== 'default') {
+                    photoItem.classList.add(`border-${currentBorderStyle}`);
+                } else {
+                    photoItem.classList.add('border-default'); // 显式添加默认
+                }
+                photoItem.style.backgroundImage = `url(${photo.src})`;
+                photoItem.dataset.id = photo.id;
+    
+                // 延迟添加 visible 类以触发CSS动画
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => { // Double requestAnimationFrame for more robust trigger
+                         photoItem.classList.add('photo-item-visible');
+                    });
+                });
+    
+                const photoInfo = document.createElement('div');
+                photoInfo.classList.add('photo-info');
+                // 简单的日期和描述，后续可以扩展
+                photoInfo.textContent = `${photo.date} - ${photo.description.substring(0,15)}${photo.description.length > 15 ? '...' : ''}`; 
+                
+                photoItem.appendChild(photoInfo);
+
+                photoItem.addEventListener('click', () => {
+                    // photosToDisplay 是在 renderPhotoWall 中定义的当前可见的照片数组
+                    // 我们需要基于这个数组来找到正确的索引
+                    const photoIndex = photosToDisplay.findIndex(p => p.id === photo.id);
+                    if (photoIndex !== -1) {
+                        // 传递 photosToDisplay 给 openModal，因为这是用户当前看到的照片集合
+                        // 但 changePhoto 内部会使用完整的 photos 数组进行导航
+                        openModal(photosToDisplay, photoIndex);
+                    }
+                });
+
+                photoWall.appendChild(photoItem);
+            });
+
+            // 如果是单张照片模式，且有照片，则特殊处理使其居中放大
+            if (currentGridSize === 1 && photosToDisplay.length > 0) {
+                const singlePhotoItem = photoWall.querySelector('.photo-item');
+                if (singlePhotoItem) {
+                    // 可以在这里添加特定于单张照片的样式或行为
+                    // 例如，确保它占据更大的空间或有不同的动画
+                }
+            }
+        }
+
+        function applyLayout(layout) {
+            currentLayout = layout;
+            photoWall.className = 'photo-wall-container'; // Reset classes
+            photoWall.classList.add(`layout-${layout}`);
+            // TODO: 为不同布局应用更复杂的JS逻辑，例如心形布局需要计算位置
+            if (layout === 'grid') {
+                applyGridSize(gridSizeSelect.value); // 网格布局依赖gridSize
+            } else {
+                // 其他布局可能不需要或以不同方式使用gridSize
+                photoWall.style.gridTemplateColumns = ''; // 清除非网格布局的grid样式
+                alert(`布局 "${layout}" 尚未完全实现，敬请期待！`);
+            }
+            console.log(`应用布局: ${layout}`);
+        }
+
+        function applyBackground(background) {
+            currentBackground = background;
+            document.body.className = ''; // Reset body classes
+            switch (background) {
+                case 'gradient-love':
+                    document.body.classList.add('bg-gradient-love');
+                    break;
+                case 'heart-pattern':
+                    document.body.classList.add('bg-heart-pattern');
+                    break;
+                case 'custom':
+                    // TODO: 实现自定义背景图片上传
+                    alert('自定义背景图片功能尚未实现。');
+                    document.body.style.backgroundColor = '#fce4ec'; // 回退到默认
+                    break;
+                case 'default':
+                default:
+                    document.body.style.backgroundColor = '#fce4ec';
+                    break;
+            }
+            console.log(`应用背景: ${background}`);
+        }
+
+        function applyBorderStyle(borderStyle) {
+            currentBorderStyle = borderStyle;
+            const allPhotoItems = photoWall.querySelectorAll('.photo-item');
+            allPhotoItems.forEach(item => {
+                // 移除所有可能的边框类，避免冲突
+                item.classList.remove('border-default', 'border-square', 'border-circle', 'border-heart');
+                // 添加新的边框类
+                if (borderStyle && borderStyle !== 'default') {
+                    item.classList.add(`border-${borderStyle}`);
+                } else {
+                    item.classList.add('border-default'); // 确保默认类被应用
+                }
+            });
+            console.log(`应用边框样式: ${borderStyle}`);
+        }
+ 
+        function savePhotosToLocalStorage() {
+            try {
+                localStorage.setItem('photoWallPhotos', JSON.stringify(photos));
+                console.log('照片数据已保存到localStorage。');
+            } catch (e) {
+                console.error('保存照片到localStorage失败:', e);
+                // alert('无法保存您的照片数据，可能是因为localStorage已满或浏览器不支持。');
+            }
+        }
+
+        function loadPhotosFromLocalStorage() {
+            try {
+                const storedPhotos = localStorage.getItem('photoWallPhotos');
+                if (storedPhotos) {
+                    photos = JSON.parse(storedPhotos);
+                    console.log('从localStorage加载了照片数据。');
+                }
+            } catch (e) {
+                console.error('从localStorage加载照片失败:', e);
+                photos = [];
+            }
+        }
+
+        function saveConfiguration() {
+            const config = {
+                gridSize: gridSizeSelect.value,
+                layout: currentLayout,
+                background: currentBackground,
+                borderStyle: currentBorderStyle // 保存边框样式
+            };
+            try {
+                localStorage.setItem('photoWallConfig', JSON.stringify(config));
+                console.log('配置已保存到localStorage:', config);
+            } catch (e) {
+                console.error('保存配置到localStorage失败:', e);
+            }
+        }
+
+        function loadConfiguration() {
+            try {
+                const storedConfig = localStorage.getItem('photoWallConfig');
+                if (storedConfig) {
+                    const config = JSON.parse(storedConfig);
+                    gridSizeSelect.value = config.gridSize || '3';
+                    layoutStyleSelect.value = config.layout || 'grid';
+                    backgroundStyleSelect.value = config.background || 'default';
+                    borderStyleSelect.value = config.borderStyle || 'default'; // 加载边框样式选择器的值
+
+                    // 应用加载的配置
+                    applyGridSize(gridSizeSelect.value);
+                    applyLayout(layoutStyleSelect.value);
+                    applyBackground(backgroundStyleSelect.value);
+                    applyBorderStyle(borderStyleSelect.value); // 应用加载的边框样式
+                    console.log('从localStorage加载了配置。');
+                } else {
+                    // 如果没有存储的配置，则应用默认值
+                    applyGridSize(gridSizeSelect.value);
+                    applyLayout(layoutStyleSelect.value);
+                    applyBackground(backgroundStyleSelect.value);
+                    applyBorderStyle(borderStyleSelect.value); // 应用默认边框样式
+                    console.log('localStorage中没有配置数据，使用默认配置。');
+                }
+            } catch (e) {
+                console.error('从localStorage加载配置失败:', e);
+                // 加载失败则应用默认值
+                applyGridSize(gridSizeSelect.value);
+                applyLayout(layoutStyleSelect.value);
+                applyBackground(backgroundStyleSelect.value);
+                applyBorderStyle(borderStyleSelect.value); // 应用默认边框样式
+            }
+        }
+
+        // 页面加载时
+        loadPhotosFromLocalStorage();
+        loadConfiguration(); // 加载配置，这会调用applyGridSize, applyLayout, applyBackground
+        renderPhotoWall(); // 最后渲染照片
+
+
+        function openModal(photoArray, index) {
+            if (!photoArray || photoArray.length === 0) return;
+            // currentPhotoIndex 应该基于完整的 photos 数组来定位，
+            // 以便左右切换时能在所有照片中导航。
+            // 当从网格点击时，我们传入的是 photoArray (可能是 photos 或 photos.slice(0,1)) 和该数组中的 index。
+            // 我们需要找到这张照片在完整 photos 数组中的实际索引。
+            const actualPhotoId = photoArray[index].id;
+            currentPhotoIndex = photos.findIndex(p => p.id === actualPhotoId);
+            
+            if (currentPhotoIndex === -1) { // 安全检查，理论上不应发生
+                console.error("无法在主照片列表中找到照片:", photoArray[index]);
+                return;
+            }
+
+            const photo = photos[currentPhotoIndex]; // 从完整列表中获取照片数据
+            
+            displayPhotoDetails(photo);
+            photoModal.style.display = 'flex';
+            photoDetailsView.style.display = 'block';
+            editPhotoForm.style.display = 'none';
+
+            // 更新：更精确地判断幻灯片是否激活
+            const isCurrentlyInSlideshowMode = slideshowInterval !== null || isSlideshowPlaying;
+            slideshowControlsView.style.display = isCurrentlyInSlideshowMode ? 'flex' : 'none';
+            
+            const editBtn = photoDetailsView.querySelector('#editPhotoButton');
+            if(editBtn) editBtn.style.display = isCurrentlyInSlideshowMode ? 'none' : 'block';
+            
+            if(prevPhotoButton) prevPhotoButton.style.display = !isCurrentlyInSlideshowMode && photos.length > 1 ? 'block' : 'none';
+            if(nextPhotoButton) nextPhotoButton.style.display = !isCurrentlyInSlideshowMode && photos.length > 1 ? 'block' : 'none';
+        }
+    
+        function displayPhotoDetails(photo) {
+            if (!photo) return;
+            modalImage.src = photo.src;
+            modalDate.textContent = `日期: ${photo.date || '未知'}`;
+            modalLocation.textContent = `地点: ${photo.location || '未知'}`;
+            modalDescription.textContent = `描述: ${photo.description || '无'}`;
+            modalMemory.textContent = photo.memory || '无';
+        }
+
+        function closeModal() {
+            photoModal.style.display = 'none';
+            photoDetailsView.style.display = 'block';
+            editPhotoForm.style.display = 'none';
+            stopSlideshow(); // 关闭模态框时也停止幻灯片
+        }
+
+        // 为模态框的关闭按钮和导航按钮绑定事件
+        closeModalButton.onclick = closeModal;
+        prevPhotoButton.onclick = () => navigatePhoto(-1);
+        nextPhotoButton.onclick = () => navigatePhoto(1);
+
+
+        function navigatePhoto(direction) {
+            if (!photos || photos.length === 0) return;
+            currentPhotoIndex = (currentPhotoIndex + direction + photos.length) % photos.length;
+            const photoToShow = photos[currentPhotoIndex];
+            displayPhotoDetails(photoToShow);
+           
+            if (!isSlideshowPlaying && slideshowInterval === null) { // 仅在非幻灯片播放时确保视图正确
+                photoDetailsView.style.display = 'block';
+                editPhotoForm.style.display = 'none';
+            }
+        }
+        
+        // `changePhoto` 被 `navigatePhoto` 取代
+        // function changePhoto(direction) { ... } // 确保这个旧函数被移除或完全注释掉
+
+        editPhotoButton.addEventListener('click', () => {
+            const photo = photos[currentPhotoIndex];
+            if (!photo) return;
+
+            editDateInput.value = photo.date || '';
+            editLocationInput.value = photo.location || '';
+            editDescriptionInput.value = photo.description || '';
+            editMemoryInput.value = photo.memory || '';
+
+            photoDetailsView.style.display = 'none';
+            editPhotoForm.style.display = 'flex';
+        });
+
+        cancelEditButton.addEventListener('click', () => {
+            photoDetailsView.style.display = 'block';
+            editPhotoForm.style.display = 'none';
+        });
+
+        saveEditButton.addEventListener('click', () => {
+            const photo = photos[currentPhotoIndex];
+            if (!photo) return;
+
+            photo.date = editDateInput.value.trim();
+            photo.location = editLocationInput.value.trim();
+            photo.description = editDescriptionInput.value.trim();
+            photo.memory = editMemoryInput.value.trim();
+
+            savePhotosToLocalStorage(); // 保存到本地存储
+            displayPhotoDetails(photo); // 用新数据更新详情显示
+            renderPhotoWall(); // 重新渲染照片墙以更新悬停信息
+
+            photoDetailsView.style.display = 'block';
+            editPhotoForm.style.display = 'none';
+            // alert('信息已保存！'); // 可以取消注释以提供用户反馈
+        });
+        
+        function startSlideshow() {
+            if (photos.length === 0) return;
+            
+            // 确保从当前或第一张照片开始，并正确打开模态框
+            if (photoModal.style.display !== 'flex' || currentPhotoIndex < 0 || currentPhotoIndex >= photos.length) {
+                currentPhotoIndex = 0;
+            }
+            // 调用 openModal 来设置初始状态和控件显隐
+            openModal(photos, currentPhotoIndex);
+
+            isSlideshowPlaying = true;
+            if(slideshowPlayPauseButton) slideshowPlayPauseButton.innerHTML = '❚❚';
+            if(slideshowControlsView) slideshowControlsView.style.display = 'flex';
+            
+            // 确保在幻灯片开始时，普通导航和编辑按钮正确隐藏
+            const editBtn = photoDetailsView.querySelector('#editPhotoButton');
+            if(editBtn) editBtn.style.display = 'none';
+            if(prevPhotoButton) prevPhotoButton.style.display = 'none';
+            if(nextPhotoButton) nextPhotoButton.style.display = 'none';
+
+            resetSlideshowInterval();
+        }
+
+        function stopSlideshow() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+            isSlideshowPlaying = false;
+            if(slideshowControlsView) slideshowControlsView.style.display = 'none';
+            
+            // 恢复普通模态框控件状态 (如果模态框仍然打开)
+            if (photoModal.style.display === 'flex' && photos.length > 0) {
+                const editBtn = photoDetailsView.querySelector('#editPhotoButton');
+                if(editBtn) editBtn.style.display = 'block';
+                if(prevPhotoButton) prevPhotoButton.style.display = photos.length > 1 ? 'block' : 'none';
+                if(nextPhotoButton) nextPhotoButton.style.display = photos.length > 1 ? 'block' : 'none';
+            }
+            if(slideshowPlayPauseButton) slideshowPlayPauseButton.innerHTML = '►';
+        }
+        
+        function togglePlayPauseSlideshow() {
+            if (!slideshowControlsView || slideshowControlsView.style.display === 'none') return; //只在幻灯片模式操作
+
+            if (isSlideshowPlaying) {
+                clearInterval(slideshowInterval);
+                // slideshowInterval = null; // 保持 interval 状态，除非完全停止幻灯片
+                isSlideshowPlaying = false;
+                if(slideshowPlayPauseButton) slideshowPlayPauseButton.innerHTML = '►';
+            } else {
+                isSlideshowPlaying = true;
+                if(slideshowPlayPauseButton) slideshowPlayPauseButton.innerHTML = '❚❚';
+                resetSlideshowInterval();
+            }
+        }
+
+        function resetSlideshowInterval() {
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            if (isSlideshowPlaying) { // 只在播放状态下设置新的interval
+                slideshowInterval = setInterval(() => {
+                    navigatePhoto(1);
+                }, SLIDESHOW_INTERVAL_MS);
+            }
+        }
+        
+        function changeSlideManually(direction) {
+            if (!slideshowControlsView || slideshowControlsView.style.display === 'none') return; //只在幻灯片模式操作
+            navigatePhoto(direction);
+            if (isSlideshowPlaying) {
+                resetSlideshowInterval();
+            }
+        }
+        
+        // 点击模态框外部区域关闭 (可选)
+        window.onclick = function(event) {
+            if (event.target == photoModal) {
+                closeModal();
+            }
+        }
+
+        // 键盘左右箭头切换照片, Esc关闭, 空格播放/暂停
+        document.addEventListener('keydown', function(event) {
+            if (photoModal.style.display === 'flex') {
+                if (editPhotoForm.style.display === 'flex') {
+                    if (event.key === 'Escape') {
+                        cancelEditButton.click();
+                        event.preventDefault();
+                    }
+                } else if (slideshowControlsView.style.display === 'flex') { // 幻灯片模式激活
+                    if (event.key === 'ArrowLeft') {
+                        changeSlideManually(-1);
+                    } else if (event.key === 'ArrowRight') {
+                        changeSlideManually(1);
+                    } else if (event.key === ' ') {
+                        togglePlayPauseSlideshow();
+                        event.preventDefault();
+                    } else if (event.key === 'Escape') {
+                        closeModal();
+                    }
+                } else { // 普通模态框查看模式
+                    if (event.key === 'ArrowLeft') {
+                        navigatePhoto(-1);
+                    } else if (event.key === 'ArrowRight') {
+                        navigatePhoto(1);
+                    } else if (event.key === 'Escape') {
+                        closeModal();
+                    }
+                }
+            }
+        });
+
+        console.log('照片墙脚本已加载，并添加了幻灯片播放功能。');
+    </script>
+    </body>
+    </html>
