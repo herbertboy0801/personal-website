@@ -561,3 +561,61 @@ section {
         padding: 0.8rem 1.5rem;
     }
 }
+/* === Lightbox 样式 === */
+#lightbox {
+  position: fixed; /* 固定定位，覆盖整个屏幕 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85); /* 半透明黑色背景 */
+  z-index: 1000; /* 确保在最上层 */
+  display: none; /* 初始隐藏 */
+  align-items: center;
+  justify-content: center;
+  padding: 20px; /* 边缘留白 */
+  cursor: pointer; /* 提示可点击关闭 */
+  backdrop-filter: blur(5px); /* 背景模糊效果 */
+  -webkit-backdrop-filter: blur(5px);
+}
+
+#lightbox img {
+  max-width: 90%; /* 图片最大宽度 */
+  max-height: 90%; /* 图片最大高度 */
+  object-fit: contain; /* 保持图片比例 */
+  border-radius: var(--border-radius);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  cursor: default; /* 图片本身恢复默认光标 */
+}
+/* 学习日记/博客 来源标签样式 */
+.source-label {
+  display: inline-block; /* 使标签成为块级元素，以便设置背景和边距 */
+  background-color: #4a5568; /* 标签背景色 (深灰色) */
+  color: #ffffff; /* 标签文字颜色 (白色) */
+  padding: 0.2em 0.6em; /* 内边距 */
+  font-size: 0.8em; /* 字体大小 */
+  border-radius: 4px; /* 圆角 */
+  margin-bottom: 0.5em; /* 与标题的下边距 */
+  font-weight: bold;
+}
+
+/* 小红书文章背景色 */
+.blog-post-summary.source-xiaohongshu {
+  background-color: #2d3748; /* 稍浅的深蓝灰色 */
+  border-left: 5px solid #e53e3e; /* 左侧红色边框 */
+  padding-left: 15px; /* 增加左内边距以显示边框 */
+}
+
+/* 公众号文章背景色 */
+.blog-post-summary.source-gongzhonghao {
+  background-color: #2c5282; /* 稍亮的蓝色 */
+  border-left: 5px solid #48bb78; /* 左侧绿色边框 */
+  padding-left: 15px; /* 增加左内边距以显示边框 */
+}
+
+/* 调整文章摘要内元素的边距，避免与新边框重叠 */
+.blog-post-summary h3,
+.blog-post-summary p,
+.blog-post-summary .details-link {
+    margin-left: 0; /* 确保内部元素不因父元素的 padding-left 而偏移 */
+}

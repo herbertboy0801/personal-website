@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人理财预算追踪器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: white;
+        }
+        section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fdfdfd;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            display: none; /* 默认隐藏所有功能模块 */
+        }
+        section.active {
+            display: block; /* 激活的模块显示 */
+        }
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .summary-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 0 10px;
+            background-color: #e8f5e9; /* Light green for summary */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .summary-item h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .summary-item p {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 5px 0;
+            color: #2E7D32;
+        }
+        .summary-item.expense p {
+            color: #D32F2F; /* Red for expenses */
+        }
+        .summary-item.balance p {
+            color: #1976D2; /* Blue for balance */
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        form input[type="number"],
+        form input[type="text"],
+        form input[type="date"],
+        form select,
+        form textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        form button {
+            grid-column: span 2;
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+        form button:hover {
+            background-color: #45a049;
+        }
+
+        .transaction-list {
+            margin-top: 20px;
+        }
+        .transaction-list h3 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
+            transition: background-color 0.2s ease;
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .transaction-item:hover {
+            background-color: #f9f9f9;
+        }
+        .transaction-info {
+            flex-grow: 1;
+        }
+        .transaction-info strong {
+            font-size: 1.1em;
+            color: #333;
+        }
+        .transaction-info span {
+            display: block;
+            font-size: 0.9em;
+            color: #777;
+        }
+        .transaction-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 4px;
+            min-width: 80px;
+            text-align: right;
+        }
+        .transaction-amount.income {
+            color: #2E7D32;
+            background-color: #e8f5e9;
+        }
+        .transaction-amount.expense {
+            color: #D32F2F;
+            background-color: #ffebee;
+        }
+        .transaction-actions button {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+            transition: color 0.3s ease;
+        }
+        .transaction-actions button:hover {
+            color: #D32F2F;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            .summary {
+                flex-direction: column;
+            }
+            .summary-item {
+                margin: 10px 0;
+            }
+            form {
+                grid-template-columns: 1fr;
+            }
+            form button {
+                grid-column: span 1;
+            }
+            .transaction-item {
+                flex-wrap: wrap;
+            }
+            .transaction-amount {
+                margin-top: 10px;
+                width: 100%;
+                text-align: left;
+            }
+        }
+        .category-budget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .category-budget-item label {
+            flex-basis: 60%;
+            margin-bottom: 0;
+        }
+        .category-budget-item input {
+            flex-basis: 35%;
+            width: auto;
+        }
+
+        /* Navigation styles */
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        .nav-buttons button {
+            padding: 10px 15px;
+            background-color: #607D8B; /* Greyish blue */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .nav-buttons button:hover,
+        .nav-buttons button.active {
+            background-color: #4CAF50; /* Green on hover/active */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>个人理财预算追踪器</h1>
+        </header>
+
+        <nav class="nav-buttons">
+            <button data-target="overview" class="active">财务概览</button>
+            <button data-target="transaction-recording">收支记录</button>
+            <button data-target="budget-setting">预算设置</button>
+            <button data-target="financial-dashboard">财务仪表盘</button>
+            <button data-target="savings-goals">储蓄目标</button>
+            <button data-target="financial-health">财务健康</button>
+            <button data-target="reports-export">报表与导出</button>
+        </nav>
+
+        <section id="overview" data-module="overview" class="active">
+            <h2>财务概览</h2>
+            <div class="summary">
+                <div class="summary-item income">
+                    <h3>总收入</h3>
+                    <p>¥ <span id="total-income">0.00</span></p>
+                </div>
+                <div class="summary-item expense">
+                    <h3>总支出</h3>
+                    <p>¥ <span id="total-expense">0.00</span></p>
+                </div>
+                <div class="summary-item balance">
+                    <h3>净结余</h3>
+                    <p>¥ <span id="net-balance">0.00</span></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="transaction-recording" data-module="transaction-recording">
+            <h2>收支记录</h2>
+            <form id="transaction-form">
+                <div>
+                    <label for="transaction-type">类型</label>
+                    <select id="transaction-type" required>
+                        <option value="expense">支出</option>
+                        <option value="income">收入</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="transaction-amount">金额</label>
+                    <input type="number" id="transaction-amount" step="0.01" min="0" required>
+                </div>
+                <div>
+                    <label for="transaction-category">分类</label>
+                    <select id="transaction-category" required>
+                        <!-- 支出分类 -->
+                        <optgroup label="支出">
+                            <option value="餐饮">餐饮</option>
+                            <option value="交通">交通</option>
+                            <option value="房租">房租</option>
+                            <option value="购物">购物</option>
+                            <option value="娱乐">娱乐</option>
+                            <option value="医疗">医疗</option>
+                            <option value="教育">教育</option>
+                            <option value="日常用品">日常用品</option>
+                            <option value="其他支出">其他支出</option>
+                        </optgroup>
+                        <!-- 收入分类 -->
+                        <optgroup label="收入">
+                            <option value="工资">工资</option>
+                            <option value="兼职">兼职</option>
+                            <option value="投资收益">投资收益</option>
+                            <option value="礼金">礼金</option>
+                            <option value="其他收入">其他收入</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div>
+                    <label for="transaction-date">日期</label>
+                    <input type="date" id="transaction-date" required>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label for="transaction-description">备注 (可选)</label>
+                    <textarea id="transaction-description" rows="2"></textarea>
+                </div>
+                <button type="submit">添加交易</button>
+            </form>
+
+            <div class="transaction-list">
+                <h3>所有交易</h3>
+                <div id="transactions-container">
+                    <!-- 交易列表将在这里动态生成 -->
+                    <p style="text-align: center; color: #888;">暂无交易记录。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="budget-setting" data-module="budget-setting">
+            <h2>预算设置与监控</h2>
+            <form id="budget-form">
+                <div>
+                    <label for="monthly-budget">月度总预算 (¥)</label>
+                    <input type="number" id="monthly-budget" step="0.01" min="0" value="0" required>
+                </div>
+                <button type="submit">设置总预算</button>
+            </form>
+
+            <h3>分类预算设置</h3>
+            <div id="category-budgets-container">
+                <!-- 分类预算输入框将在这里动态生成 -->
+                <p style="text-align: center; color: #888;">请先设置月度总预算。</p>
+            </div>
+            <button id="save-category-budgets" style="display: none; margin-top: 15px;">保存分类预算</button>
+
+            <h3>预算使用进度</h3>
+            <div class="summary">
+                <div class="summary-item">
+                    <h3>已用预算</h3>
+                    <p>¥ <span id="used-budget">0.00</span></p>
+                </div>
+                <div class="summary-item">
+                    <h3>剩余预算</h3>
+                    <p>¥ <span id="remaining-budget">0.00</span></p>
+                </div>
+                <div class="summary-item">
+                    <h3>预算进度</h3>
+                    <p><span id="budget-progress">0</span>%</p>
+                </div>
+            </div>
+            <div id="budget-warning" style="color: red; text-align: center; margin-top: 10px; font-weight: bold; display: none;">
+                预算超支！请注意您的消费。
+            </div>
+        </section>
+
+        <section id="financial-dashboard" data-module="financial-dashboard">
+            <h2>财务仪表盘</h2>
+            <div class="summary">
+                <div class="summary-item income">
+                    <h3>当月总收入</h3>
+                    <p>¥ <span id="dashboard-total-income">0.00</span></p>
+                </div>
+                <div class="summary-item expense">
+                    <h3>当月总支出</h3>
+                    <p>¥ <span id="dashboard-total-expense">0.00</span></p>
+                </div>
+                <div class="summary-item balance">
+                    <h3>当月净结余</h3>
+                    <p>¥ <span id="dashboard-net-balance">0.00</span></p>
+                </div>
+            </div>
+
+            <h3>支出类别占比</h3>
+            <canvas id="expenseCategoryChart"></canvas>
+
+            <h3>支出趋势</h3>
+            <canvas id="expenseTrendChart"></canvas>
+        </section>
+
+        <section id="savings-goals" data-module="savings-goals">
+            <h2>储蓄目标追踪</h2>
+            <form id="savings-goal-form">
+                <div>
+                    <label for="goal-name">目标名称</label>
+                    <input type="text" id="goal-name" required>
+                </div>
+                <div>
+                    <label for="goal-amount">目标金额 (¥)</label>
+                    <input type="number" id="goal-amount" step="0.01" min="0" required>
+                </div>
+                <div>
+                    <label for="goal-date">达成日期</label>
+                    <input type="date" id="goal-date" required>
+                </div>
+                <button type="submit">添加储蓄目标</button>
+            </form>
+
+            <h3>我的储蓄目标</h3>
+            <div id="savings-goals-container">
+                <!-- 储蓄目标列表将在这里动态生成 -->
+                <p style="text-align: center; color: #888;">暂无储蓄目标。</p>
+            </div>
+        </section>
+
+        <section id="financial-health" data-module="financial-health">
+            <h2>财务健康分析</h2>
+            <div class="summary">
+                <div class="summary-item">
+                    <h3>储蓄率</h3>
+                    <p><span id="savings-rate">0.00</span>%</p>
+                </div>
+                <div class="summary-item">
+                    <h3>必要支出比例</h3>
+                    <p><span id="essential-expense-ratio">0.00</span>%</p>
+                </div>
+                <div class="summary-item">
+                    <h3>财务健康评分</h3>
+                    <p><span id="financial-score">0</span></p>
+                </div>
+            </div>
+
+            <h3>财务建议</h3>
+            <div id="financial-advice">
+                <p>根据您的财务数据，这里有一些建议：</p>
+                <ul>
+                    <li id="advice-savings-rate">储蓄率：</li>
+                    <li id="advice-essential-expense">必要支出：</li>
+                    <li id="advice-spending-pattern">消费模式：</li>
+                    <li id="advice-overall">整体建议：</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="reports-export" data-module="reports-export">
+            <h2>报表与导出</h2>
+            <div>
+                <label for="report-start-date">开始日期:</label>
+                <input type="date" id="report-start-date">
+                <label for="report-end-date">结束日期:</label>
+                <input type="date" id="report-end-date">
+                <button id="generate-report-btn">生成报告</button>
+                <button id="export-csv-btn">导出CSV</button>
+            </div>
+
+            <h3>财务报告</h3>
+            <pre id="financial-report" style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;"></pre>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const transactionForm = document.getElementById('transaction-form');
+            const transactionsContainer = document.getElementById('transactions-container');
+            const totalIncomeSpan = document.getElementById('total-income');
+            const totalExpenseSpan = document.getElementById('total-expense');
+            const netBalanceSpan = document.getElementById('net-balance');
+
+            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+            // 设置默认日期为今天
+            document.getElementById('transaction-date').valueAsDate = new Date();
+
+            // --- 模块切换功能 ---
+            const navButtons = document.querySelectorAll('.nav-buttons button');
+            const sections = document.querySelectorAll('section[data-module]');
+
+            function showModule(moduleId) {
+                sections.forEach(section => {
+                    if (section.dataset.module === moduleId) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                navButtons.forEach(button => {
+                    if (button.dataset.target === moduleId) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+                // 每次切换模块时，重新渲染所有依赖数据的模块
+                renderTransactions();
+                renderCategoryBudgetInputs();
+                updateBudgetSummary();
+                if (typeof Chart !== 'undefined') {
+                    renderDashboardCharts();
+                }
+                renderSavingsGoals();
+                updateFinancialHealth();
+                generateFinancialReport();
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    showModule(button.dataset.target);
+                });
+            });
+
+            // 更新分类选项
+            function updateCategoryOptions() {
+                const transactionType = document.getElementById('transaction-type').value;
+                const transactionCategorySelect = document.getElementById('transaction-category');
+                const expenseCategories = `
+                    <optgroup label="支出">
+                        <option value="餐饮">餐饮</option>
+                        <option value="交通">交通</option>
+                        <option value="房租">房租</option>
+                        <option value="购物">购物</option>
+                        <option value="娱乐">娱乐</option>
+                        <option value="医疗">医疗</option>
+                        <option value="教育">教育</option>
+                        <option value="日常用品">日常用品</option>
+                        <option value="其他支出">其他支出</option>
+                    </optgroup>
+                `;
+                const incomeCategories = `
+                    <optgroup label="收入">
+                        <option value="工资">工资</option>
+                        <option value="兼职">兼职</option>
+                        <option value="投资收益">投资收益</option>
+                        <option value="礼金">礼金</option>
+                        <option value="其他收入">其他收入</option>
+                    </optgroup>
+                `;
+
+                transactionCategorySelect.innerHTML = ''; // 清空现有选项
+
+                if (transactionType === 'expense') {
+                    transactionCategorySelect.innerHTML = expenseCategories;
+                } else {
+                    transactionCategorySelect.innerHTML = incomeCategories;
+                }
+            }
+
+            // 监听交易类型变化，更新分类选项
+            document.getElementById('transaction-type').addEventListener('change', updateCategoryOptions);
+            updateCategoryOptions(); // 页面加载时初始化分类选项
+
+            // 保存交易到 localStorage
+            function saveTransactions() {
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+            }
+
+            // 渲染交易列表
+            function renderTransactions() {
+                transactionsContainer.innerHTML = ''; // 清空现有列表
+                if (transactions.length === 0) {
+                    transactionsContainer.innerHTML = '<p style="text-align: center; color: #888;">暂无交易记录。</p>';
+                    updateSummary(0, 0);
+                    return;
+                }
+
+                let totalIncome = 0;
+                let totalExpense = 0;
+
+                // 按日期降序排序
+                const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                sortedTransactions.forEach(transaction => {
+                    const transactionItem = document.createElement('div');
+                    transactionItem.classList.add('transaction-item');
+                    transactionItem.dataset.id = transaction.id; // 用于删除
+
+                    const amountClass = transaction.type === 'income' ? 'income' : 'expense';
+                    const sign = transaction.type === 'income' ? '+' : '-';
+
+                    transactionItem.innerHTML = `
+                        <div class="transaction-info">
+                            <strong>${transaction.category}</strong>
+                            <span>${transaction.date} - ${transaction.description || '无备注'}</span>
+                        </div>
+                        <div class="transaction-amount ${amountClass}">
+                            ${sign} ¥ ${parseFloat(transaction.amount).toFixed(2)}
+                        </div>
+                        <div class="transaction-actions">
+                            <button class="delete-btn" data-id="${transaction.id}">删除</button>
+                        </div>
+                    `;
+                    transactionsContainer.appendChild(transactionItem);
+
+                    if (transaction.type === 'income') {
+                        totalIncome += parseFloat(transaction.amount);
+                    } else {
+                        totalExpense += parseFloat(transaction.amount);
+                    }
+                });
+                updateSummary(totalIncome, totalExpense);
+            }
+
+            // 更新总览数据
+            function updateSummary(income, expense) {
+                totalIncomeSpan.textContent = income.toFixed(2);
+                totalExpenseSpan.textContent = expense.toFixed(2);
+                netBalanceSpan.textContent = (income - expense).toFixed(2);
+            }
+
+            // 添加交易
+            transactionForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const type = document.getElementById('transaction-type').value;
+                const amount = parseFloat(document.getElementById('transaction-amount').value);
+                const category = document.getElementById('transaction-category').value;
+                const date = document.getElementById('transaction-date').value;
+                const description = document.getElementById('transaction-description').value.trim();
+
+                if (isNaN(amount) || amount <= 0) {
+                    alert('请输入有效的金额！');
+                    return;
+                }
+
+                const newTransaction = {
+                    id: Date.now(), // 唯一ID
+                    type,
+                    amount,
+                    category,
+                    date,
+                    description
+                };
+
+                transactions.push(newTransaction);
+                saveTransactions();
+                renderTransactions();
+                transactionForm.reset(); // 重置表单
+                document.getElementById('transaction-date').valueAsDate = new Date(); // 重新设置默认日期
+                updateCategoryOptions(); // 确保分类选项正确
+            });
+
+            // 删除交易
+            transactionsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-btn')) {
+                    const idToDelete = parseInt(e.target.dataset.id);
+                    transactions = transactions.filter(transaction => transaction.id !== idToDelete);
+                    saveTransactions();
+                    renderTransactions();
+                }
+            });
+
+            // --- 预算功能相关JS ---
+            const budgetForm = document.getElementById('budget-form');
+            const monthlyBudgetInput = document.getElementById('monthly-budget');
+            const categoryBudgetsContainer = document.getElementById('category-budgets-container');
+            const saveCategoryBudgetsBtn = document.getElementById('save-category-budgets');
+            const usedBudgetSpan = document.getElementById('used-budget');
+            const remainingBudgetSpan = document.getElementById('remaining-budget');
+            const budgetProgressSpan = document.getElementById('budget-progress');
+            const budgetWarningDiv = document.getElementById('budget-warning');
+
+            let monthlyBudget = parseFloat(localStorage.getItem('monthlyBudget')) || 0;
+            let categoryBudgets = JSON.parse(localStorage.getItem('categoryBudgets')) || {};
+
+            monthlyBudgetInput.value = monthlyBudget.toFixed(2);
+
+            // 获取所有支出分类
+            function getExpenseCategories() {
+                const select = document.getElementById('transaction-category');
+                const expenseOptgroup = select.querySelector('optgroup[label="支出"]');
+                if (expenseOptgroup) {
+                    return Array.from(expenseOptgroup.children).map(option => option.value);
+                }
+                return [];
+            }
+
+            // 渲染分类预算输入框
+            function renderCategoryBudgetInputs() {
+                const expenseCategories = getExpenseCategories();
+                categoryBudgetsContainer.innerHTML = '';
+                if (monthlyBudget === 0) {
+                    categoryBudgetsContainer.innerHTML = '<p style="text-align: center; color: #888;">请先设置月度总预算。</p>';
+                    saveCategoryBudgetsBtn.style.display = 'none';
+                    return;
+                }
+
+                saveCategoryBudgetsBtn.style.display = 'block';
+                expenseCategories.forEach(category => {
+                    const div = document.createElement('div');
+                    div.classList.add('category-budget-item');
+                    div.innerHTML = `
+                        <label for="budget-${category}">${category} (¥)</label>
+                        <input type="number" id="budget-${category}" data-category="${category}" step="0.01" min="0" value="${(categoryBudgets[category] || 0).toFixed(2)}">
+                    `;
+                    categoryBudgetsContainer.appendChild(div);
+                });
+            }
+
+            // 更新预算概览
+            function updateBudgetSummary() {
+                const currentMonthTransactions = transactions.filter(t => {
+                    const transactionDate = new Date(t.date);
+                    const now = new Date();
+                    return t.type === 'expense' &&
+                           transactionDate.getMonth() === now.getMonth() &&
+                           transactionDate.getFullYear() === now.getFullYear();
+                });
+
+                let currentMonthExpense = currentMonthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+                usedBudgetSpan.textContent = currentMonthExpense.toFixed(2);
+                remainingBudgetSpan.textContent = (monthlyBudget - currentMonthExpense).toFixed(2);
+
+                let progress = (currentMonthExpense / monthlyBudget) * 100;
+                if (monthlyBudget === 0) progress = 0;
+                budgetProgressSpan.textContent = progress.toFixed(0);
+
+                if (currentMonthExpense > monthlyBudget && monthlyBudget > 0) {
+                    budgetWarningDiv.style.display = 'block';
+                } else {
+                    budgetWarningDiv.style.display = 'none';
+                }
+            }
+
+            // 设置月度总预算
+            budgetForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newMonthlyBudget = parseFloat(monthlyBudgetInput.value);
+                if (isNaN(newMonthlyBudget) || newMonthlyBudget < 0) {
+                    alert('请输入有效的月度总预算！');
+                    return;
+                }
+                monthlyBudget = newMonthlyBudget;
+                localStorage.setItem('monthlyBudget', monthlyBudget.toFixed(2));
+                renderCategoryBudgetInputs(); // 总预算变化后重新渲染分类预算
+                updateBudgetSummary();
+                alert('月度总预算已设置！');
+            });
+
+            // 保存分类预算
+            saveCategoryBudgetsBtn.addEventListener('click', () => {
+                const inputs = categoryBudgetsContainer.querySelectorAll('input[type="number"]');
+                let tempCategoryBudgets = {};
+                let totalCategoryBudget = 0;
+                inputs.forEach(input => {
+                    const category = input.dataset.category;
+                    const budgetAmount = parseFloat(input.value);
+                    if (!isNaN(budgetAmount) && budgetAmount >= 0) {
+                        tempCategoryBudgets[category] = budgetAmount;
+                        totalCategoryBudget += budgetAmount;
+                    }
+                });
+
+                if (totalCategoryBudget > monthlyBudget) {
+                    alert(`分类预算总和 (¥${totalCategoryBudget.toFixed(2)}) 超过了月度总预算 (¥${monthlyBudget.toFixed(2)})。请调整！`);
+                    return; // 阻止保存
+                }
+
+                categoryBudgets = tempCategoryBudgets;
+                localStorage.setItem('categoryBudgets', JSON.stringify(categoryBudgets));
+                alert('分类预算已保存！');
+                // TODO: 未来可以添加分类预算超支预警
+            });
+
+            // --- 财务仪表盘功能相关JS ---
+            // 引入 Chart.js
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            script.onload = () => {
+                console.log('Chart.js loaded');
+                renderDashboardCharts();
+            };
+            document.head.appendChild(script);
+
+            const dashboardTotalIncomeSpan = document.getElementById('dashboard-total-income');
+            const dashboardTotalExpenseSpan = document.getElementById('dashboard-total-expense');
+            const dashboardNetBalanceSpan = document.getElementById('dashboard-net-balance');
+            const expenseCategoryChartCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+            const expenseTrendChartCtx = document.getElementById('expenseTrendChart').getContext('2d');
+
+            let expenseCategoryChart;
+            let expenseTrendChart;
+
+            function renderDashboardCharts() {
+                const now = new Date();
+                const currentMonthTransactions = transactions.filter(t => {
+                    const transactionDate = new Date(t.date);
+                    return transactionDate.getMonth() === now.getMonth() &&
+                           transactionDate.getFullYear() === now.getFullYear();
+                });
+
+                let currentMonthIncome = currentMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                let currentMonthExpense = currentMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+                dashboardTotalIncomeSpan.textContent = currentMonthIncome.toFixed(2);
+                dashboardTotalExpenseSpan.textContent = currentMonthExpense.toFixed(2);
+                dashboardNetBalanceSpan.textContent = (currentMonthIncome - currentMonthExpense).toFixed(2);
+
+                // 支出类别占比分析 (饼图)
+                const expenseCategoriesData = {};
+                currentMonthTransactions.filter(t => t.type === 'expense').forEach(t => {
+                    expenseCategoriesData[t.category] = (expenseCategoriesData[t.category] || 0) + parseFloat(t.amount);
+                });
+
+                const categoryLabels = Object.keys(expenseCategoriesData);
+                const categoryAmounts = Object.values(expenseCategoriesData);
+                const categoryColors = categoryLabels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`); // 随机颜色
+
+                if (expenseCategoryChart) {
+                    expenseCategoryChart.destroy();
+                }
+                expenseCategoryChart = new Chart(expenseCategoryChartCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            data: categoryAmounts,
+                            backgroundColor: categoryColors,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: '当月支出类别占比'
+                            }
+                        }
+                    }
+                });
+
+                // 日/周/月/年度支出趋势图表 (折线图 - 默认显示月度趋势)
+                // 简化为按月度趋势，可以根据需求扩展为日/周/年
+                const monthlyExpenseTrend = {};
+                transactions.filter(t => t.type === 'expense').forEach(t => {
+                    const date = new Date(t.date);
+                    const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                    monthlyExpenseTrend[monthYear] = (monthlyExpenseTrend[monthYear] || 0) + parseFloat(t.amount);
+                });
+
+                const trendLabels = Object.keys(monthlyExpenseTrend).sort();
+                const trendData = trendLabels.map(label => monthlyExpenseTrend[label]);
+
+                if (expenseTrendChart) {
+                    expenseTrendChart.destroy();
+                }
+                expenseTrendChart = new Chart(expenseTrendChartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: trendLabels,
+                        datasets: [{
+                            label: '月度支出趋势',
+                            data: trendData,
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: '月度支出趋势'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: '金额 (¥)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: '月份'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // --- 储蓄目标追踪功能相关JS ---
+            const savingsGoalForm = document.getElementById('savings-goal-form');
+            const savingsGoalsContainer = document.getElementById('savings-goals-container');
+
+            let savingsGoals = JSON.parse(localStorage.getItem('savingsGoals')) || [];
+
+            // 保存储蓄目标到 localStorage
+            function saveSavingsGoals() {
+                localStorage.setItem('savingsGoals', JSON.stringify(savingsGoals));
+            }
+
+            // 渲染储蓄目标列表
+            function renderSavingsGoals() {
+                savingsGoalsContainer.innerHTML = '';
+                if (savingsGoals.length === 0) {
+                    savingsGoalsContainer.innerHTML = '<p style="text-align: center; color: #888;">暂无储蓄目标。</p>';
+                    return;
+                }
+
+                savingsGoals.forEach(goal => {
+                    const goalItem = document.createElement('div');
+                    goalItem.classList.add('transaction-item'); // 复用样式
+                    goalItem.style.flexWrap = 'wrap';
+                    goalItem.dataset.id = goal.id;
+
+                    const savedAmount = transactions.filter(t => t.type === 'income' && t.category === '储蓄').reduce((sum, t) => sum + parseFloat(t.amount), 0); // 假设有“储蓄”分类的收入
+                    const progress = (savedAmount / goal.amount) * 100;
+                    const remainingAmount = goal.amount - savedAmount;
+
+                    // 计算每月应存金额
+                    const targetDate = new Date(goal.date);
+                    const now = new Date();
+                    const monthsRemaining = (targetDate.getFullYear() - now.getFullYear()) * 12 + (targetDate.getMonth() - now.getMonth());
+                    const monthlySavingNeeded = monthsRemaining > 0 ? remainingAmount / monthsRemaining : remainingAmount;
+
+
+                    goalItem.innerHTML = `
+                        <div class="transaction-info" style="flex-basis: 100%;">
+                            <strong>${goal.name}</strong>
+                            <span>目标金额: ¥${parseFloat(goal.amount).toFixed(2)} | 达成日期: ${goal.date}</span>
+                        </div>
+                        <div style="flex-basis: 100%; margin-top: 10px;">
+                            <p>已存金额: ¥${savedAmount.toFixed(2)}</p>
+                            <p>剩余金额: ¥${remainingAmount.toFixed(2)}</p>
+                            <p>进度: ${progress.toFixed(2)}%</p>
+                            <p>每月建议存入: ¥${monthlySavingNeeded.toFixed(2)}</p>
+                        </div>
+                        <div class="transaction-actions" style="flex-basis: 100%; text-align: right;">
+                            <button class="delete-goal-btn" data-id="${goal.id}">删除</button>
+                        </div>
+                    `;
+                    savingsGoalsContainer.appendChild(goalItem);
+                });
+            }
+
+            // 添加储蓄目标
+            savingsGoalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('goal-name').value.trim();
+                const amount = parseFloat(document.getElementById('goal-amount').value);
+                const date = document.getElementById('goal-date').value;
+
+                if (!name || isNaN(amount) || amount <= 0 || !date) {
+                    alert('请填写所有有效的储蓄目标信息！');
+                    return;
+                }
+
+                const newGoal = {
+                    id: Date.now(),
+                    name,
+                    amount,
+                    date
+                };
+
+                savingsGoals.push(newGoal);
+                saveSavingsGoals();
+                renderSavingsGoals();
+                savingsGoalForm.reset();
+                alert('储蓄目标已添加！');
+            });
+
+            // 删除储蓄目标
+            savingsGoalsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-goal-btn')) {
+                    const idToDelete = parseInt(e.target.dataset.id);
+                    savingsGoals = savingsGoals.filter(goal => goal.id !== idToDelete);
+                    saveSavingsGoals();
+                    renderSavingsGoals();
+                }
+            });
+
+            // --- 财务健康分析功能相关JS ---
+            const savingsRateSpan = document.getElementById('savings-rate');
+            const essentialExpenseRatioSpan = document.getElementById('essential-expense-ratio');
+            const financialScoreSpan = document.getElementById('financial-score');
+            const adviceSavingsRateLi = document.getElementById('advice-savings-rate');
+            const adviceEssentialExpenseLi = document.getElementById('advice-essential-expense');
+            const adviceSpendingPatternLi = document.getElementById('advice-spending-pattern');
+            const adviceOverallLi = document.getElementById('advice-overall');
+
+            function updateFinancialHealth() {
+                const now = new Date();
+                const currentMonthTransactions = transactions.filter(t => {
+                    const transactionDate = new Date(t.date);
+                    return transactionDate.getMonth() === now.getMonth() &&
+                           transactionDate.getFullYear() === now.getFullYear();
+                });
+
+                let currentMonthIncome = currentMonthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                let currentMonthExpense = currentMonthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+                // 储蓄率 = (总收入 - 总支出) / 总收入 * 100%
+                let savingsRate = 0;
+                if (currentMonthIncome > 0) {
+                    savingsRate = ((currentMonthIncome - currentMonthExpense) / currentMonthIncome) * 100;
+                }
+                savingsRateSpan.textContent = savingsRate.toFixed(2);
+
+                // 必要支出比例 (假设餐饮、交通、房租、日常用品为必要支出)
+                const essentialCategories = ['餐饮', '交通', '房租', '日常用品'];
+                let essentialExpense = currentMonthTransactions.filter(t => t.type === 'expense' && essentialCategories.includes(t.category)).reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                let essentialExpenseRatio = 0;
+                if (currentMonthExpense > 0) {
+                    essentialExpenseRatio = (essentialExpense / currentMonthExpense) * 100;
+                }
+                essentialExpenseRatioSpan.textContent = essentialExpenseRatio.toFixed(2);
+
+                // 财务健康评分 (简单示例)
+                let score = 0;
+                if (savingsRate >= 20) score += 40;
+                else if (savingsRate >= 10) score += 20;
+
+                if (essentialExpenseRatio <= 50) score += 30;
+                else if (essentialExpenseRatio <= 70) score += 15;
+
+                // 识别异常消费模式 (简单示例：如果某个分类支出特别高)
+                const expenseCategoriesData = {};
+                currentMonthTransactions.filter(t => t.type === 'expense').forEach(t => {
+                    expenseCategoriesData[t.category] = (expenseCategoriesData[t.category] || 0) + parseFloat(t.amount);
+                });
+                let maxExpenseCategory = '';
+                let maxExpenseAmount = 0;
+                for (const category in expenseCategoriesData) {
+                    if (expenseCategoriesData[category] > maxExpenseAmount) {
+                        maxExpenseAmount = expenseCategoriesData[category];
+                        maxExpenseCategory = category;
+                    }
+                }
+                if (maxExpenseAmount > (currentMonthExpense * 0.4) && currentMonthExpense > 0) { // 某个分类支出超过总支出的40%
+                    score -= 10;
+                    adviceSpendingPatternLi.textContent = `消费模式：您在“${maxExpenseCategory}”类别支出较高，可能存在过度消费。`;
+                } else {
+                    adviceSpendingPatternLi.textContent = `消费模式：您的消费模式较为均衡。`;
+                }
+
+                financialScoreSpan.textContent = Math.max(0, score); // 确保评分不为负
+
+                // 提供建议
+                if (savingsRate < 10) {
+                    adviceSavingsRateLi.textContent = `储蓄率：您的储蓄率较低，建议增加储蓄，目标是月收入的10%-20%。`;
+                } else if (savingsRate < 20) {
+                    adviceSavingsRateLi.textContent = `储蓄率：您的储蓄率良好，可以考虑进一步提高。`;
+                } else {
+                    adviceSavingsRateLi.textContent = `储蓄率：您的储蓄率非常健康！`;
+                }
+
+                if (essentialExpenseRatio > 70) {
+                    adviceEssentialExpenseLi.textContent = `必要支出：您的必要支出占比较高，尝试寻找降低房租、交通或日常开销的方法。`;
+                } else if (essentialExpenseRatio > 50) {
+                    adviceEssentialExpenseLi.textContent = `必要支出：您的必要支出占比合理，但仍有优化空间。`;
+                } else {
+                    adviceEssentialExpenseLi.textContent = `必要支出：您的必要支出控制得很好！`;
+                }
+
+                if (score < 40) {
+                    adviceOverallLi.textContent = `整体建议：您的财务健康状况有待提高，请关注储蓄和支出结构。`;
+                } else if (score < 70) {
+                    adviceOverallLi.textContent = `整体建议：您的财务状况良好，继续保持并优化。`;
+                } else {
+                    adviceOverallLi.textContent = `整体建议：您的财务状况非常健康，恭喜！`;
+                }
+            }
+
+            // --- 报表与导出功能相关JS ---
+            const reportStartDateInput = document.getElementById('report-start-date');
+            const reportEndDateInput = document.getElementById('report-end-date');
+            const generateReportBtn = document.getElementById('generate-report-btn');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const financialReportPre = document.getElementById('financial-report');
+
+            // 设置默认日期范围为当月
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            reportStartDateInput.valueAsDate = firstDayOfMonth;
+            reportEndDateInput.valueAsDate = lastDayOfMonth;
+
+            generateReportBtn.addEventListener('click', generateFinancialReport);
+            exportCsvBtn.addEventListener('click', exportTransactionsToCsv);
+
+            function generateFinancialReport() {
+                const startDate = reportStartDateInput.value ? new Date(reportStartDateInput.value) : null;
+                const endDate = reportEndDateInput.value ? new Date(reportEndDateInput.value) : null;
+
+                let reportContent = `--- 财务报告 (${startDate ? startDate.toLocaleDateString() : '开始'} 至 ${endDate ? endDate.toLocaleDateString() : '结束'}) ---\n\n`;
+
+                const filteredTransactions = transactions.filter(t => {
+                    const transactionDate = new Date(t.date);
+                    return (!startDate || transactionDate >= startDate) && (!endDate || transactionDate <= endDate);
+                });
+
+                let totalIncome = 0;
+                let totalExpense = 0;
+                const categorySummary = {};
+                let taxRelatedExpense = 0; // 税务相关支出
+
+                filteredTransactions.forEach(t => {
+                    if (t.type === 'income') {
+                        totalIncome += parseFloat(t.amount);
+                    } else {
+                        totalExpense += parseFloat(t.amount);
+                        categorySummary[t.category] = (categorySummary[t.category] || 0) + parseFloat(t.amount);
+                        if (t.category === '税务') { // 假设有“税务”分类
+                            taxRelatedExpense += parseFloat(t.amount);
+                        }
+                    }
+                });
+
+                reportContent += `总收入: ¥${totalIncome.toFixed(2)}\n`;
+                reportContent += `总支出: ¥${totalExpense.toFixed(2)}\n`;
+                reportContent += `净结余: ¥${(totalIncome - totalExpense).toFixed(2)}\n\n`;
+
+                reportContent += `--- 支出分类汇总 ---\n`;
+                for (const category in categorySummary) {
+                    reportContent += `${category}: ¥${categorySummary[category].toFixed(2)}\n`;
+                }
+                reportContent += `\n`;
+
+                reportContent += `--- 税务相关支出 ---\n`;
+                reportContent += `税务支出总额: ¥${taxRelatedExpense.toFixed(2)}\n\n`;
+
+                reportContent += `--- 详细交易列表 ---\n`;
+                if (filteredTransactions.length === 0) {
+                    reportContent += `无交易记录。\n`;
+                } else {
+                    filteredTransactions.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
+                        reportContent += `${t.date} | ${t.type === 'income' ? '收入' : '支出'} | ${t.category} | ¥${parseFloat(t.amount).toFixed(2)} | ${t.description || '无备注'}\n`;
+                    });
+                }
+
+                financialReportPre.textContent = reportContent;
+            }
+
+            function exportTransactionsToCsv() {
+                const headers = ['ID', '类型', '金额', '分类', '日期', '备注'];
+                const rows = transactions.map(t => [
+                    t.id,
+                    t.type === 'income' ? '收入' : '支出',
+                    t.amount,
+                    t.category,
+                    t.date,
+                    t.description
+                ]);
+
+                let csvContent = headers.join(',') + '\n';
+                rows.forEach(row => {
+                    csvContent += row.map(item => `"${item}"`).join(',') + '\n';
+                });
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                if (link.download !== undefined) { // feature detection
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', '财务数据.csv');
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('您的浏览器不支持直接下载CSV文件，请手动复制以下内容：\n\n' + csvContent);
+                }
+            }
+
+            // 页面加载时初始化显示第一个模块
+            showModule('overview'); // 更改为默认显示财务概览页面
+        });
+    </script>
+</body>
+</html>

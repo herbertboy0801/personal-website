@@ -79,16 +79,55 @@ body {
     font-size: 1.1em; /* 图标稍大 */
 }
 
-/* 新增：设定与输出按钮容器 */
-.settings-output-container {
-   display: flex;
-   /* flex-direction: column; */ /* 移除垂直排列 */
-   align-items: center;
-   margin-left: 10px; /* 与历史回顾按钮的间距 */
-   /* cursor: pointer; */ /* 按钮本身可点击即可 */
+/* --- 页眉操作按钮 (历史回顾 & 设定输出) --- */
+.header-action-button {
+    display: flex;
+    flex-direction: column; /* 图标在上，文字在下 */
+    align-items: center; /* 水平居中 */
+    text-align: center;
+    gap: 2px; /* 图标和文字的间距 */
 }
 
-/* 新增：设定与输出按钮 */
+/* 按钮容器通用样式 (移除特定容器的样式) */
+/* .history-review-container { ... } */
+/* .settings-output-container { ... } */
+
+/* 图标按钮通用样式 */
+.header-action-button button {
+    background-color: #6c757d; /* 灰色背景 */
+    color: white;
+    border: none;
+    border-radius: 50%; /* 圆形按钮 */
+    width: 40px; /* 固定宽度 */
+    height: 40px; /* 固定高度 */
+    font-size: 1.5em; /* 图标大小 */
+    /* line-height: 40px; */ /* 移除 line-height，使用 flex 居中 */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+    padding: 0; /* 移除内边距 */
+    cursor: pointer;
+    display: flex; /* 使用 flex 居中图标 */
+    align-items: center; /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
+}
+
+.header-action-button button:hover {
+   background-color: #5a6268; /* 深灰色 */
+}
+
+/* 文字标签样式 */
+.header-action-button .button-label {
+    font-size: 0.75em; /* 较小的字体 */
+    color: #555; /* 深灰色文字 */
+    margin-top: 2px; /* 与按钮的微小间距 */
+}
+
+/* 移除旧的、重复的按钮样式 */
+/* #history-review-btn { ... } */
+/* #settings-output-btn { ... } */
+
+/* 设定与输出按钮 */
 #settings-output-btn {
    background-color: #6c757d; /* 灰色背景 */
    color: white;
@@ -109,7 +148,14 @@ body {
    background-color: #5a6268; /* 深灰色 */
 }
 
-/* 设定与输出按钮标签样式已移除 */
+/* 解锁按钮特定样式 (如果需要覆盖通用样式) */
+#unlock-btn {
+    /* 可以添加特定样式，例如不同的背景色 */
+    /* background-color: #ffc107; */ /* 例如黄色 */
+}
+/* #unlock-btn:hover {
+    background-color: #e0a800;
+} */
 
 /* --- 主要内容区域 --- */
 .diary-section {
@@ -236,6 +282,17 @@ body {
 .section-content:focus-within { /* 当内部元素聚焦时 */
     border-color: #007bff; /* 聚焦时边框变蓝 */
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+/* 新增：锁定状态下的编辑区域样式 */
+.section-content.locked {
+    background-color: #f8f9fa; /* 浅灰色背景表示禁用 */
+    cursor: not-allowed; /* 禁用光标 */
+    opacity: 0.7; /* 轻微透明 */
+}
+.section-content.locked:focus-within {
+    border-color: #d9d9d9; /* 锁定状态下聚焦也不变蓝 */
+    box-shadow: none;
 }
 
 .section-content p {
