@@ -29,7 +29,7 @@ const featuredWorksData = [
   },
   {
     "type": "ai-drawing",
-    "imageSrc": "D:\\code\\VScode\\personal-website\\assets\\ai-drawings\\api_93d6192b-2f27-4c51-9434-7fbafb3eaddb.jpg",
+    "imageSrc": "assets/ai-drawings/api_93d6192b-2f27-4c51-9434-7fbafb3eaddb.jpg",
     "altText": "AI 绘图作品 3",
     "title": "《雪岭红阳》",
     "description": "雪覆群山，红日映梅。",
