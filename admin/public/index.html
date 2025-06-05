@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人网站内容管理</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>个人网站内容管理</h1>
+
+    <section id="featured-works-admin">
+        <h2>精选作品管理</h2>
+        <div id="featured-works-list">
+            <!-- 现有作品列表将由 JS 填充 -->
+            <p>正在加载作品列表...</p>
+        </div>
+        <form id="featured-works-form">
+            <h3>添加/编辑精选作品</h3>
+            <input type="hidden" id="work-edit-id"> <!-- 用于编辑 -->
+            <div>
+                <label for="work-type">类型:</label>
+                <input type="text" id="work-type" name="type" value="other" required>
+            </div>
+            <div>
+                <label for="work-imageSrc">图片路径:</label>
+                <input type="text" id="work-imageSrc" name="imageSrc" placeholder="例如: assets/new-image.jpg" required>
+            </div>
+            <div>
+                <label for="work-altText">图片 Alt 文本:</label>
+                <input type="text" id="work-altText" name="altText" required>
+            </div>
+            <div>
+                <label for="work-title">标题:</label>
+                <input type="text" id="work-title" name="title" required>
+            </div>
+            <div>
+                <label for="work-description">描述:</label>
+                <textarea id="work-description" name="description" required></textarea>
+            </div>
+            <div>
+                <label for="work-tag">标签:</label>
+                <input type="text" id="work-tag" name="tag" required>
+            </div>
+            <div>
+                <label for="work-detailsLink">详情链接:</label>
+                <input type="text" id="work-detailsLink" name="detailsLink" value="#">
+            </div>
+            <button type="submit">保存作品</button>
+            <button type="button" id="cancel-edit-work" style="display: none;">取消编辑</button>
+        </form>
+    </section>
+
+    <hr>
+
+    <section id="blog-admin">
+        <h2>博客文章管理</h2>
+        <div id="blog-list">
+            <!-- 现有博客列表将由 JS 填充 -->
+            <p>正在加载博客列表...</p>
+        </div>
+        <form id="blog-form">
+            <h3>添加/编辑博客文章</h3>
+             <input type="hidden" id="blog-edit-id"> <!-- 用于编辑 -->
+            <div>
+                <label for="blog-source">来源:</label>
+                <input type="text" id="blog-source" name="source" placeholder="例如: 小红书, 公众号" required>
+            </div>
+            <div>
+                <label for="blog-title">标题:</label>
+                <input type="text" id="blog-title" name="title" required>
+            </div>
+            <div>
+                <label for="blog-summary">摘要:</label>
+                <textarea id="blog-summary" name="summary" required></textarea>
+            </div>
+            <div>
+                <label for="blog-link">文章链接:</label>
+                <input type="url" id="blog-link" name="link" required>
+            </div>
+            <button type="submit">保存博客</button>
+             <button type="button" id="cancel-edit-blog" style="display: none;">取消编辑</button>
+        </form>
+    </section>
+
+    <!-- 学习日记部分已移除 -->
+
+    <script src="script.js"></script>
+</body>
+</html>
