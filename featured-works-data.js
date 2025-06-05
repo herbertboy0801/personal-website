@@ -4,7 +4,7 @@ const featuredWorksData = [
     "type": "ai-drawing",
     "imageSrc": "assets/ai-drawings/api_9a575946-74ab-4e2f-936c-f455250a2056.jpg",
     "altText": "AI 绘图作品 1",
-    "title": "《月落掌心》- 已编辑",
+    "title": "《月落掌心》",
     "description": "手托明月，云星相伴",
     "tag": "AI 绘图",
     "detailsLink": "#"
@@ -28,12 +28,12 @@ const featuredWorksData = [
     "detailsLink": "#"
   },
   {
-    "type": "test-add-refresh",
-    "imageSrc": "assets/test-refresh.png",
-    "altText": "刷新测试图片",
-    "title": "我的第二个测试作品",
-    "description": "验证添加后自动刷新。",
-    "tag": "刷新测试",
-    "detailsLink": "#refresh"
+    "type": "ai-drawing",
+    "imageSrc": "D:\\code\\VScode\\personal-website\\assets\\ai-drawings\\api_93d6192b-2f27-4c51-9434-7fbafb3eaddb.jpg",
+    "altText": "AI 绘图作品 3",
+    "title": "《雪岭红阳》",
+    "description": "雪覆群山，红日映梅。",
+    "tag": "AI 绘图",
+    "detailsLink": "#"
   }
 ];
