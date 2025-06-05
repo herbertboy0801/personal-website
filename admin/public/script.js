@@ -12,6 +12,7 @@ const blogList = document.getElementById('blog-list');
 const blogForm = document.getElementById('blog-form');
 const cancelEditBlogBtn = document.getElementById('cancel-edit-blog');
 // ... (get other form elements for blog)
+const gitStatusDiv = document.getElementById('git-status'); // Div to show git status
 
 // const diaryList = document.getElementById('diary-list'); // Removed
 // const diaryForm = document.getElementById('diary-form'); // Removed
@@ -173,7 +174,7 @@ async function handleFormSubmit(event, type) {
 
     if (result) {
         console.log(`${type} saved successfully:`, result);
-        alert(`${type} 保存成功!`);
+        alert(`${type} 保存成功! (正在后台尝试推送到 GitHub...)`); // Update alert message
         form.reset(); // Clear the form
         if(editIdInput) editIdInput.value = ''; // Clear edit ID
         // Hide cancel button after successful save
@@ -204,6 +205,9 @@ async function handleFormSubmit(event, type) {
 
         // Now call loadAllData after other UI updates (as fallback/consistency check)
         loadAllData(); // Reload data for the specific type
+
+        // Start polling for Git status
+        pollGitStatus(type);
     }
 }
 
@@ -350,6 +354,59 @@ function checkPassword() {
     // Hide content if password is wrong or cancelled
     document.body.innerHTML = '<h1>密码错误或未输入</h1>';
     return false;
+}
+
+
+// --- Git Status Polling ---
+let pollingIntervalId = null; // Store interval ID to stop later
+
+async function checkGitStatus(type) {
+    const url = `${API_BASE_URL}/git-status/${type}`;
+    console.log(`[checkGitStatus] Attempting to fetch: ${url}`); // <-- 添加日志
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.error(`[checkGitStatus] Error fetching git status: ${response.status} ${response.statusText}`); // <-- 添加日志
+            updateGitStatusUI('error', `无法获取推送状态 (${response.status})`);
+            return 'error'; // Indicate error fetching status
+        }
+        const statusData = await response.json();
+        updateGitStatusUI(statusData.status, statusData.message);
+        return statusData.status; // Return current status (idle, pending, success, error)
+    } catch (error) {
+        console.error('[checkGitStatus] Exception caught while fetching git status:', error); // <-- 修改日志
+        updateGitStatusUI('error', '获取推送状态时出错');
+        return 'error';
+    }
+}
+
+function updateGitStatusUI(status, message) {
+    if (!gitStatusDiv) return;
+    gitStatusDiv.textContent = `Git 推送状态: ${message || status}`;
+    gitStatusDiv.className = `status-${status}`; // Add class for potential styling
+    gitStatusDiv.style.display = 'block'; // Make sure it's visible
+}
+
+function pollGitStatus(type) {
+    if (pollingIntervalId) {
+        clearInterval(pollingIntervalId); // Clear previous interval if any
+    }
+    updateGitStatusUI('pending', '检查推送状态...'); // Initial message
+
+    pollingIntervalId = setInterval(async () => {
+        const currentStatus = await checkGitStatus(type);
+        // Stop polling if status is success, error, or idle (after pending)
+        if (currentStatus === 'success' || currentStatus === 'error' || currentStatus === 'idle') {
+            clearInterval(pollingIntervalId);
+            pollingIntervalId = null;
+             // Optionally hide the status after a few seconds
+            setTimeout(() => {
+                if (gitStatusDiv && (currentStatus === 'success' || currentStatus === 'idle')) { // Keep error message visible longer?
+                     gitStatusDiv.style.display = 'none';
+                }
+            }, 5000); // Hide after 5 seconds for success/idle
+        }
+    }, 3000); // Poll every 3 seconds
 }
 
 

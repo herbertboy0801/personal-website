@@ -9,6 +9,10 @@
 <body>
     <h1>个人网站内容管理</h1>
 
+    <div id="git-status" style="display: none; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
+        <!-- Git push status will be shown here -->
+    </div>
+
     <section id="featured-works-admin">
         <h2>精选作品管理</h2>
         <div id="featured-works-list">
@@ -24,7 +28,7 @@
             </div>
             <div>
                 <label for="work-imageSrc">图片路径:</label>
-                <input type="text" id="work-imageSrc" name="imageSrc" placeholder="例如: assets/new-image.jpg" required>
+                <input type="text" id="work-imageSrc" name="imageSrc" placeholder="例如: assets/ai-drawings/image.jpg (相对于网站根目录)" required>
             </div>
             <div>
                 <label for="work-altText">图片 Alt 文本:</label>
