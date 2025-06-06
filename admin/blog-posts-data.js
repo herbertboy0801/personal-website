@@ -1,5 +1,5 @@
 // blog-posts-data.js
-window.blogPostsData = [
+window.blogPosts = [
   {
     "id": "blog-1717682256001",
     "source": "小红书",
@@ -34,5 +34,12 @@ window.blogPostsData = [
     "title": "0基础学 COZE 古诗词视频详细教程：小白保证学会，图生视频工作流大拆解",
     "summary": "透过工作流，5分钟生成古诗词讲解短视频( 动画+音乐版)",
     "link": "https://mp.weixin.qq.com/s/-IoNQuKONqomWbvjuhYtQA"
+  },
+  {
+    "id": "blog-1749240310163",
+    "source": "公众号",
+    "title": "123",
+    "summary": "123",
+    "link": "https://mp.weixin.qq.com/s/E-WI4fY8cRzFN991_iDTIw"
   }
 ];
