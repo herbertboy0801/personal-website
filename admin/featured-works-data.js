@@ -1,5 +1,5 @@
 // featured-works-data.js
-const featuredWorksData = [
+window.featuredWorksData = [
   {
     "id": "works-1749220166168",
     "type": "ai-drawing",

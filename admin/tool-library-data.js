@@ -1,5 +1,5 @@
 // tool-library-data.js
-const toolLibraryData = [
+window.toolLibraryData = [
   {
     "id": "tool-0",
     "name": "晨间日记",

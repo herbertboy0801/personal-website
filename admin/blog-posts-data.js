@@ -1,5 +1,5 @@
 // blog-posts-data.js
-const blogPosts = [
+window.blogPostsData = [
   {
     "id": "blog-1717682256001",
     "source": "小红书",

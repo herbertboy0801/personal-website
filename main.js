@@ -60,34 +60,28 @@ const learningDiaryData = [
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 逻辑来自: generate-blog-list.js ---
-    (async () => { // Make IIFE async
+    (() => { // Removed async
         const blogListContainer = document.querySelector('#blog-summary .blog-posts-grid');
         if (!blogListContainer) {
             console.error('Blog list container not found!');
             return;
         }
 
-        blogListContainer.innerHTML = '<p>正在加载博客列表...</p>'; // Show loading message
+        blogListContainer.innerHTML = ''; // Clear container
 
-        try {
-            const response = await fetch('/api/blog'); // Fetch data from API
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const fetchedBlogPosts = await response.json(); // Parse JSON data
+        // Use global data directly
+        const blogPosts = window.blogPostsData || [];
 
-            blogListContainer.innerHTML = ''; // Clear loading message
+        if (!Array.isArray(blogPosts) || blogPosts.length === 0) {
+             blogListContainer.innerHTML = '<p>暂无博客文章。</p>';
+             return;
+        }
 
-            if (!Array.isArray(fetchedBlogPosts) || fetchedBlogPosts.length === 0) {
-                 blogListContainer.innerHTML = '<p>暂无博客文章。</p>';
-                 return;
-            }
-
-            // Use fetched data (fetchedBlogPosts) to render
-            fetchedBlogPosts.forEach(post => {
-                const article = document.createElement('article');
-                article.classList.add('blog-post-summary');
-                let sourceClass = '';
+        // Use global data (blogPosts) to render
+        blogPosts.forEach(post => {
+            const article = document.createElement('article');
+            article.classList.add('blog-post-summary');
+            let sourceClass = '';
                 if (post.source === '小红书') {
                     sourceClass = 'source-xiaohongshu';
                 } else if (post.source === '公众号') {
@@ -115,41 +109,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 article.appendChild(link);
                 blogListContainer.appendChild(article);
             });
-        } catch (error) {
-            console.error('无法加载博客列表:', error);
-            blogListContainer.innerHTML = '<p>加载博客列表时出错，请稍后重试。</p>';
-        }
-    })(); // End async IIFE for blog
+        // Removed try...catch block for fetch
+    })(); // End IIFE for blog
 
     // --- 逻辑来自: generate-featured-works.js ---
-    (async () => { // Make IIFE async
+    (() => { // Removed async
         const worksGridContainer = document.querySelector('#featured-works .works-grid');
         if (!worksGridContainer) {
             console.error('Featured works grid container not found!');
             return;
         }
 
-        worksGridContainer.innerHTML = '<p>正在加载精选作品...</p>'; // Show loading message
+        worksGridContainer.innerHTML = ''; // Clear container
 
-        try {
-            const response = await fetch('/api/works'); // Fetch data from API
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const fetchedWorksData = await response.json(); // Parse JSON data
+        // Use global data directly
+        const worksData = window.featuredWorksData || [];
 
-            worksGridContainer.innerHTML = ''; // Clear loading message
+        if (!Array.isArray(worksData) || worksData.length === 0) {
+             worksGridContainer.innerHTML = '<p>暂无精选作品。</p>';
+             return;
+        }
 
-            if (!Array.isArray(fetchedWorksData) || fetchedWorksData.length === 0) {
-                 worksGridContainer.innerHTML = '<p>暂无精选作品。</p>';
-                 return;
-            }
-
-            // Use fetched data (fetchedWorksData) to render
-            fetchedWorksData.forEach(work => {
-                const workCard = document.createElement('div');
-                workCard.classList.add('work-card');
-                const img = document.createElement('img');
+        // Use global data (worksData) to render
+        worksData.forEach(work => {
+            const workCard = document.createElement('div');
+            workCard.classList.add('work-card');
+            const img = document.createElement('img');
                 // 注意：API 返回的可能是相对路径，需要确保它们相对于网站根目录是正确的
                 // 如果 API 返回的是 admin 目录下的路径，可能需要调整
                 img.src = work.imageSrc; // Assuming API returns correct path relative to website root
@@ -172,11 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 workCard.appendChild(link);
                 worksGridContainer.appendChild(workCard);
             });
-        } catch (error) {
-            console.error('无法加载精选作品:', error);
-            worksGridContainer.innerHTML = '<p>加载精选作品时出错，请稍后重试。</p>';
-        }
-    })(); // End async IIFE for featured works
+        // Removed try...catch block for fetch
+    })(); // End IIFE for featured works
 
     // --- 逻辑来自: generate-learning-diary.js ---
     (() => {
@@ -216,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })(); // IIFE to scope variables
 
     // --- 逻辑来自: generate-tool-library.js ---
-    (async () => { // Make IIFE async
+    (() => { // Removed async
         const categoriesNavContainer = document.getElementById('tool-categories-nav');
         const toolListContainer = document.getElementById('tool-list-container');
         const searchInput = document.getElementById('tool-search-input');
@@ -234,49 +216,30 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentCategory = '全部';
         let currentSearchTerm = '';
         let filteredToolsCache = [];
-        let toolsData = []; // Declare toolsData within the IIFE scope
+        // Use global data directly
+        const toolsData = window.toolLibraryData || [];
+        console.log("Using global tools data:", toolsData); // DEBUG
 
-        // --- Fetch Data ---
-        toolListContainer.innerHTML = '<p>正在加载工具列表...</p>'; // Show loading message
-        categoriesNavContainer.innerHTML = ''; // Clear categories while loading
-        paginationContainer.innerHTML = ''; // Clear pagination while loading
+        // --- Initial Render ---
+        toolListContainer.innerHTML = ''; // Clear container
+        categoriesNavContainer.innerHTML = '';
+        paginationContainer.innerHTML = '';
 
-        try {
-            console.log("Fetching tools from /api/tools..."); // DEBUG
-            const response = await fetch('/api/tools'); // Fetch data from API
-            console.log("Fetch response status:", response.status); // DEBUG
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            toolsData = await response.json(); // Assign fetched data
-            console.log("Fetched tools data:", toolsData); // DEBUG: Log the fetched data
-
-            if (!Array.isArray(toolsData)) {
-                 console.error('Fetched tools data is not an array:', toolsData);
-                 throw new Error('从服务器获取的数据格式不正确。');
-            }
-
-            // --- Initial Render after successful fetch ---
-            console.log("Rendering initial categories and tools..."); // DEBUG
-            renderCategories(); // Render categories based on fetched data
-            renderToolList();   // Render the first page of tools
-            searchInput.addEventListener('input', handleSearchInput); // Add listener after data is ready
-
-        } catch (error) {
-            console.error('无法加载工具列表:', error);
-            toolListContainer.innerHTML = `<p>加载工具列表时出错: ${error.message}</p>`; // Show error message
-            // Optionally clear categories/pagination on error too
-            categoriesNavContainer.innerHTML = '';
-            paginationContainer.innerHTML = '';
-            return; // Stop execution of this IIFE on error
-        } finally {
-             console.log("Tool fetching/rendering finished."); // DEBUG
+        if (!Array.isArray(toolsData)) {
+             console.error('Global tools data is not an array:', toolsData);
+             toolListContainer.innerHTML = '<p>工具数据格式不正确。</p>';
+             return; // Stop if data is invalid
         }
-        // --- End Fetch Data ---
 
+        console.log("Rendering initial categories and tools..."); // DEBUG
+        renderCategories(); // Render categories based on global data
+        renderToolList();   // Render the first page of tools
+        searchInput.addEventListener('input', handleSearchInput); // Add listener
+
+        // Removed try...catch...finally block for fetch
 
         function renderCategories() {
-            // Uses the 'toolsData' variable from the IIFE scope
+            // Uses the 'toolsData' variable from the IIFE scope (now assigned from window.toolLibraryData)
             const categoryIcons = {
                 '全部': 'apps', 'AI 生成': 'auto_awesome', '开发工具': 'code',
                 '效率助手': 'checklist', '图像影音处理': 'perm_media', '休闲娱乐': 'stadia_controller'
@@ -449,7 +412,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Initial calls are now inside the try block after successful fetch
 
-    })(); // End async IIFE for tool library
+        // Initial calls are now directly executed after data check
+
+    })(); // End IIFE for tool library
 
     // --- 逻辑来自: lightbox.js ---
     (() => {
