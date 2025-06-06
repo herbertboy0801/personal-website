@@ -530,20 +530,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     })(); // 结束 theme toggle IIFE
 
-    // --- Simplified Admin Entry Link ---
-    (() => {
-        const adminLink = document.getElementById('admin-entry-link');
-        if (adminLink) {
-            adminLink.addEventListener('click', (event) => {
-                event.preventDefault(); // Prevent default link behavior
-                const adminUrl = '/admin'; // Use relative path for admin
-                console.log('Admin link clicked, opening:', adminUrl);
-                window.open(adminUrl, '_blank'); // Open in new tab
-            });
-        } else {
-            console.warn('Admin entry link element not found.');
-        }
-    })(); // End admin link IIFE
+    // --- Simplified Admin Entry Link (JS removed, rely on HTML href) ---
+    // (() => {
+    //     const adminLink = document.getElementById('admin-entry-link');
+    //     if (adminLink) {
+    //         adminLink.addEventListener('click', (event) => {
+    //             event.preventDefault(); // Prevent default link behavior
+    //             const adminUrl = '/admin'; // Incorrect for GitHub Pages
+    //             console.log('Admin link clicked, opening:', adminUrl);
+    //             window.open(adminUrl, '_blank'); // Open in new tab
+    //         });
+    //     } else {
+    //         console.warn('Admin entry link element not found.');
+    //     }
+    // })(); // End admin link IIFE
 
 }); // 结束 DOMContentLoaded 事件监听器
 // ==========================================================================
