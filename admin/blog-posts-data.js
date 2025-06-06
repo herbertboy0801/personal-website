@@ -11,7 +11,7 @@ const blogPosts = [
     "id": "blog-1717682256002",
     "source": "小红书",
     "title": "AI编程，如何3分钟做出六一儿童节小游戏",
-    "summary": "暂无摘要",
+    "summary": "透过AI制作儿童节元素的射击游戏",
     "link": "https://www.xiaohongshu.com/explore/683c6f12000000002300d6f5?xsec_token=ABdSk6o16B6NyzFjVKagFu1PgPtdxpAOSFoth2nUnQl6g=&xsec_source=pc_user"
   },
   {
