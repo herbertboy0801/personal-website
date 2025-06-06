@@ -1,16 +1,5 @@
 // tool-library-data.js
-window.toolLibraryData = [
-  {
-    "id": "tool-0",
-    "name": "晨间日记",
-    "description": "记录自己每天的生活",
-    "icon": "palette",
-    "category": "效率助手",
-    "tags": [
-      "日记"
-    ],
-    "url": "tools/drawing-app/"
-  },
+const toolLibraryData = [
   {
     "id": "tool-1",
     "name": "俄罗斯方块",
