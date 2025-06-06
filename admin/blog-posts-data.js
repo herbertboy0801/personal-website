@@ -32,7 +32,7 @@ const blogPosts = [
     "id": "blog-1717682256005",
     "source": "公众号",
     "title": "0基础学 COZE 古诗词视频详细教程：小白保证学会，图生视频工作流大拆解",
-    "summary": "暂无摘要",
+    "summary": "透过工作流，5分钟生成古诗词讲解短视频( 动画+音乐版)",
     "link": "https://mp.weixin.qq.com/s/-IoNQuKONqomWbvjuhYtQA"
   }
 ];
