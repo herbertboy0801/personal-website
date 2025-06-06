@@ -215,16 +215,5 @@ window.toolLibraryData = [
       "文本",
       "统计"
     ]
-  },
-  {
-    "id": "tools-1749239364175",
-    "name": "图片大小变更工具",
-    "description": "可以自由变更图片大小",
-    "icon": "analytics",
-    "category": "图像影音处理",
-    "tags": [
-      "图片调整"
-    ],
-    "url": "tools/image_editor.html"
   }
 ];
