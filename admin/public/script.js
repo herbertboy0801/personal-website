@@ -12,7 +12,15 @@ const blogList = document.getElementById('blog-list');
 const blogForm = document.getElementById('blog-form');
 const cancelEditBlogBtn = document.getElementById('cancel-edit-blog');
 // ... (get other form elements for blog)
-const gitStatusDiv = document.getElementById('git-status'); // Div to show git status
+const blogGitStatusDiv = document.getElementById('blog-git-status'); // Specific status div for blog
+
+// Tool Library Elements
+const toolsList = document.getElementById('tools-list');
+const toolForm = document.getElementById('tool-form');
+const addToolButton = document.getElementById('add-tool-button'); // Button to show the form
+const cancelEditToolBtn = document.getElementById('cancel-tool-edit');
+const toolsGitStatusDiv = document.getElementById('tools-git-status'); // Specific status div for tools
+// ... (get other form elements for tools)
 
 // const diaryList = document.getElementById('diary-list'); // Removed
 // const diaryForm = document.getElementById('diary-form'); // Removed
@@ -93,6 +101,10 @@ function renderList(type, data) {
             listContainer = blogList;
             renderItemFunction = renderBlogItem;
             break;
+        case 'tools':
+            listContainer = toolsList;
+            renderItemFunction = renderToolItem;
+            break;
         // case 'diary': // Removed
         //     listContainer = diaryList;
         //     renderItemFunction = renderDiaryItem;
@@ -108,9 +120,9 @@ function renderList(type, data) {
         return;
     }
 
-    data.forEach((item, index) => {
-        // Pass index as potential ID if backend doesn't assign unique IDs
-        const itemElement = renderItemFunction(item, index);
+    data.forEach((item) => { // No longer need index here
+        // Backend now assigns unique IDs (item.id)
+        const itemElement = renderItemFunction(item, item.id); // Pass the actual unique ID
         listContainer.appendChild(itemElement);
     });
 }
@@ -119,13 +131,17 @@ function renderWorkItem(item, id) {
     const div = document.createElement('div');
     div.classList.add('list-item');
     div.innerHTML = `
-        <strong>${item.title}</strong> (${item.tag}) - ${item.description.substring(0, 50)}...
-        <button onclick="editItem('works', ${id})">编辑</button>
-        <button onclick="deleteItem('works', ${id})">删除</button>
+        <div class="item-content">
+            <strong>${item.title}</strong> (${item.tag}) - ${item.description.substring(0, 50)}...
+        </div>
+        <div class="item-actions">
+            <button onclick="editItem('works', '${id}')">编辑</button>  <!-- Use quotes for string ID -->
+            <button onclick="deleteItem('works', '${id}')">删除</button> <!-- Use quotes for string ID -->
+        </div>
     `;
     // Store full data with the element for editing
     div.dataset.itemData = JSON.stringify(item);
-    div.dataset.itemId = id;
+    div.dataset.itemId = id; // Store the unique ID
     return div;
 }
 
@@ -133,12 +149,16 @@ function renderBlogItem(item, id) {
     const div = document.createElement('div');
     div.classList.add('list-item');
     div.innerHTML = `
-        <strong>${item.title}</strong> (${item.source}) - ${item.summary.substring(0, 50)}...
-        <button onclick="editItem('blog', ${id})">编辑</button>
-        <button onclick="deleteItem('blog', ${id})">删除</button>
+        <div class="item-content">
+            <strong>${item.title}</strong> (${item.source}) - ${item.summary.substring(0, 50)}...
+        </div>
+        <div class="item-actions">
+            <button onclick="editItem('blog', '${id}')">编辑</button>  <!-- Use quotes for string ID -->
+            <button onclick="deleteItem('blog', '${id}')">删除</button> <!-- Use quotes for string ID -->
+        </div>
     `;
     div.dataset.itemData = JSON.stringify(item);
-     div.dataset.itemId = id;
+     div.dataset.itemId = id; // Store the unique ID
     return div;
 }
 
@@ -155,6 +175,24 @@ function renderBlogItem(item, id) {
 //     return div;
 // }
 
+function renderToolItem(item, id) {
+    const div = document.createElement('div');
+    div.classList.add('list-item');
+    // Display relevant tool info
+    div.innerHTML = `
+        <div class="item-content">
+            <strong>${item.name}</strong> (${item.category}) - ${item.url}
+        </div>
+        <div class="item-actions">
+            <button onclick="editItem('tools', '${id}')">编辑</button> <!-- Use quotes for string ID -->
+            <button onclick="deleteItem('tools', '${id}')">删除</button> <!-- Use quotes for string ID -->
+        </div>
+    `;
+    div.dataset.itemData = JSON.stringify(item);
+    div.dataset.itemId = id; // Store the unique ID
+    return div;
+}
+
 // --- Form Handling ---
 
 // Mark function as async
@@ -162,15 +200,42 @@ async function handleFormSubmit(event, type) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+    let data = Object.fromEntries(formData.entries());
     const editIdInput = form.querySelector(`input[type="hidden"]`); // Get the hidden input for ID
-    const editId = editIdInput ? editIdInput.value : null;
+    const editId = editIdInput ? editIdInput.value : null; // This will be the unique string ID for edits
 
+    // --- Handle Dropdown "New" Option ---
+    if (type === 'blog') {
+        const sourceSelect = form.elements['source'];
+        const newSourceInput = form.elements['source-new'];
+        if (sourceSelect.value === '--new--' && newSourceInput.value.trim()) {
+            data.source = newSourceInput.value.trim(); // Use the new value
+        }
+        delete data['source-new']; // Remove temporary field
+    } else if (type === 'works') {
+        const typeSelect = form.elements['type'];
+        const newTypeInput = form.elements['type-new'];
+        if (typeSelect.value === '--new--' && newTypeInput.value.trim()) {
+            data.type = newTypeInput.value.trim(); // Use the new value
+        }
+         delete data['type-new']; // Remove temporary field
+    }
+    // Tool category is always selected from the fixed list, no 'new' handling needed.
+
+    // Special handling for tags (convert comma-separated string to array)
+    if (type === 'tools' && data.tags) {
+        data.tags = data.tags.split(',').map(tag => tag.trim()).filter(tag => tag); // Split, trim, remove empty
+    }
+    // Add similar handling for blog tags if needed
+    if (type === 'blog' && data.tags) {
+         data.tags = data.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    }
 
     console.log(`Submitting ${type} data:`, data, "with ID:", editId);
 
     // Use await to ensure postData completes before proceeding
-    const result = await postData(type, data, editId || null);
+    // Pass editId (which is the unique string ID) or null for new items
+    const result = await postData(type, data, editId);
 
     if (result) {
         console.log(`${type} saved successfully:`, result);
@@ -189,17 +254,23 @@ async function handleFormSubmit(event, type) {
                  noDataMsg.remove();
             }
             // Determine new index (length before potential async loadAllData adds it)
-            const currentItemCount = featuredWorksList.querySelectorAll('.list-item').length;
-            const newItemElement = renderWorkItem(result.item, currentItemCount);
+            // Use the ID returned from the server (which should be the generated unique ID)
+            const newItemElement = renderWorkItem(result.item, result.item.id);
             featuredWorksList.appendChild(newItemElement);
         } else if (!editId && type === 'blog' && result.item) { // Only for adding new 'blog'
             const noDataMsg = blogList.querySelector('p');
              if (noDataMsg && blogList.children.length === 1) {
                  noDataMsg.remove();
              }
-            const currentItemCount = blogList.querySelectorAll('.list-item').length;
-            const newItemElement = renderBlogItem(result.item, currentItemCount);
+            const newItemElement = renderBlogItem(result.item, result.item.id);
             blogList.appendChild(newItemElement);
+        } else if (!editId && type === 'tools' && result.item) { // Handle adding new 'tools'
+            const noDataMsg = toolsList.querySelector('p');
+             if (noDataMsg && toolsList.children.length === 1) {
+                 noDataMsg.remove();
+             }
+            const newItemElement = renderToolItem(result.item, result.item.id);
+            toolsList.appendChild(newItemElement);
         }
         // --- End Direct DOM Manipulation ---
 
@@ -228,6 +299,11 @@ function editItem(type, id) {
             listContainer = blogList;
             cancelBtn = cancelEditBlogBtn;
             break;
+        case 'tools':
+            form = toolForm;
+            listContainer = toolsList;
+            cancelBtn = cancelEditToolBtn;
+            break;
         // case 'diary': // Removed
         //     form = diaryForm;
         //     listContainer = diaryList;
@@ -236,10 +312,10 @@ function editItem(type, id) {
         default: return;
     }
 
-    // Find the item element in the list
+    // Find the item element in the list using the unique string ID
     const itemElement = listContainer.querySelector(`div[data-item-id="${id}"]`);
     if (!itemElement || !itemElement.dataset.itemData) {
-        console.error('Could not find item data for editing.');
+        console.error(`Could not find item data for editing ${type} with id: ${id}`);
         return;
     }
 
@@ -247,8 +323,42 @@ function editItem(type, id) {
 
     // Populate the form
     for (const key in itemData) {
-        if (form.elements[key]) {
-            form.elements[key].value = itemData[key];
+        const formElement = form.elements[key]; // Direct access should work with correct names
+        if (formElement) {
+            // Handle tags array specifically
+            if ((type === 'tools' || type === 'blog') && key === 'tags' && Array.isArray(itemData[key])) {
+                 formElement.value = itemData[key].join(', '); // Join array back to comma-separated string for input field
+            } else if (formElement.tagName === 'SELECT') {
+                 // Handle select elements: Check if the value exists as an option
+                 let optionExists = false;
+                 for (let i = 0; i < formElement.options.length; i++) {
+                     if (formElement.options[i].value === itemData[key]) {
+                         optionExists = true;
+                         break;
+                     }
+                 }
+                 // If the option exists, select it. Otherwise, select '--new--' and fill the text input.
+                 if (optionExists) {
+                     formElement.value = itemData[key];
+                     // Hide the 'new' input if it exists
+                     const newTextInput = form.elements[`${key}-new`];
+                     if (newTextInput) newTextInput.style.display = 'none';
+                 } else if (form.elements[`${key}-new`]) { // Check if 'new' input exists
+                     formElement.value = '--new--'; // Select the 'new' option
+                     const newTextInput = form.elements[`${key}-new`];
+                     newTextInput.value = itemData[key]; // Fill the text input
+                     newTextInput.style.display = 'block'; // Show the text input
+                 } else {
+                      // Fallback if value doesn't exist and no 'new' option (e.g., tool category)
+                      console.warn(`Value "${itemData[key]}" for field "${key}" not found in select options.`);
+                      // Optionally set to default or first option
+                      if (formElement.options.length > 0) {
+                           formElement.selectedIndex = 0;
+                      }
+                 }
+            } else {
+                formElement.value = itemData[key];
+            }
         }
     }
      // Set the hidden ID field
@@ -256,6 +366,9 @@ function editItem(type, id) {
     if (editIdInput) {
         editIdInput.value = id; // Store the ID for submission
     }
+
+    // Show the form itself
+    form.style.display = 'block'; // Ensure the form is visible
 
     // Show cancel button and scroll to form
     if (cancelBtn) cancelBtn.style.display = 'inline-block';
@@ -274,7 +387,8 @@ async function deleteItem(type, id) {
             // --- Direct DOM Manipulation for DELETE ---
             let listContainer;
             if (type === 'works') listContainer = featuredWorksList;
-            if (type === 'blog') listContainer = blogList;
+            else if (type === 'blog') listContainer = blogList;
+            else if (type === 'tools') listContainer = toolsList;
             // Add other types if needed
 
             if (listContainer) {
@@ -311,6 +425,11 @@ function cancelEdit(type) {
             cancelBtn = cancelEditBlogBtn;
             editIdInput = document.getElementById('blog-edit-id');
             break;
+        case 'tools':
+            form = toolForm;
+            cancelBtn = cancelEditToolBtn;
+            editIdInput = document.getElementById('tool-id');
+            break;
         // case 'diary': // Removed
         //     form = diaryForm;
         //     cancelBtn = cancelEditDiaryBtn;
@@ -324,37 +443,85 @@ function cancelEdit(type) {
 }
 
 
+// --- Dropdown Population ---
+
+// Fixed categories for the tool library
+const toolCategories = ['AI 生成', '开发工具', '效率助手', '图像影音处理', '休闲娱乐'];
+
+function populateSelectWithOptions(selectElement, options, includeNewOption = false) {
+    selectElement.innerHTML = ''; // Clear existing options
+    options.forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue;
+        selectElement.appendChild(option);
+    });
+    if (includeNewOption) {
+        const newOption = document.createElement('option');
+        newOption.value = '--new--';
+        newOption.textContent = '新增...';
+        selectElement.appendChild(newOption);
+    }
+}
+
+function setupDynamicSelect(selectElementId, newTextInputId) {
+    const selectElement = document.getElementById(selectElementId);
+    const newTextInput = document.getElementById(newTextInputId);
+    if (selectElement && newTextInput) {
+        selectElement.addEventListener('change', () => {
+            if (selectElement.value === '--new--') {
+                newTextInput.style.display = 'block';
+                newTextInput.required = true; // Make required when visible
+            } else {
+                newTextInput.style.display = 'none';
+                newTextInput.required = false; // Not required when hidden
+                newTextInput.value = ''; // Clear value when hidden
+            }
+        });
+         // Initial check in case the form is pre-populated for editing
+         if (selectElement.value === '--new--') {
+             newTextInput.style.display = 'block';
+             newTextInput.required = true;
+         } else {
+              newTextInput.style.display = 'none';
+              newTextInput.required = false;
+         }
+    }
+}
+
+
 // --- Initialization ---
 
 async function loadAllData() {
-    const worksData = await fetchData('works');
+    // Fetch all data concurrently
+    const [worksData, blogData, toolsData] = await Promise.all([
+        fetchData('works'),
+        fetchData('blog'),
+        fetchData('tools')
+    ]);
+
+    // Render lists
     renderList('works', worksData);
-
-    const blogData = await fetchData('blog');
     renderList('blog', blogData);
+    renderList('tools', toolsData);
 
-    // const diaryData = await fetchData('diary'); // Removed
-    // renderList('diary', diaryData); // Removed
+    // Populate dropdowns
+    const workTypes = [...new Set(worksData.map(item => item.type))].sort();
+    populateSelectWithOptions(document.getElementById('work-type'), workTypes, true);
+
+    const blogSources = [...new Set(blogData.map(item => item.source))].sort();
+    populateSelectWithOptions(document.getElementById('blog-source'), blogSources, true);
+
+    populateSelectWithOptions(document.getElementById('tool-category'), toolCategories, false); // No 'new' for tools
+
+    // Setup dynamic behavior for 'new' options
+    setupDynamicSelect('work-type', 'work-type-new');
+    setupDynamicSelect('blog-source', 'blog-source-new');
+
 }
 
-// --- Password Protection ---
-function checkPassword() {
-    const storedPassword = sessionStorage.getItem('adminPassword'); // Use sessionStorage for the current session
-    if (storedPassword === '123456') {
-        return true;
-    }
-
-    const inputPassword = prompt('请输入管理密码:');
-    if (inputPassword === '123456') {
-        sessionStorage.setItem('adminPassword', '123456');
-        return true;
-    } else if (inputPassword !== null) { // Handle cancel button
-        alert('密码错误！');
-    }
-    // Hide content if password is wrong or cancelled
-    document.body.innerHTML = '<h1>密码错误或未输入</h1>';
-    return false;
-}
+// --- Password Protection (Removed) ---
+// function checkPassword() { ... } // Removed password check logic
 
 
 // --- Git Status Polling ---
@@ -371,7 +538,7 @@ async function checkGitStatus(type) {
             return 'error'; // Indicate error fetching status
         }
         const statusData = await response.json();
-        updateGitStatusUI(statusData.status, statusData.message);
+        updateGitStatusUI(type, statusData.status, statusData.message); // Pass type to update correct UI element
         return statusData.status; // Return current status (idle, pending, success, error)
     } catch (error) {
         console.error('[checkGitStatus] Exception caught while fetching git status:', error); // <-- 修改日志
@@ -380,18 +547,28 @@ async function checkGitStatus(type) {
     }
 }
 
-function updateGitStatusUI(status, message) {
-    if (!gitStatusDiv) return;
-    gitStatusDiv.textContent = `Git 推送状态: ${message || status}`;
-    gitStatusDiv.className = `status-${status}`; // Add class for potential styling
-    gitStatusDiv.style.display = 'block'; // Make sure it's visible
+function updateGitStatusUI(type, status, message) {
+    let statusDiv;
+    // Use the newly added IDs from index.html
+    if (type === 'works') statusDiv = document.getElementById('featured-works-git-status');
+    else if (type === 'blog') statusDiv = document.getElementById('blog-git-status'); // Use the ID directly
+    else if (type === 'tools') statusDiv = document.getElementById('tools-git-status'); // Use the ID directly
+    else return; // Unknown type
+
+    if (!statusDiv) {
+        console.warn(`Git status div not found for type: ${type}`); // Add warning if div not found
+        return;
+    }
+    statusDiv.textContent = `Git 推送状态: ${message || status}`;
+    statusDiv.className = `git-status status-${status}`; // Add class for potential styling
+    statusDiv.style.display = 'block'; // Make sure it's visible
 }
 
 function pollGitStatus(type) {
     if (pollingIntervalId) {
         clearInterval(pollingIntervalId); // Clear previous interval if any
     }
-    updateGitStatusUI('pending', '检查推送状态...'); // Initial message
+    updateGitStatusUI(type, 'pending', '检查推送状态...'); // Initial message for the specific type
 
     pollingIntervalId = setInterval(async () => {
         const currentStatus = await checkGitStatus(type);
@@ -401,8 +578,14 @@ function pollGitStatus(type) {
             pollingIntervalId = null;
              // Optionally hide the status after a few seconds
             setTimeout(() => {
-                if (gitStatusDiv && (currentStatus === 'success' || currentStatus === 'idle')) { // Keep error message visible longer?
-                     gitStatusDiv.style.display = 'none';
+                // Find the correct status div again
+                let statusDiv;
+                if (type === 'works') statusDiv = document.getElementById('featured-works-git-status');
+                else if (type === 'blog') statusDiv = blogGitStatusDiv;
+                else if (type === 'tools') statusDiv = toolsGitStatusDiv;
+
+                if (statusDiv && (currentStatus === 'success' || currentStatus === 'idle')) { // Keep error message visible longer?
+                     statusDiv.style.display = 'none';
                 }
             }, 5000); // Hide after 5 seconds for success/idle
         }
@@ -412,21 +595,110 @@ function pollGitStatus(type) {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    if (!checkPassword()) {
-        return; // Stop execution if password is wrong
-    }
+    // Removed password check: if (!checkPassword()) { return; }
 
-    // If password is correct, proceed to load data and set up listeners
+    // Load data and set up listeners directly
     loadAllData();
 
     // Add form submit listeners
     featuredWorksForm.addEventListener('submit', (e) => handleFormSubmit(e, 'works'));
     blogForm.addEventListener('submit', (e) => handleFormSubmit(e, 'blog'));
+    toolForm.addEventListener('submit', (e) => handleFormSubmit(e, 'tools')); // Add listener for tools form
     // diaryForm.addEventListener('submit', (e) => handleFormSubmit(e, 'diary')); // Removed
 
      // Add cancel button listeners
     cancelEditWorkBtn.addEventListener('click', () => cancelEdit('works'));
     cancelEditBlogBtn.addEventListener('click', () => cancelEdit('blog'));
+    cancelEditToolBtn.addEventListener('click', () => cancelEdit('tools')); // Add listener for tools cancel
     // cancelEditDiaryBtn.addEventListener('click', () => cancelEdit('diary')); // Removed
 
+    // Add listener for the "Add New Tool" button to show the form
+    addToolButton.addEventListener('click', () => {
+        toolForm.reset();
+        document.getElementById('tool-id').value = ''; // Clear hidden ID
+        cancelEditToolBtn.style.display = 'none'; // Hide cancel button initially
+        toolForm.style.display = 'block'; // Show the form
+        toolForm.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Add similar listeners for "Add New Work" and "Add New Blog" if needed
+    // Example for blog:
+    const addBlogButton = document.getElementById('add-blog-button');
+    if (addBlogButton) {
+        addBlogButton.addEventListener('click', () => {
+            blogForm.reset();
+            document.getElementById('blog-edit-id').value = '';
+            cancelEditBlogBtn.style.display = 'none';
+            blogForm.style.display = 'block';
+            blogForm.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    // Add listener for "Add New Work" button
+    const addWorkButton = document.getElementById('add-work-button');
+    if (addWorkButton) {
+        addWorkButton.addEventListener('click', () => {
+            featuredWorksForm.reset();
+            document.getElementById('work-edit-id').value = '';
+            cancelEditWorkBtn.style.display = 'none';
+            featuredWorksForm.style.display = 'block';
+            featuredWorksForm.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    // --- Update Backup Button Listener --- // Changed comment
+    const updateBackupButton = document.getElementById('update-backup-button'); // Changed ID
+    if (updateBackupButton) { // Changed variable name
+        updateBackupButton.addEventListener('click', async () => { // Changed variable name
+            if (confirm('确定要将当前所有数据更新到备份文件 (.bak) 吗？这将覆盖现有的备份。')) { // Changed confirmation message
+                updateBackupButton.disabled = true; // Disable button during operation
+                updateBackupButton.textContent = '正在更新备份...'; // Update button text
+                try {
+                    const response = await fetch(`${API_BASE_URL}/update-backups`, { // Changed API endpoint
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    const result = await response.json(); // Get the response message
+                    if (response.ok) {
+                        alert(`备份文件更新成功！ (${result.message || ''})`); // Changed success message
+                    } else {
+                        throw new Error(result.message || `HTTP error! status: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('Error updating backups:', error); // Changed error log message
+                    alert(`更新备份文件时出错: ${error.message}`); // Changed error alert message
+                } finally {
+                     updateBackupButton.disabled = false; // Re-enable button
+                     updateBackupButton.textContent = '更新备份文件'; // Restore button text
+                }
+            }
+        });
+    } else {
+        console.warn('Update backup button not found.'); // Changed warning message
+    }
+
 });
+// --- Tab Navigation Logic ---
+    const adminNav = document.getElementById('admin-nav');
+    const navButtons = adminNav.querySelectorAll('.nav-button');
+    const adminSections = document.querySelectorAll('.admin-section');
+
+    adminNav.addEventListener('click', (event) => {
+        const clickedButton = event.target.closest('.nav-button');
+        if (!clickedButton) return; // Exit if click wasn't on a nav button
+
+        const targetId = clickedButton.dataset.target; // Get target section ID (e.g., '#featured-works-admin')
+        const targetSection = document.querySelector(targetId);
+
+        if (!targetSection) return; // Exit if target section not found
+
+        // Remove active class from all buttons and sections
+        navButtons.forEach(button => button.classList.remove('active'));
+        adminSections.forEach(section => section.classList.remove('active'));
+
+        // Add active class to the clicked button and target section
+        clickedButton.classList.add('active');
+        targetSection.classList.add('active');
+    });
+    // --- End Tab Navigation Logic ---

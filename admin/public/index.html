@@ -5,26 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人网站内容管理</title>
     <link rel="stylesheet" href="style.css">
+<style>
+        .admin-section {
+            display: none; /* Hide sections by default */
+            margin-top: 20px; /* Add some space */
+        }
+        .admin-section.active {
+            display: block; /* Show active section */
+        }
+        #admin-nav .nav-button {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #admin-nav .nav-button.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        /* Style for the new update backup button */
+        #update-backup-button { /* Changed ID */
+             margin-left: auto; padding: 8px 15px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; /* Changed background color */
+        }
+    </style>
 </head>
 <body>
     <h1>个人网站内容管理</h1>
+<div id="admin-nav" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <button data-target="#featured-works-admin" class="nav-button active">精选作品管理</button>
+        <button data-target="#blog-admin" class="nav-button">博客文章管理</button>
+        <button data-target="#tools-section" class="nav-button">工具资源库管理</button>
+        <button id="update-backup-button" style="margin-left: auto; padding: 8px 15px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">更新备份文件</button> <!-- Changed ID and Text -->
+    </div>
 
     <div id="git-status" style="display: none; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
         <!-- Git push status will be shown here -->
     </div>
 
-    <section id="featured-works-admin">
-        <h2>精选作品管理</h2>
+    <section id="featured-works-admin" class="admin-section active">
+        <div class="section-controls"> <!-- Move H2 inside -->
+             <h2>精选作品管理</h2>
+            <div class="git-status" id="featured-works-git-status" style="display: none;">Git 状态: 检查中...</div>
+            <button id="add-work-button">添加新作品</button>
+        </div>
         <div id="featured-works-list">
             <!-- 现有作品列表将由 JS 填充 -->
             <p>正在加载作品列表...</p>
         </div>
         <form id="featured-works-form">
             <h3>添加/编辑精选作品</h3>
-            <input type="hidden" id="work-edit-id"> <!-- 用于编辑 -->
+            <input type="hidden" id="work-edit-id" name="id"> <!-- 用于编辑 -->
             <div>
                 <label for="work-type">类型:</label>
-                <input type="text" id="work-type" name="type" value="other" required>
+                <select id="work-type" name="type" required>
+                    <!-- Options will be populated by JS -->
+                </select>
+                <input type="text" id="work-type-new" name="type-new" placeholder="或输入新类型" style="display: none; margin-top: 5px;">
             </div>
             <div>
                 <label for="work-imageSrc">图片路径:</label>
@@ -55,20 +93,27 @@
         </form>
     </section>
 
-    <hr>
+    <!-- <hr> Removed -->
 
-    <section id="blog-admin">
-        <h2>博客文章管理</h2>
+    <section id="blog-admin" class="admin-section">
+         <div class="section-controls"> <!-- Move H2 inside -->
+             <h2>博客文章管理</h2>
+            <div class="git-status" id="blog-git-status" style="display: none;">Git 状态: 检查中...</div>
+            <button id="add-blog-button">添加新博客</button>
+        </div>
         <div id="blog-list">
             <!-- 现有博客列表将由 JS 填充 -->
             <p>正在加载博客列表...</p>
         </div>
         <form id="blog-form">
             <h3>添加/编辑博客文章</h3>
-             <input type="hidden" id="blog-edit-id"> <!-- 用于编辑 -->
+             <input type="hidden" id="blog-edit-id" name="id"> <!-- 用于编辑 -->
             <div>
                 <label for="blog-source">来源:</label>
-                <input type="text" id="blog-source" name="source" placeholder="例如: 小红书, 公众号" required>
+                <select id="blog-source" name="source" required>
+                     <!-- Options will be populated by JS -->
+                </select>
+                 <input type="text" id="blog-source-new" name="source-new" placeholder="或输入新来源" style="display: none; margin-top: 5px;">
             </div>
             <div>
                 <label for="blog-title">标题:</label>
@@ -84,6 +129,51 @@
             </div>
             <button type="submit">保存博客</button>
              <button type="button" id="cancel-edit-blog" style="display: none;">取消编辑</button>
+        </form>
+    </section>
+
+<!-- <hr> Removed -->
+
+    <!-- Tool Library Section -->
+    <section id="tools-section" class="admin-section">
+        <div class="section-controls"> <!-- Move H2 inside -->
+            <h2>工具资源库管理</h2>
+            <div class="git-status" id="tools-git-status">Git 状态: 检查中...</div>
+            <button id="add-tool-button">添加新工具</button>
+        </div>
+        <div id="tools-list"><!-- Tools will be loaded here --></div>
+        <form id="tool-form" style="display: none;">
+            <h3>添加/编辑工具</h3>
+            <input type="hidden" id="tool-id" name="id"> <!-- Store unique ID for editing, Added name attribute -->
+            <div>
+                <label for="tool-name">工具名称:</label>
+                <input type="text" id="tool-name" name="name" required> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-description">描述:</label>
+                <textarea id="tool-description" name="description" rows="2"></textarea> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-icon">图标 (Emoji 或 Material Icon):</label>
+                <input type="text" id="tool-icon" name="icon"> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-category">分类:</label>
+                <select id="tool-category" name="category" required>
+                    <!-- Options will be populated by JS (fixed categories) -->
+                </select>
+                <!-- No 'new' option for tool category -->
+            </div>
+            <div>
+                <label for="tool-tags">标签 (逗号分隔):</label>
+                <input type="text" id="tool-tags" name="tags"> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-url">工具链接 (相对路径):</label>
+                <input type="text" id="tool-url" name="url" required placeholder="例如: tools/my-tool/index.html"> <!-- Added name attribute -->
+            </div>
+            <button type="submit">保存工具</button>
+            <button type="button" id="cancel-tool-edit">取消</button>
         </form>
     </section>
 

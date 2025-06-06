@@ -45,12 +45,17 @@ label {
 
 input[type="text"],
 input[type="url"],
-textarea {
+textarea,
+select { /* Add select element here */
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    padding: 10px; /* Apply same padding */
+    border: 1px solid #ccc; /* Apply same border */
+    border-radius: 4px; /* Apply same border-radius */
+    box-sizing: border-box; /* Apply same box-sizing */
+    font-size: 1em; /* Ensure consistent font size */
+    background-color: #fff; /* Ensure white background like inputs */
+    height: auto; /* Reset height for select, padding will determine size */
+    /* Consider adding appearance: none; for more consistent styling across browsers, but might require custom arrow */
 }
 
 textarea {
@@ -80,6 +85,36 @@ button[type="button"]:hover {
     background-color: #ec971f;
 }
 
+/* Section Controls (H2 + Git Status + Add Button) */
+.section-controls {
+    display: flex;
+    /* justify-content: space-between; /* Remove this */
+    align-items: center;      /* Vertically aligns items */
+    margin-bottom: 15px;      /* Space below the controls */
+    flex-wrap: wrap;          /* Allow wrapping on smaller screens */
+    gap: 15px;                /* Increase gap slightly for better spacing */
+}
+
+/* Make H2 take up available space, pushing others to the right */
+.section-controls h2 {
+    flex-grow: 1;             /* Allow H2 to grow */
+    margin: 0;                /* Remove default H2 margin */
+}
+
+
+.section-controls .git-status {
+    /* Style for the git status text if needed */
+    padding: 5px 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    font-size: 0.9em;
+}
+
+.section-controls button {
+     margin-right: 0; /* Remove default right margin from button inside controls */
+}
+
 
 /* List styling */
 .list-item {
@@ -91,24 +126,39 @@ button[type="button"]:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px; /* Add some gap between content and actions */
 }
 
-.list-item strong {
-    margin-right: 10px;
+.list-item .item-content {
+    flex-grow: 1; /* Allow content to take available space */
+    /* strong styling is handled below */
 }
 
-.list-item button {
+.list-item .item-content strong {
+     margin-right: 10px; /* Keep margin for the strong tag */
+}
+
+
+.list-item .item-actions {
+    display: flex; /* Align buttons horizontally */
+    gap: 5px;      /* Space between buttons */
+    flex-shrink: 0; /* Prevent action buttons from shrinking */
+}
+
+.list-item .item-actions button { /* Target buttons inside actions div */
     padding: 5px 10px;
     font-size: 0.9em;
-    margin-left: 5px;
+    /* margin-left is removed, using gap now */
 }
 
-.list-item button:last-child {
+/* Style the delete button specifically */
+.list-item .item-actions button:last-child {
      background-color: #d9534f;
 }
-.list-item button:last-child:hover {
+.list-item .item-actions button:last-child:hover {
      background-color: #c9302c;
 }
+
 
 /* Hide edit ID input */
 input[type="hidden"] {

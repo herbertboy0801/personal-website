@@ -15,7 +15,8 @@ const REPO_PATH = path.resolve(__dirname, '..'); // Get the absolute path to the
 // Global variable to store git push status
 const gitPushStatus = {
     works: { status: 'idle', message: '', timestamp: null }, // idle, pending, success, error
-    blog: { status: 'idle', message: '', timestamp: null }
+    blog: { status: 'idle', message: '', timestamp: null },
+    tools: { status: 'idle', message: '', timestamp: null } // Add status for tools
 };
 
 // Middleware
@@ -35,18 +36,23 @@ app.use(express.json()); // Parse JSON request bodies
 async function readDataFile(filePath, variableName) {
     try {
         const fullPath = path.join(__dirname, filePath);
+        console.log(`[readDataFile] Reading: ${fullPath} for variable ${variableName}`); // DEBUG
         const fileContent = await fs.readFile(fullPath, 'utf8');
+        console.log(`[readDataFile] Read content length: ${fileContent.length}`); // DEBUG
 
         // Create a sandbox context object
         const sandbox = { module: {}, exports: {} /* Add other globals if needed */ };
         // Append the variable name to the script content so runInNewContext returns its value
         const scriptContent = `${fileContent}\n${variableName};`;
+        console.log(`[readDataFile] Prepared script content for vm (first 100 chars): ${scriptContent.substring(0, 100)}...`); // DEBUG
 
         // Run the script in a new context and get the result
+        console.log(`[readDataFile] Executing vm.runInNewContext for ${filePath}...`); // DEBUG
         const data = vm.runInNewContext(scriptContent, sandbox, { filename: fullPath }); // Pass filename for better error messages
+        console.log(`[readDataFile] vm execution successful for ${filePath}. Type of result: ${typeof data}`); // DEBUG
 
         if (!Array.isArray(data)) {
-             console.warn(`Variable '${variableName}' in ${filePath} is not an array or not found after execution. Returning empty array.`);
+             console.warn(`[readDataFile] Variable '${variableName}' in ${filePath} is not an array or not found after execution. Result:`, data, `Returning empty array.`); // DEBUG
              return [];
         }
 
@@ -58,14 +64,16 @@ async function readDataFile(filePath, variableName) {
             console.warn(`Data file ${filePath} not found, returning empty array.`);
             return [];
         }
-        console.error(`Error reading data file ${filePath}:`, error);
+        // Log the specific error before re-throwing
+        console.error(`[readDataFile] Error reading or executing data file ${filePath} for variable ${variableName}:`, error.message, error.stack); // DEBUG
         throw error; // Re-throw other errors
     }
 }
 
 // Function to run git commands and push changes, updating status
-async function gitCommitAndPush(filePathToPush, type) { // Added type parameter
-    const fileName = path.basename(filePathToPush);
+// Accepts relative paths for data file and optional asset file (relative to REPO_PATH)
+async function gitCommitAndPush(relativeDataPath, type, relativeAssetPath = null) {
+    const fileName = path.basename(relativeDataPath);
     const commitMessage = `Update ${fileName} via admin tool`;
     console.log(`Attempting to commit and push changes for ${fileName} (type: ${type})...`);
 
@@ -73,19 +81,25 @@ async function gitCommitAndPush(filePathToPush, type) { // Added type parameter
     gitPushStatus[type] = { status: 'pending', message: '推送中...', timestamp: Date.now() };
 
     try {
-        // 1. Add the specific file
-        console.log(`Running: git add "${filePathToPush}" in ${REPO_PATH}`);
-        const { stdout: addStdout, stderr: addStderr } = await execPromise(`git add "${filePathToPush}"`, { cwd: REPO_PATH });
-        if (addStderr) console.error('Git add stderr:', addStderr);
-        console.log('Git add stdout:', addStdout);
+        // 1. Add the specific file(s)
+        console.log(`Running: git add "${relativeDataPath}" in ${REPO_PATH}`);
+        const { stdout: addDataStdout, stderr: addDataStderr } = await execPromise(`git add "${relativeDataPath}"`, { cwd: REPO_PATH });
+        if (addDataStderr) console.error(`Git add stderr for ${relativeDataPath}:`, addDataStderr);
+        console.log(`Git add stdout for ${relativeDataPath}:`, addDataStdout);
+
+        if (relativeAssetPath) {
+            console.log(`Running: git add "${relativeAssetPath}" in ${REPO_PATH}`);
+            const { stdout: addAssetStdout, stderr: addAssetStderr } = await execPromise(`git add "${relativeAssetPath}"`, { cwd: REPO_PATH });
+            if (addAssetStderr) console.error(`Git add stderr for ${relativeAssetPath}:`, addAssetStderr);
+            console.log(`Git add stdout for ${relativeAssetPath}:`, addAssetStdout);
+        }
 
         // 2. Commit the changes
-        // Explicitly commit only the added file to avoid committing unrelated changes
-        console.log(`Running: git commit "${filePathToPush}" -m "${commitMessage}" in ${REPO_PATH}`);
+        console.log(`Running: git commit -m "${commitMessage}" in ${REPO_PATH}`); // Commit all staged changes
         // Use try-catch for commit as it might fail if nothing changed or other issues
-        let commitStdout = '', commitStderr = '';
+        let commitStdout = '', commitStderr = ''; // Reset variables
         try {
-            const commitResult = await execPromise(`git commit "${filePathToPush}" -m "${commitMessage}"`, { cwd: REPO_PATH }); // Commit specific file
+            const commitResult = await execPromise(`git commit -m "${commitMessage}"`, { cwd: REPO_PATH }); // Commit specific file
             commitStdout = commitResult.stdout;
             commitStderr = commitResult.stderr;
         } catch (commitError) {
@@ -122,21 +136,38 @@ async function gitCommitAndPush(filePathToPush, type) { // Added type parameter
 
 
 // Writes data back to the JS file, preserving the variable assignment AND triggers git push
-async function writeDataFile(filePath, variableName, data, type) { // Added type parameter
-    const fullPath = path.join(__dirname, filePath); // Define fullPath here to use later
+// filePath is relative to __dirname (admin folder)
+async function writeDataFile(filePath, variableName, data, type, changedItem) { // Added changedItem
+    const fullDataPath = path.join(__dirname, filePath);
+    const relativeDataPath = path.relative(REPO_PATH, fullDataPath).replace(/\\/g, '/'); // Path relative to repo root for git
+
     try {
         // Ensure data is an array
         const dataArray = Array.isArray(data) ? data : [];
         const arrayString = JSON.stringify(dataArray, null, 2); // Pretty print JSON
         const fileContent = `// ${path.basename(filePath)}\nconst ${variableName} = ${arrayString};\n`;
-        await fs.writeFile(fullPath, fileContent, 'utf8');
+        await fs.writeFile(fullDataPath, fileContent, 'utf8');
         console.log(`Data successfully written to ${filePath}`);
 
         // After successful write, attempt to commit and push
-        // We run this asynchronously and don't wait for it to finish
+        // Check if the changed item has an imageSrc and if the file exists
+        let relativeImagePath = null;
+        if (changedItem && changedItem.imageSrc && typeof changedItem.imageSrc === 'string' && changedItem.imageSrc.startsWith('assets/')) {
+            const potentialFullImagePath = path.resolve(REPO_PATH, changedItem.imageSrc);
+            try {
+                await fs.access(potentialFullImagePath); // Check if file exists
+                relativeImagePath = changedItem.imageSrc; // Use the relative path directly for git
+                console.log(`Image file found for ${type} item: ${relativeImagePath}`);
+            } catch (fsError) {
+                // File doesn't exist or not accessible
+                console.warn(`Image file specified in ${type} item not found or inaccessible: ${changedItem.imageSrc}`);
+            }
+        }
+
+        // Run git commit/push asynchronously
         // to avoid blocking the API response. Errors are logged server-side.
         // Pass the type to the git function
-        gitCommitAndPush(fullPath, type).catch(err => {
+        gitCommitAndPush(relativeDataPath, type, relativeImagePath).catch(err => { // Pass relative paths
              console.error("Error in background git push:", err);
              // Update status on unexpected error during async execution
              if (gitPushStatus[type].status === 'pending') {
@@ -154,9 +185,11 @@ async function writeDataFile(filePath, variableName, data, type) { // Added type
 // --- API Routes --- (Define BEFORE static files)
 
 const dataFiles = {
-    works: { path: '../featured-works-data.js', varName: 'featuredWorksData' },
-    blog: { path: '../blog-data.js', varName: 'blogPosts' }
-    // diary: { path: '../learning-diary-data.js', varName: 'learningDiaryData' } // Removed
+    // Paths are relative to __dirname (admin folder)
+    works: { path: 'featured-works-data.js', varName: 'featuredWorksData' },
+    blog: { path: 'blog-posts-data.js', varName: 'blogPosts' }, // Corrected path
+    tools: { path: 'tool-library-data.js', varName: 'toolLibraryData' }
+    // diary: { path: 'learning-diary-data.js', varName: 'learningDiaryData' } // Removed
 };
 
 // Generic GET route
@@ -186,9 +219,14 @@ app.post('/api/:type', async (req, res) => {
         if (typeof newItem !== 'object' || newItem === null) {
              return res.status(400).json({ message: 'Invalid data format received.' });
         }
+        // Generate a unique ID for the new item (simple timestamp-based ID)
+        // Consider using a more robust UUID library in production if needed
+        newItem.id = `${type}-${Date.now()}`;
+        console.log(`Generated ID for new ${type} item: ${newItem.id}`);
+
         currentData.push(newItem); // Add to the end
-        // Pass type to writeDataFile
-        await writeDataFile(dataFiles[type].path, dataFiles[type].varName, currentData, type);
+        // Pass type and the new item to writeDataFile
+        await writeDataFile(dataFiles[type].path, dataFiles[type].varName, currentData, type, newItem);
         res.status(201).json({ message: `${type} item added successfully`, item: newItem });
     } catch (error) {
         res.status(500).json({ message: `Error adding ${type} item`, error: error.message });
@@ -200,28 +238,35 @@ app.post('/api/:type', async (req, res) => {
 // A unique ID property on each item would be more robust.
 app.put('/api/:type/:id', async (req, res) => {
     const type = req.params.type;
-    const id = parseInt(req.params.id, 10); // Use index as ID
+    const itemId = req.params.id; // Use the unique string ID from the URL
 
     if (!dataFiles[type]) {
         return res.status(404).json({ message: 'Invalid data type' });
     }
-    if (isNaN(id)) {
-        return res.status(400).json({ message: 'Invalid ID format' });
+    if (!itemId) { // Check if ID is provided
+        return res.status(400).json({ message: 'Item ID is required' });
     }
 
     try {
         const currentData = await readDataFile(dataFiles[type].path, dataFiles[type].varName);
-        if (id < 0 || id >= currentData.length) {
-            return res.status(404).json({ message: 'Item not found at the specified index' });
+        const itemIndex = currentData.findIndex(item => item.id === itemId); // Find item by unique ID
+
+        if (itemIndex === -1) { // Check if item was found
+            return res.status(404).json({ message: `Item with ID '${itemId}' not found` });
         }
+
         const updatedItem = req.body;
          // Basic validation: ensure updatedItem is an object
         if (typeof updatedItem !== 'object' || updatedItem === null) {
              return res.status(400).json({ message: 'Invalid data format received.' });
         }
-        currentData[id] = updatedItem; // Replace item at index
-        // Pass type to writeDataFile
-        await writeDataFile(dataFiles[type].path, dataFiles[type].varName, currentData, type);
+
+        // Ensure the ID in the body matches the ID in the URL (or assign it)
+        updatedItem.id = itemId;
+
+        currentData[itemIndex] = updatedItem; // Replace item at the found index
+        // Pass type and the updated item to writeDataFile
+        await writeDataFile(dataFiles[type].path, dataFiles[type].varName, currentData, type, updatedItem);
         res.json({ message: `${type} item updated successfully`, item: updatedItem });
     } catch (error) {
         res.status(500).json({ message: `Error updating ${type} item`, error: error.message });
@@ -231,23 +276,26 @@ app.put('/api/:type/:id', async (req, res) => {
 // Generic DELETE route (Delete item by index)
 app.delete('/api/:type/:id', async (req, res) => {
     const type = req.params.type;
-    const id = parseInt(req.params.id, 10); // Use index as ID
+    const itemId = req.params.id; // Use the unique string ID from the URL
 
     if (!dataFiles[type]) {
         return res.status(404).json({ message: 'Invalid data type' });
     }
-     if (isNaN(id)) {
-        return res.status(400).json({ message: 'Invalid ID format' });
+     if (!itemId) { // Check if ID is provided
+        return res.status(400).json({ message: 'Item ID is required' });
     }
 
     try {
         const currentData = await readDataFile(dataFiles[type].path, dataFiles[type].varName);
-        if (id < 0 || id >= currentData.length) {
-            return res.status(404).json({ message: 'Item not found at the specified index' });
+        const itemIndex = currentData.findIndex(item => item.id === itemId); // Find item by unique ID
+
+        if (itemIndex === -1) { // Check if item was found
+            return res.status(404).json({ message: `Item with ID '${itemId}' not found` });
         }
-        const deletedItem = currentData.splice(id, 1); // Remove item at index
-        // Pass type to writeDataFile
-        await writeDataFile(dataFiles[type].path, dataFiles[type].varName, currentData, type);
+
+        const deletedItem = currentData.splice(itemIndex, 1); // Remove item at the found index
+        // Pass type to writeDataFile, but null for changedItem as it's a delete
+        await writeDataFile(dataFiles[type].path, dataFiles[type].varName, currentData, type, null);
         res.json({ message: `${type} item deleted successfully`, item: deletedItem[0] });
     } catch (error) {
         res.status(500).json({ message: `Error deleting ${type} item`, error: error.message });
@@ -263,14 +311,55 @@ app.get('/api/git-status/:type', (req, res) => {
     res.json(gitPushStatus[type]);
 });
 
-// --- Static Files Middleware --- (Moved here, AFTER API routes)
-app.use(express.static(path.join(__dirname, 'public')));
+// --- API Route for Updating Backups --- (Defined BEFORE static files)
+app.post('/api/update-backups', async (req, res) => {
+    console.log('Received request to update backup files...');
+    const backupFiles = [
+        { source: 'blog-posts-data.js', backup: 'blog-posts-data.js.bak' },
+        { source: 'featured-works-data.js', backup: 'featured-works-data.js.bak' },
+        { source: 'tool-library-data.js', backup: 'tool-library-data.js.bak' }
+    ];
 
-// --- Serve the admin page (Root Route - Should be last) ---
-app.get('/', (req, res) => {
-    // This will now likely be handled by express.static serving index.html from public
-    // But keeping it as a fallback doesn't hurt.
+    try {
+        const copyPromises = backupFiles.map(async (file) => {
+            const sourcePath = path.join(__dirname, file.source);
+            const backupPath = path.join(__dirname, file.backup);
+            console.log(`Copying ${sourcePath} to ${backupPath}`);
+            // Use fs.copyFile for efficient copying
+            await fs.copyFile(sourcePath, backupPath);
+            console.log(`Successfully backed up ${file.source} to ${file.backup}`);
+        });
+
+        // Wait for all copy operations to complete
+        await Promise.all(copyPromises);
+
+        console.log('All backup files updated successfully.');
+        res.json({ message: '所有备份文件已成功更新！' });
+
+    } catch (error) {
+        console.error('Error updating backup files:', error);
+        res.status(500).json({ message: '更新备份文件时出错', error: error.message });
+    }
+});
+
+// --- (Shutdown route removed) ---
+// --- Static Files Middleware & Routes --- (AFTER API routes)
+
+// 1. Serve admin static files under the /admin path
+app.use('/admin', express.static(path.join(__dirname, 'public')));
+
+// 2. Serve the admin page specifically at /admin
+app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 3. Serve main site static files from the project root (parent directory)
+//    This needs to handle CSS, JS, images etc. from the root
+app.use(express.static(path.join(__dirname, '..')));
+
+// 4. Serve the main site index.html for the root route (Must be last route)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 
@@ -279,8 +368,9 @@ app.listen(port, () => {
     console.log(`Admin server listening at http://localhost:${port}`);
     console.log(`Serving admin UI from: ${path.join(__dirname, 'public')}`);
     console.log('API Endpoints:');
-    console.log(`  GET    /api/{works|blog}`);
-    console.log(`  POST   /api/{works|blog}`);
-    console.log(`  PUT    /api/{works|blog}/{index}`);
-    console.log(`  DELETE /api/{works|blog}/{index}`);
+    console.log(`  GET    /api/{works|blog|tools}`);
+    console.log(`  POST   /api/{works|blog|tools}`);
+    console.log(`  PUT    /api/{works|blog|tools}/{id}`); // ID is now unique string
+    console.log(`  DELETE /api/{works|blog|tools}/{id}`); // ID is now unique string
+    console.log(`  GET    /api/git-status/{works|blog|tools}`);
 });
