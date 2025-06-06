@@ -25,7 +25,7 @@ const blogPosts = [
     "id": "blog-1717682256004",
     "source": "公众号",
     "title": "零代码！AI编程3分钟生成你的专属工具箱",
-    "summary": "暂无摘要",
+    "summary": "目标透过AU编程完成100个实用小工具集合",
     "link": "https://mp.weixin.qq.com/s/_ejVZtqMMRKAfCDA-tRdqq?scene=1"
   },
   {
