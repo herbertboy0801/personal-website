@@ -4,7 +4,7 @@ window.blogPosts = [
     "id": "blog-1717682256001",
     "source": "小红书",
     "title": "AI编程，3分钟创作属于自己的日记小程序",
-    "summary": "晨间日记让你更清楚自己的方向，透过AI编程创造出好用工具要",
+    "summary": "晨间日记让你更清楚自己的方向，透过AI编程创造出好用工具来记录自己的每一天",
     "link": "https://www.xiaohongshu.com/explore/683dc394000000002202e6f2?xsec_token=AB1i-bXFYUGW7aGNw_tJTin9RpA85VQ7fYMWzbN5I4ik=&xsec_source=pc_user"
   },
   {
