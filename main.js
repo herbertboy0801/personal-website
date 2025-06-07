@@ -427,6 +427,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // End IIFE for tool library
 
+    // --- 新增：渲染晨间日记摘要 ---
+    function renderMorningJournalSummary() {
+        console.log("--- Executing renderMorningJournalSummary function ---");
+        const summaryContainer = document.getElementById('morning-journal-summary');
+        if (!summaryContainer) {
+            console.error('Morning journal summary container not found!');
+            return;
+        }
+
+        summaryContainer.innerHTML = ''; // Clear container
+
+        const journalEntries = window.morningJournalEntries || [];
+        console.log("Checking window.morningJournalEntries:", journalEntries);
+
+        if (!Array.isArray(journalEntries) || journalEntries.length === 0) {
+            console.log("No morning journal entries found.");
+            summaryContainer.innerHTML = '<p>暂无晨间日记。</p>';
+            return;
+        }
+
+        // Sort by date descending (newest first)
+        const sortedEntries = [...journalEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Take the latest 3 entries
+        const latestEntries = sortedEntries.slice(0, 3);
+        console.log(`Rendering ${latestEntries.length} latest morning journal entries.`);
+
+        latestEntries.forEach(entry => {
+            const entryDiv = document.createElement('div');
+            entryDiv.classList.add('journal-summary-item'); // Add a class for potential styling
+
+            // Simple content snippet (e.g., first 100 chars)
+            const contentSnippet = entry.content.length > 100
+                ? entry.content.substring(0, 100) + '...'
+                : entry.content;
+
+            entryDiv.innerHTML = `
+                <h4>${entry.date}</h4>
+                <p>${contentSnippet.replace(/\n/g, '<br>')}</p> <!-- Replace newlines with <br> for display -->
+            `;
+            summaryContainer.appendChild(entryDiv);
+        });
+    }
+
+    // --- 调用晨间日记渲染函数 ---
+    renderMorningJournalSummary();
+
+
     // --- 逻辑来自: lightbox.js ---
     (() => {
         const images = document.querySelectorAll('img.lightbox-trigger');

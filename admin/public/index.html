@@ -37,18 +37,20 @@
         <button data-target="#featured-works-admin" class="nav-button active">精选作品管理</button>
         <button data-target="#blog-admin" class="nav-button">博客文章管理</button>
         <button data-target="#tools-section" class="nav-button">工具资源库管理</button>
+        <a href="morning-journal.html" class="nav-button">晨间日记管理</a> <!-- 新增晨间日记链接 -->
         <button id="update-backup-button" style="margin-left: auto; padding: 8px 15px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">更新备份文件</button> <!-- Changed ID and Text -->
     </div>
 
-    <div id="git-status" style="display: none; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
-        <!-- Git push status will be shown here -->
+    <!-- Global Git Status Display Area -->
+    <div id="git-status" style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; display: none;"> <!-- Initially hidden -->
+        最近推送状态：无
     </div>
 
     <section id="featured-works-admin" class="admin-section active">
         <div class="section-controls"> <!-- Move H2 inside -->
              <h2>精选作品管理</h2>
-            <div class="git-status" id="featured-works-git-status" style="display: none;">Git 状态: 检查中...</div>
-            <button id="add-work-button">添加新作品</button>
+           <!-- Removed section-specific git status -->
+           <button id="add-work-button">添加新作品</button>
         </div>
         <div id="featured-works-list">
             <!-- 现有作品列表将由 JS 填充 -->
@@ -97,11 +99,11 @@
 
     <section id="blog-admin" class="admin-section">
          <div class="section-controls"> <!-- Move H2 inside -->
-             <h2>博客文章管理</h2>
-            <div class="git-status" id="blog-git-status" style="display: none;">Git 状态: 检查中...</div>
+              <h2>博客文章管理</h2>
+            <!-- Removed section-specific git status -->
             <button id="add-blog-button">添加新博客</button>
-        </div>
-        <div id="blog-list">
+         </div>
+         <div id="blog-list">
             <!-- 现有博客列表将由 JS 填充 -->
             <p>正在加载博客列表...</p>
         </div>
@@ -138,7 +140,7 @@
     <section id="tools-section" class="admin-section">
         <div class="section-controls"> <!-- Move H2 inside -->
             <h2>工具资源库管理</h2>
-            <div class="git-status" id="tools-git-status">Git 状态: 检查中...</div>
+            <!-- Removed section-specific git status -->
             <button id="add-tool-button">添加新工具</button>
         </div>
         <div id="tools-list"><!-- Tools will be loaded here --></div>

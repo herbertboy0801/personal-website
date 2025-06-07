@@ -67,13 +67,13 @@
     <!-- 重点推荐：晨间日记 Section -->
     <section id="featured-tool-morning-journal" class="featured-tool-section section-padding alternate-bg">
       <div class="container">
-        <h2>重点推荐：晨间日记</h2>
-        <div class="featured-tool-content">
-          <img src="tools/drawing-app/logo.png" alt="晨间日记 Logo" class="featured-tool-logo"> <!-- 恢复为 drawing-app -->
-          <div class="featured-tool-text">
-            <p>记录每日感悟，规划精彩一天。这款工具助你通过结构化的方式回顾、反思与计划，开启高效能生活。</p>
-            <a href="tools/drawing-app/index.html" class="cta-button">立即体验晨间日记</a> <!-- 恢复为 drawing-app -->
-          </div>
+        <h2>晨间日记摘要</h2> <!-- 更新标题 -->
+        <div id="morning-journal-summary">
+            <!-- 最新日记摘要将由 JavaScript 动态加载 -->
+            <p>正在加载最新日记...</p>
+        </div>
+        <div style="text-align: center; margin-top: 1rem;">
+             <a href="admin/public/morning-journal.html" class="cta-button" target="_blank">管理晨间日记</a> <!-- 链接到管理页面 -->
         </div>
       </div>
     </section>
@@ -156,6 +156,7 @@
 <script src="admin/featured-works-data.js"></script>
 <script src="admin/blog-posts-data.js"></script>
 <script src="admin/tool-library-data.js"></script>
+<script src="admin/morning-journal-data.js"></script> <!-- 添加晨间日记数据 -->
 <script src="main.js"></script> <!-- 合并后的 JavaScript 文件 -->
 <!-- <script src="learning-diary-data.js"></script> --> <!-- Removed -->
 <!-- <script src="generate-learning-diary.js"></script> --> <!-- Removed -->

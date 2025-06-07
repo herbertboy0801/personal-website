@@ -12,11 +12,12 @@ const app = express();
 const port = 3000;
 const REPO_PATH = path.resolve(__dirname, '..'); // Get the absolute path to the repository root
 
-// Global variable to store git push status
-const gitPushStatus = {
-    works: { status: 'idle', message: '', timestamp: null }, // idle, pending, success, error
-    blog: { status: 'idle', message: '', timestamp: null },
-    tools: { status: 'idle', message: '', timestamp: null } // Add status for tools
+// Global variable to store the status of the *last* git push attempt
+let lastGitPushStatus = {
+    status: 'idle', // idle, pending, success, error
+    message: '',
+    timestamp: null,
+    type: null // Store which type triggered the last push ('works', 'blog', 'tools')
 };
 
 // Middleware
@@ -32,41 +33,79 @@ app.use(express.json()); // Parse JSON request bodies
 
 // --- Helper Functions ---
 
-// Reads a JS data file by executing it in a sandbox and extracting the variable
-async function readDataFile(filePath, variableName) {
+// Reads a JS data file by extracting the first array/object literal after an assignment
+// and parsing it safely using vm.runInNewContext. Handles various assignment formats.
+async function readDataFile(filePath, variableName) { // variableName is kept for API consistency but less relevant now
+    const fullPath = path.join(__dirname, filePath);
+    console.log(`[readDataFile v2] Reading: ${fullPath}`);
+    let fileContent;
     try {
-        const fullPath = path.join(__dirname, filePath);
-        console.log(`[readDataFile] Reading: ${fullPath} for variable ${variableName}`); // DEBUG
-        const fileContent = await fs.readFile(fullPath, 'utf8');
-        console.log(`[readDataFile] Read content length: ${fileContent.length}`); // DEBUG
-
-        // Create a sandbox context object
-        const sandbox = { module: {}, exports: {} /* Add other globals if needed */ };
-        // Append the variable name to the script content so runInNewContext returns its value
-        const scriptContent = `${fileContent}\n${variableName};`;
-        console.log(`[readDataFile] Prepared script content for vm (first 100 chars): ${scriptContent.substring(0, 100)}...`); // DEBUG
-
-        // Run the script in a new context and get the result
-        console.log(`[readDataFile] Executing vm.runInNewContext for ${filePath}...`); // DEBUG
-        const data = vm.runInNewContext(scriptContent, sandbox, { filename: fullPath }); // Pass filename for better error messages
-        console.log(`[readDataFile] vm execution successful for ${filePath}. Type of result: ${typeof data}`); // DEBUG
-
-        if (!Array.isArray(data)) {
-             console.warn(`[readDataFile] Variable '${variableName}' in ${filePath} is not an array or not found after execution. Result:`, data, `Returning empty array.`); // DEBUG
-             return [];
-        }
-
-        return data; // Return the actual JavaScript array
-
+        fileContent = await fs.readFile(fullPath, 'utf8');
+        console.log(`[readDataFile v2] Read content length: ${fileContent.length}`);
+        // --- DEBUG: Log initial file content ---
+        console.log(`[readDataFile v2 DEBUG] Initial content (first 500 chars):\n${fileContent.substring(0, 500)}`);
+        // --- END DEBUG ---
     } catch (error) {
-        // If file not found, return empty array assuming it's the first run
         if (error.code === 'ENOENT') {
             console.warn(`Data file ${filePath} not found, returning empty array.`);
             return [];
         }
-        // Log the specific error before re-throwing
-        console.error(`[readDataFile] Error reading or executing data file ${filePath} for variable ${variableName}:`, error.message, error.stack); // DEBUG
-        throw error; // Re-throw other errors
+        console.error(`[readDataFile v2] Error reading file ${filePath}:`, error.message);
+        // Return empty array on read error other than ENOENT to prevent crashes
+        console.warn(`[readDataFile v2] Returning empty array due to read error.`);
+        return [];
+        // throw error; // Optionally re-throw if strict error handling is needed
+    }
+
+    try {
+        // Regex to find the first array [...] or object {...} after an assignment (=)
+        // Handles 'const var =', 'let var =', 'var var =', 'window.var =', 'module.exports =' etc.
+        // Captures the content within the brackets/braces.
+        // Allows for comments (// or /* */) and whitespace before the assignment.
+        // Uses [\s\S]*? for non-greedy matching within brackets/braces.
+        // --- Attempt v6: Simpler regex focusing on '= [...]' ---
+        console.log(`[readDataFile v6] Attempting simpler match for '= [...]'`); // v6 log
+        // Look for an equals sign followed by an array literal. Use greedy match for array content.
+        const match = fileContent.match(/\s*=\s*(\[[\s\S]*\]);?/m);
+
+
+        // We need the first capture group (index 1) which contains the array literal
+        if (match && match[1]) {
+            const dataLiteralString = match[1]; // Use group 1
+            console.log(`[readDataFile v6] Matched '= [...]'. Extracted data literal string (first 100 chars): ${dataLiteralString.substring(0, 100)}...`); // v6 log
+
+            // Use vm.runInNewContext to safely evaluate the JS array/object literal string
+            // This is generally safer than JSON.parse for JS literals (handles comments, trailing commas etc.)
+            // Assign to a temporary variable within the context to avoid potential issues with direct expression evaluation.
+            const sandbox = {}; // Minimal sandbox is sufficient
+            // Try evaluating the literal string directly, without extra wrappers
+            console.log(`[readDataFile v2] Running script in VM: (evaluating extracted literal directly)`); // DEBUG
+            const data = vm.runInNewContext(dataLiteralString, sandbox, { filename: fullPath + '-eval', timeout: 5000 }); // Add timeout
+
+            // --- Validation ---
+            // Ensure it's an array as expected by the rest of the application logic
+            if (Array.isArray(data)) {
+                 console.log(`[readDataFile v6] Successfully parsed data as array from ${filePath}. Length: ${data.length}`); // v6 log
+                 return data; // Return the actual JavaScript array
+            } else {
+                 console.warn(`[readDataFile v6] Parsed data from ${filePath} is not an array. Type: ${typeof data}. Returning empty array.`); // v6 log
+                 return [];
+            }
+        } else {
+            // --- DEBUG: Log content on regex failure ---
+            console.error(`[readDataFile v6 DEBUG] Simpler Regex failed to match pattern '= [...]' in ${filePath}.`); // v6 log
+            console.error(`[readDataFile v6 DEBUG] Content being checked (up to 1000 chars):\n${fileContent.substring(0, 1000)}`);
+            // --- END DEBUG ---
+            console.warn(`[readDataFile v6] Could not find '= [...]' assignment pattern in ${filePath}. Returning empty array.`); // v6 log
+            return [];
+        }
+    } catch (parseError) {
+        console.error(`[readDataFile v6] Error parsing data literal from ${filePath}:`, parseError.message); // v6 log
+        console.error(`[readDataFile v6] File content (first 500 chars): ${fileContent.substring(0, 500)}...`); // v6 log
+        // Return empty array on parsing error to prevent crashes
+        console.warn(`[readDataFile v6] Returning empty array due to parsing error.`); // v6 log
+        return [];
+        // throw new Error(`Failed to parse data from ${filePath}: ${parseError.message}`); // Optionally re-throw
     }
 }
 
@@ -77,8 +116,8 @@ async function gitCommitAndPush(relativeDataPath, type, relativeAssetPath = null
     const commitMessage = `Update ${fileName} via admin tool`;
     console.log(`Attempting to commit and push changes for ${fileName} (type: ${type})...`);
 
-    // Update status to pending
-    gitPushStatus[type] = { status: 'pending', message: '推送中...', timestamp: Date.now() };
+    // Update global status to pending
+    lastGitPushStatus = { status: 'pending', message: '推送中...', timestamp: Date.now(), type: type };
 
     try {
         // 1. Add the specific file(s)
@@ -99,22 +138,36 @@ async function gitCommitAndPush(relativeDataPath, type, relativeAssetPath = null
         // Use try-catch for commit as it might fail if nothing changed or other issues
         let commitStdout = '', commitStderr = ''; // Reset variables
         try {
-            const commitResult = await execPromise(`git commit -m "${commitMessage}"`, { cwd: REPO_PATH }); // Commit specific file
+            // Commit only the specific file(s) added in this operation
+            // Commit only the specific file(s) added in this operation
+            // Redirect stderr to NUL on Windows to suppress LF/CRLF warnings causing promise rejection
+            const filesToCommit = `"${relativeDataPath}" ${relativeAssetPath ? `"${relativeAssetPath}"` : ''}`;
+            const commitCommand = `git commit ${filesToCommit} -m "${commitMessage}" 2> NUL`;
+            console.log(`Running: ${commitCommand} in ${REPO_PATH}`); // Log specific commit with redirection
+            const commitResult = await execPromise(commitCommand, { cwd: REPO_PATH });
             commitStdout = commitResult.stdout;
-            commitStderr = commitResult.stderr;
+            commitStderr = commitResult.stderr; // Stderr should now be empty due to redirection
         } catch (commitError) {
-            // Handle "nothing to commit"
-            if (commitError.stdout && commitError.stdout.includes('nothing to commit')) {
+            // Handle "nothing to commit" more robustly
+            // Check both stdout and stderr (just in case redirection didn't fully work or message is elsewhere)
+            const output = (commitError.stdout || '') + (commitError.stderr || '');
+            if (output.includes('nothing to commit') || output.includes('no changes added to commit')) {
                 console.log('Nothing to commit.');
-                gitPushStatus[type] = { status: 'idle', message: '无更改可推送。', timestamp: Date.now() };
-                return; // Stop if nothing to commit
+                // Update global status to idle, indicating no push was needed
+                lastGitPushStatus = { status: 'idle', message: '无更改可推送。', timestamp: Date.now(), type: type };
+                return; // Stop the process gracefully
             } else {
-                 console.error('Git commit failed:', commitError);
-                 gitPushStatus[type] = { status: 'error', message: `Git commit 失败: ${commitError.message}`, timestamp: Date.now() };
-                 return; // Stop the process if commit fails
+                 // Log the actual error object for more details
+                 console.error('Git commit failed unexpectedly:', commitError);
+                 // Provide a more informative error message in the status
+                 // Use commitError.message which often contains the command's exit code or specific error
+                 const detailedErrorMessage = commitError.message || '未知提交错误';
+                 lastGitPushStatus = { status: 'error', message: `Git commit 失败: ${detailedErrorMessage}`, timestamp: Date.now(), type: type };
+                 return; // Stop the process on failure
             }
         }
-        if (commitStderr) console.error('Git commit stderr:', commitStderr);
+        // This line might not be reached if commit fails, but keep it for debugging successful commits
+        if (commitStderr) console.error('Git commit stderr (should be empty):', commitStderr);
         console.log('Git commit stdout:', commitStdout);
 
 
@@ -125,11 +178,13 @@ async function gitCommitAndPush(relativeDataPath, type, relativeAssetPath = null
         console.log('Git push stdout:', pushStdout);
 
         console.log(`Successfully committed and pushed changes for ${fileName}.`);
-        gitPushStatus[type] = { status: 'success', message: '推送成功！', timestamp: Date.now() }; // Update status on success
+        // Update global status on success
+        lastGitPushStatus = { status: 'success', message: '推送成功！', timestamp: Date.now(), type: type };
 
     } catch (error) {
         console.error(`Error during git operations for ${fileName}:`, error);
-        gitPushStatus[type] = { status: 'error', message: `Git 操作失败: ${error.message}`, timestamp: Date.now() }; // Update status on error
+        // Update global status on error
+        lastGitPushStatus = { status: 'error', message: `Git 操作失败: ${error.message}`, timestamp: Date.now(), type: type };
         console.error('Automatic Git push failed. Please push manually.');
     }
 }
@@ -145,9 +200,10 @@ async function writeDataFile(filePath, variableName, data, type, changedItem) { 
         // Ensure data is an array
         const dataArray = Array.isArray(data) ? data : [];
         const arrayString = JSON.stringify(dataArray, null, 2); // Pretty print JSON
-        const fileContent = `// ${path.basename(filePath)}\nconst ${variableName} = ${arrayString};\n`;
+        // Write back in the window.variableName format for public site compatibility
+        const fileContent = `// ${path.basename(filePath)}\nwindow.${variableName} = ${arrayString};\n`;
         await fs.writeFile(fullDataPath, fileContent, 'utf8');
-        console.log(`Data successfully written to ${filePath}`);
+        console.log(`Data successfully written to ${filePath} in window.${variableName} format`); // Update log message
 
         // After successful write, attempt to commit and push
         // Check if the changed item has an imageSrc and if the file exists
@@ -169,11 +225,11 @@ async function writeDataFile(filePath, variableName, data, type, changedItem) { 
         // Pass the type to the git function
         gitCommitAndPush(relativeDataPath, type, relativeImagePath).catch(err => { // Pass relative paths
              console.error("Error in background git push:", err);
-             // Update status on unexpected error during async execution
-             if (gitPushStatus[type].status === 'pending') {
-                 gitPushStatus[type] = { status: 'error', message: `后台推送出错: ${err.message}`, timestamp: Date.now() };
+             // Update global status on unexpected error during async execution
+             if (lastGitPushStatus.status === 'pending') {
+                  lastGitPushStatus = { status: 'error', message: `后台推送出错: ${err.message}`, timestamp: Date.now(), type: type };
              }
-        });
+         });
 
     } catch (error) {
         console.error(`Error writing data file ${filePath}:`, error);
@@ -188,9 +244,54 @@ const dataFiles = {
     // Paths are relative to __dirname (admin folder)
     works: { path: 'featured-works-data.js', varName: 'featuredWorksData' },
     blog: { path: 'blog-posts-data.js', varName: 'blogPosts' }, // Corrected path
-    tools: { path: 'tool-library-data.js', varName: 'toolLibraryData' }
+    tools: { path: 'tool-library-data.js', varName: 'toolLibraryData' },
     // diary: { path: 'learning-diary-data.js', varName: 'learningDiaryData' } // Removed
+    morningJournal: { path: 'morning-journal-data.js', varName: 'morningJournalEntries' } // 添加晨间日记
 };
+
+// --- API Route for Last Git Status --- (Define BEFORE generic routes)
+app.get('/api/git-status/last', (req, res) => {
+    // Return the single global status object
+    res.json(lastGitPushStatus);
+});
+
+
+// --- API Route for Updating Backups --- (Define BEFORE generic routes)
+app.post('/api/update-backups', async (req, res) => {
+    // --- DEBUG: Confirm route is reached ---
+    console.log('--- Reached /api/update-backups POST handler ---');
+    // --- END DEBUG ---
+    console.log('Received request to update backup files...');
+    const backupFiles = [
+        { source: 'blog-posts-data.js', backup: 'blog-posts-data.js.bak' },
+        { source: 'featured-works-data.js', backup: 'featured-works-data.js.bak' },
+        { source: 'tool-library-data.js', backup: 'tool-library-data.js.bak' }
+    ];
+
+    try {
+        const copyPromises = backupFiles.map(async (file) => {
+            const sourcePath = path.join(__dirname, file.source);
+            const backupPath = path.join(__dirname, file.backup);
+            console.log(`Copying ${sourcePath} to ${backupPath}`);
+            // Use fs.copyFile for efficient copying
+            await fs.copyFile(sourcePath, backupPath);
+            console.log(`Successfully backed up ${file.source} to ${file.backup}`);
+        });
+
+        // Wait for all copy operations to complete
+        await Promise.all(copyPromises);
+
+        console.log('All backup files updated successfully.');
+        res.json({ message: '所有备份文件已成功更新！' });
+
+    } catch (error) {
+        console.error('Error updating backup files:', error);
+        res.status(500).json({ message: '更新备份文件时出错', error: error.message });
+    }
+});
+
+
+// --- Generic API Routes ---
 
 // Generic GET route
 app.get('/api/:type', async (req, res) => {
@@ -302,46 +403,6 @@ app.delete('/api/:type/:id', async (req, res) => {
     }
 });
 
-// --- API Route for Git Status --- (Defined BEFORE static files)
-app.get('/api/git-status/:type', (req, res) => {
-    const type = req.params.type;
-    if (!gitPushStatus[type]) {
-        return res.status(404).json({ message: 'Invalid data type for status' });
-    }
-    res.json(gitPushStatus[type]);
-});
-
-// --- API Route for Updating Backups --- (Defined BEFORE static files)
-app.post('/api/update-backups', async (req, res) => {
-    console.log('Received request to update backup files...');
-    const backupFiles = [
-        { source: 'blog-posts-data.js', backup: 'blog-posts-data.js.bak' },
-        { source: 'featured-works-data.js', backup: 'featured-works-data.js.bak' },
-        { source: 'tool-library-data.js', backup: 'tool-library-data.js.bak' }
-    ];
-
-    try {
-        const copyPromises = backupFiles.map(async (file) => {
-            const sourcePath = path.join(__dirname, file.source);
-            const backupPath = path.join(__dirname, file.backup);
-            console.log(`Copying ${sourcePath} to ${backupPath}`);
-            // Use fs.copyFile for efficient copying
-            await fs.copyFile(sourcePath, backupPath);
-            console.log(`Successfully backed up ${file.source} to ${file.backup}`);
-        });
-
-        // Wait for all copy operations to complete
-        await Promise.all(copyPromises);
-
-        console.log('All backup files updated successfully.');
-        res.json({ message: '所有备份文件已成功更新！' });
-
-    } catch (error) {
-        console.error('Error updating backup files:', error);
-        res.status(500).json({ message: '更新备份文件时出错', error: error.message });
-    }
-});
-
 // --- (Shutdown route removed) ---
 // --- Static Files Middleware & Routes --- (AFTER API routes)
 
@@ -368,9 +429,10 @@ app.listen(port, () => {
     console.log(`Admin server listening at http://localhost:${port}`);
     console.log(`Serving admin UI from: ${path.join(__dirname, 'public')}`);
     console.log('API Endpoints:');
-    console.log(`  GET    /api/{works|blog|tools}`);
-    console.log(`  POST   /api/{works|blog|tools}`);
-    console.log(`  PUT    /api/{works|blog|tools}/{id}`); // ID is now unique string
-    console.log(`  DELETE /api/{works|blog|tools}/{id}`); // ID is now unique string
-    console.log(`  GET    /api/git-status/{works|blog|tools}`);
+    console.log(`  GET    /api/{works|blog|tools|morningJournal}`);
+    console.log(`  POST   /api/{works|blog|tools|morningJournal}`);
+    console.log(`  PUT    /api/{works|blog|tools|morningJournal}/{id}`); // ID is now unique string
+    console.log(`  DELETE /api/{works|blog|tools|morningJournal}/{id}`); // ID is now unique string
+    console.log(`  GET    /api/git-status/last`); // Updated Git status endpoint
+    console.log(`  POST   /api/update-backups`);
 });

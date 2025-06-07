@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理晨间日记 - 管理后台</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>管理后台</h1>
+        <nav>
+            <a href="index.html">仪表盘</a>
+            <a href="index.html#manage-works">管理精选作品</a>
+            <a href="index.html#manage-blog">管理博客文章</a>
+            <a href="index.html#manage-tools">管理工具资源</a>
+            <a href="morning-journal.html" class="active">管理晨间日记</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="manage-morning-journal">
+            <h2>管理晨间日记</h2>
+
+            <!-- 添加/编辑表单 -->
+            <form id="morning-journal-form">
+                <h3>添加/编辑日记条目</h3>
+                <input type="hidden" id="journal-id"> <!-- 用于编辑 -->
+                <div>
+                    <label for="journal-date">日期:</label>
+                    <input type="date" id="journal-date" required>
+                </div>
+                <div>
+                    <label for="journal-content">内容:</label>
+                    <textarea id="journal-content" rows="10" required></textarea>
+                </div>
+                <button type="submit">保存条目</button>
+                <button type="button" id="cancel-edit-button" style="display: none;">取消编辑</button>
+            </form>
+
+            <!-- 日记列表 -->
+            <h3>现有日记条目</h3>
+            <div id="morning-journal-list">
+                <p>正在加载日记...</p>
+                <!-- 日记条目将由 JavaScript 动态加载 -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; <span id="current-year"></span> Herbert. 管理后台</p>
+    </footer>
+
+    <script src="morning-journal.js"></script>
+    <script>
+        // 页脚年份
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
