@@ -29,5 +29,15 @@ window.featuredWorksData = [
     "description": "雪覆群山，红日映梅",
     "tag": "AI 绘图",
     "detailsLink": "#"
+  },
+  {
+    "id": "works-1749268606813",
+    "type": "ai-drawing",
+    "imageSrc": "assets/ai-drawings/api_43453f05-6ed4-4cd2-a431-ccf8a4313290.jpg",
+    "altText": "AI 绘图作品 4",
+    "title": "《掌心萌物》",
+    "description": "毛绒小兽，掌心相伴",
+    "tag": "AI 绘图",
+    "detailsLink": "#"
   }
 ];
