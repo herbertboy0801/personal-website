@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片编辑器</title>
+    <link rel="stylesheet" href="image_editor.css">
+</head>
+<body>
+    <h1>图片编辑器</h1>
+
+    <div>
+        <label for="imageLoader">选择 PNG 图片:</label>
+        <input type="file" id="imageLoader" accept=".png">
+    </div>
+
+    <fieldset id="resizeOptions">
+        <legend>调整尺寸选项</legend>
+        <div>
+            <input type="radio" id="resizeModePercent" name="resizeMode" value="percent" checked>
+            <label for="resizeModePercent">按百分比</label>
+            <input type="radio" id="resizeModePixel" name="resizeMode" value="pixel">
+            <label for="resizeModePixel">按像素</label>
+        </div>
+
+        <div id="percentOptions">
+            <label for="percentInput">比例 (%):</label>
+            <input type="number" id="percentInput" value="100" min="1">
+        </div>
+
+        <div id="pixelOptions" style="display: none;">
+            <div>
+                <label for="widthInput">宽度 (px):</label>
+                <input type="number" id="widthInput" min="1">
+            </div>
+            <div>
+                <label for="heightInput">高度 (px):</label>
+                <input type="number" id="heightInput" min="1">
+            </div>
+            <div>
+                <input type="checkbox" id="keepAspectRatio">
+                <label for="keepAspectRatio">保持长宽比</label>
+            </div>
+        </div>
+    </fieldset>
+
+    <p>在图片上拖动鼠标以选择区域进行预览。</p>
+
+    <canvas id="imageCanvas"></canvas>
+
+    <script src="image_editor.js"></script>
+</body>
+</html>

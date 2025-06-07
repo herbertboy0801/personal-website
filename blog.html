@@ -3,81 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>所有博客文章 - Herbert's Digital Space</title>
+    <title>博客文章 - Herbert's Digital Space</title> <!-- 修改标题 -->
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- 移除图标和字体链接，如果不需要 -->
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> -->
+    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
 </head>
 <body>
-    <header>
-        <h1><a href="index.html">Herbert's Digital Space</a></h1>
-        <nav>
-            <a href="index.html#about">关于我</a>
-            <a href="index.html#featured-works">精选作品</a>
-            <a href="blog.html">博客文章</a>
-            <a href="index.html#tool-library">工具资源库</a>
-            <a href="index.html#contact">联系我</a>
-            <button id="theme-toggle" class="theme-toggle-button">
-                <span class="material-symbols-outlined"></span>
-            </button>
-        </nav>
-    </header>
+    <!-- <header>...</header> 移除页眉 -->
 
-    <main>
+    <main class="blog-main-container"> <!-- 添加主容器用于居中 -->
         <section id="blog-list">
-            <h2>所有博客文章</h2>
-            <div id="blog-list-container" class="blog-posts-grid">
-                <!-- 博客文章将由 JavaScript 动态加载 -->
-                <p>正在加载文章...</p>
-            </div>
-            <div class="back-link" style="text-align: center; margin-top: 2em;">
-                <a href="index.html">&larr; 返回首页</a>
-            </div>
+            <h2>博客文章</h2> <!-- 修改 H2 标题 -->
+            <table id="blog-table">
+                <thead>
+                    <tr>
+                        <th>来源</th>
+                        <th>标题</th>
+                        <th>摘要</th>
+                        <th>链接</th>
+                    </tr>
+                </thead>
+                <tbody id="blog-table-body"> <!-- 表格主体，JS 将在此填充内容 -->
+                    <tr>
+                        <td colspan="4">正在加载文章...</td> <!-- 初始加载提示 -->
+                    </tr>
+                </tbody>
+            </table>
+            <!-- <div class="back-link">...</div> 移除返回链接 -->
         </section>
     </main>
 
-    <footer>
-        <p>&copy; <span id="current-year"></span> Herbert. 保留所有权利。</p>
-        <p><a href="admin/public/index.html">管理员入口</a></p>
-    </footer>
+    <!-- <footer>...</footer> 移除页脚 -->
 
     <script src="admin/blog-posts-data.js"></script>
     <script src="blog.js"></script>
-    <script>
-        // 页脚年份
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-
-        // 主题切换逻辑 (与 index.html 相同)
-        const themeToggle = document.getElementById('theme-toggle');
-        const currentTheme = localStorage.getItem('theme');
-        const themeIcon = themeToggle.querySelector('.material-symbols-outlined');
-
-        function setTheme(theme) {
-            document.body.classList.toggle('dark-theme', theme === 'dark');
-            themeIcon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-            localStorage.setItem('theme', theme);
-        }
-
-        if (currentTheme) {
-            setTheme(currentTheme);
-        } else {
-            // 默认跟随系统
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setTheme(prefersDark ? 'dark' : 'light');
-        }
-
-        themeToggle.addEventListener('click', () => {
-            const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
-            setTheme(newTheme);
-        });
-
-         // 监听系统颜色方案变化
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-            // 仅当用户未手动设置主题时才跟随系统
-            if (!localStorage.getItem('theme')) {
-                 setTheme(event.matches ? 'dark' : 'light');
-            }
-        });
-    </script>
+    <!-- 移除页脚年份和主题切换逻辑 -->
+    <!-- <script> ... </script> -->
 </body>
 </html>
