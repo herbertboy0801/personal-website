@@ -10,9 +10,13 @@
     *   工具卡片使用 Material Symbols 图标，样式优化。
     *   支持分页浏览，每页最多显示 4 个工具。
     *   支持按分类筛选和关键词搜索。
+*   **新增图片编辑器**: ([`tools/image_editor.html`](personal-website/tools/image_editor.html:0)) 提供 PNG 图片按比例缩放和自由选区预览功能。
 *   **博客/学习日记**: 分享 AI 相关的学习笔记、思考和实践经验。
+    *   **计划中**: 将添加一个独立的博客列表页面 (`blog.html`) 展示所有文章。
+*   **晨间日记**: (原“重点推荐”部分)
+    *   **计划中**: 将迁移到后台管理，允许通过管理界面更新设置和日记条目。公共页面将动态显示最新 3 条日记摘要。
 *   **日夜模式**: 支持浅色和深色主题切换，并保存用户偏好。
-*   **内容管理**: 内建一个简单的管理后台（位于 `/admin` 目录），用于更新精选作品 ([`admin/featured-works-data.js`](personal-website/admin/featured-works-data.js:1))、博客文章 ([`admin/blog-posts-data.js`](personal-website/admin/blog-posts-data.js:1)) 和工具资源库 ([`admin/tool-library-data.js`](personal-website/admin/tool-library-data.js:1)) 的数据。
+*   **内容管理**: 内建一个简单的管理后台（位于 `/admin` 目录），用于更新精选作品 ([`admin/featured-works-data.js`](personal-website/admin/featured-works-data.js:1))、博客文章 ([`admin/blog-posts-data.js`](personal-website/admin/blog-posts-data.js:1))、工具资源库 ([`admin/tool-library-data.js`](personal-website/admin/tool-library-data.js:1)) 的数据。（**计划中**: 将添加晨间日记管理）。
     *   优化了页脚“管理入口”链接，点击时会检查本地服务器是否运行。
     *   管理后台保存数据后会自动尝试将更改提交并推送到 GitHub 仓库的 `main` 分支。
 
@@ -41,7 +45,7 @@
 1.  **启动管理后台**: 按照上面的“运行项目”说明启动 Node.js 服务器。
 2.  **访问**: 在浏览器中打开 `http://localhost:3000/admin` (或通过主页页脚的“管理入口”链接)。
 3.  **操作**: 在对应的标签页中添加、编辑或删除内容。
-4.  **保存与推送**: 保存更改后，后台会自动修改 [`admin/`](personal-website/admin/) 目录下的相应数据文件 (`featured-works-data.js`, `blog-posts-data.js`, `tool-library-data.js`)，并尝试将这些更改提交和推送到 GitHub 仓库的 `main` 分支。
+4.  **保存与推送**: 保存更改后，后台会自动修改 [`admin/`](personal-website/admin/) 目录下的相应数据文件 (`featured-works-data.js`, `blog-posts-data.js`, `tool-library-data.js`，**计划中**: `morning-journal-data.js`)，并尝试将这些更改提交和推送到 GitHub 仓库的 `main` 分支。
 5.  **更新备份**: 点击管理界面右上角的“更新备份文件”按钮，可以将当前的数据文件内容复制到对应的 `.bak` 文件中，作为手动备份。
 
 **工具库数据结构 ([`tool-library-data.js`](personal-website/admin/tool-library-data.js:1) 中的对象):**
