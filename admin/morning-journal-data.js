@@ -3,11 +3,11 @@ window.morningJournalEntries = [
   {
     "id": "2025-06-07",
     "date": "2025-06-07",
-    "harvest": "123",
-    "plan": "",
-    "gratitude": "",
-    "investment": "",
-    "connect": ""
+    "harvest": "<p>1. 今天把之前做的AI编程小工具汇整了一下，并把个人网页设计完成，相关的资讯已更新到git hub的网站上( 有需要相关教程的小伙伴，请私我)</p><p>2. 个人网站正式上线，因为包含了很多内容，所以自己申请了免费的git hub来更新，过程比较繁琐，写了一个教程，跟着一步一步执行，也是蛮容易的，过程中有问题，直接问AI，可以很好的解答并完成</p><p>3.AI编程真的很有趣，学习了大概2周左右，竟然可以做出这些东西，真的令人感到兴奋，也许不是特别专业，但是已经可以抓一些垂直的需求来运作，这就是一般人学习AI编程的目的，编程已经不在是那样的遥不可及</p>",
+    "plan": "<p>1. 持续完善个人网站</p><p>2. AI编程持续钻研，加入老徐AI编程星球</p><p>3. 出海活动展开，目标活动期间开通YPP</p>",
+    "gratitude": "<p>感谢每天自己的进步，从当初完全小白开始，每天花一点时间钻研，目前已经可以解决大部分的前端需求，期待后面的插件开发与小程序跟IOS APP，今年就是结合这几个方向用力做</p>",
+    "investment": "<p>1.每天一句越南语练习( 80/365)\n<br>\n</p><p>请给我袋子</p><div data-page-id=\"KNI9dPcHnoEB0fxU5iWc3ulwnnc\" data-lark-html-role=\"root\" data-docx-has-block-data=\"false\"><div class=\"ace-line ace-line old-record-id-T0fwdWmbuousv6xixoGcX4JanCh\">Cho tôi túi nhé.&nbsp;</div></div><p><span data-lark-record-data=\"{&quot;rootId&quot;:&quot;KNI9dPcHnoEB0fxU5iWc3ulwnnc&quot;,&quot;text&quot;:{&quot;initialAttributedTexts&quot;:{&quot;text&quot;:{&quot;0&quot;:&quot;Cho tôi túi nhé. 請給我袋子&quot;},&quot;attribs&quot;:{&quot;0&quot;:&quot;*0+m&quot;}},&quot;apool&quot;:{&quot;numToAttrib&quot;:{&quot;0&quot;:[&quot;author&quot;,&quot;7475141736692695041&quot;]},&quot;nextNum&quot;:1}},&quot;type&quot;:&quot;text&quot;,&quot;referenceRecordMap&quot;:{},&quot;extra&quot;:{&quot;channel&quot;:&quot;saas&quot;,&quot;isEqualBlockSelection&quot;:true,&quot;pasteRandomId&quot;:&quot;5b4ebd45-65e4-4cd2-b5f2-8b8762bab7db&quot;,&quot;mention_page_title&quot;:{},&quot;external_mention_url&quot;:{}},&quot;isKeepQuoteContainer&quot;:false,&quot;isFromCode&quot;:false,&quot;selection&quot;:[{&quot;id&quot;:22,&quot;type&quot;:&quot;text&quot;,&quot;selection&quot;:{&quot;start&quot;:0,&quot;end&quot;:22},&quot;recordId&quot;:&quot;T0fwdWmbuousv6xixoGcX4JanCh&quot;}],&quot;payloadMap&quot;:{},&quot;isCut&quot;:false}\" data-lark-record-format=\"docx/text\" class=\"lark-record-clipboard\"></span>2.日更睡前故事影片(44/365)</p>",
+    "connect": "<p>我的公众号: #贺伯谈AI\n<br>我的视频号: #贺伯谈AI\n<br>我的小红书: #贺伯谈AI</p>"
   },
   {
     "id": "2025-06-04",
