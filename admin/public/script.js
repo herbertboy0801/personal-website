@@ -710,10 +710,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const featuredIds = Array.from(checkboxes).map(cb => cb.dataset.id);
 
             console.log('Updating featured blog posts with IDs:', featuredIds);
-            // alert(`将 ${featuredIds.length} 篇文章标记为精选。\n（注意：后端 API 尚未实现此功能）`); // Temporarily comment out alert
 
-            // TODO: Implement API call when backend is ready
-            // Placeholder for backend call - will be implemented next
+            // API call is now uncommented
             try {
                 updateFeaturedBlogButton.disabled = true;
                 updateFeaturedBlogButton.textContent = '更新中...';
@@ -724,7 +722,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (!response.ok) {
                     const errorData = await response.text();
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+                    // Try to parse HTML error for a better message
+                    let detail = errorData;
+                    if (errorData.includes('<pre>') && errorData.includes('</pre>')) {
+                        detail = errorData.split('<pre>')[1].split('</pre>')[0];
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${detail}`);
                 }
                 const result = await response.json();
                 alert(`精选文章更新成功！ (${result.message || ''})`);
