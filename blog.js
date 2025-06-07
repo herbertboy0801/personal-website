@@ -14,25 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const postElement = document.createElement('div');
                 postElement.classList.add('blog-post-card'); // 使用与首页摘要相同的样式
 
-                // 简单的 Markdown -> HTML 转换 (仅支持段落和加粗)
-                // 注意：这非常基础，不支持所有 Markdown 功能。
-                // 如果需要更复杂的 Markdown，应考虑使用库如 marked.js
-                let contentHtml = post.content
-                    .split('\n\n') // 按双换行分割段落
-                    .map(paragraph => `<p>${paragraph.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`) // 处理加粗
-                    .join('');
+                // 使用数据文件中存在的字段
+                const title = post.title || '无标题';
+                const summary = post.summary || '无摘要';
+                const link = post.link;
+                const source = post.source || '未知来源';
 
-                // 截断内容以显示摘要 (可选，如果需要显示全文则移除)
-                // const summaryLength = 150; // 摘要长度
-                // if (contentHtml.length > summaryLength) {
-                //     contentHtml = contentHtml.substring(0, summaryLength) + '...';
-                // }
+                // 直接使用 summary 作为内容，不需要 Markdown 转换
+                const contentHtml = `<p>${summary}</p>`; // 将摘要包裹在 p 标签中
 
                 postElement.innerHTML = `
-                    <h3>${post.title}</h3>
-                    <p class="post-meta">发布于 ${post.date}</p>
+                    <h3>${title}</h3>
+                    <p class="post-meta">来源: ${source}</p> <!-- 显示来源，替代日期 -->
                     <div class="post-content">${contentHtml}</div>
-                    ${post.tags && post.tags.length > 0 ? `<p class="post-tags">标签: ${post.tags.join(', ')}</p>` : ''}
+                    ${link ? `<p><a href="${link}" target="_blank" rel="noopener noreferrer">阅读原文 &rarr;</a></p>` : ''} <!-- 添加原文链接 -->
                 `;
                 blogListContainer.appendChild(postElement);
             });
