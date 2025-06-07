@@ -22,7 +22,7 @@ window.blogPosts = [
     "title": "AI编程，如何3分钟搞出一个端午节的小游戏",
     "summary": "端午节元素的接物游戏，小朋友玩的不亦乐乎",
     "link": "https://www.xiaohongshu.com/explore/683b12a1000000002202d8d5?xsec_token=ABqQffvb-Yfujb1IlT4het5LdvHgL1TXBGmWTX0oRHbqp=&xsec_source=pc_user",
-    "featured": true
+    "featured": false
   },
   {
     "id": "blog-1717682256004",
