@@ -12,14 +12,14 @@ const blogList = document.getElementById('blog-list');
 const blogForm = document.getElementById('blog-form');
 const cancelEditBlogBtn = document.getElementById('cancel-edit-blog');
 // ... (get other form elements for blog)
-const blogGitStatusDiv = document.getElementById('blog-git-status'); // Specific status div for blog
+// const blogGitStatusDiv = document.getElementById('blog-git-status'); // Removed specific status div
 
 // Tool Library Elements
 const toolsList = document.getElementById('tools-list');
 const toolForm = document.getElementById('tool-form');
 const addToolButton = document.getElementById('add-tool-button'); // Button to show the form
 const cancelEditToolBtn = document.getElementById('cancel-tool-edit');
-const toolsGitStatusDiv = document.getElementById('tools-git-status'); // Specific status div for tools
+// const toolsGitStatusDiv = document.getElementById('tools-git-status'); // Removed specific status div
 // ... (get other form elements for tools)
 
 // const diaryList = document.getElementById('diary-list'); // Removed
@@ -148,9 +148,15 @@ function renderWorkItem(item, id) {
 function renderBlogItem(item, id) {
     const div = document.createElement('div');
     div.classList.add('list-item');
+    // Add checkbox at the beginning of item-content
+    // Check if item.featured is true
+    const isFeatured = item.featured === true;
     div.innerHTML = `
-        <div class="item-content">
-            <strong>${item.title}</strong> (${item.source}) - ${item.summary.substring(0, 50)}...
+        <div class="item-content" style="display: flex; align-items: center;">
+            <input type="checkbox" class="featured-checkbox" data-id="${id}" style="margin-right: 10px; transform: scale(1.2);" ${isFeatured ? 'checked' : ''}>
+            <span> <!-- Wrap text content in a span for better alignment -->
+                <strong>${item.title}</strong> (${item.source}) - ${item.summary.substring(0, 50)}...
+            </span>
         </div>
         <div class="item-actions">
             <button onclick="editItem('blog', '${id}')">编辑</button>  <!-- Use quotes for string ID -->
@@ -277,8 +283,8 @@ async function handleFormSubmit(event, type) {
         // Now call loadAllData after other UI updates (as fallback/consistency check)
         loadAllData(); // Reload data for the specific type
 
-        // Start polling for Git status
-        pollGitStatus(type);
+        // Start polling for Git status (no longer needs type)
+        pollGitStatus();
     }
 }
 
@@ -404,6 +410,8 @@ async function deleteItem(type, id) {
              // --- End Direct DOM Manipulation ---
 
             loadAllData(); // Reload data (as fallback/consistency check)
+            // Start polling for Git status after successful delete
+            pollGitStatus();
         }
     }
 }
@@ -525,72 +533,157 @@ async function loadAllData() {
 
 
 // --- Git Status Polling ---
-let pollingIntervalId = null; // Store interval ID to stop later
+let pollingIntervalId = null; // Store interval ID for stopping
+const pollingInterval = 5000; // Poll every 5 seconds
+let isPolling = false; // Flag to prevent multiple concurrent polls
 
-async function checkGitStatus(type) {
-    const url = `${API_BASE_URL}/git-status/${type}`;
-    console.log(`[checkGitStatus] Attempting to fetch: ${url}`); // <-- 添加日志
+// Function to check the *last* Git status from the server
+async function checkGitStatus() {
+    if (isPolling) return; // Prevent overlapping checks
+    isPolling = true;
+    console.log(`Checking last Git status...`); // DEBUG
     try {
-        const response = await fetch(url);
+        const response = await fetch(`/api/git-status/last`); // Fetch the global status
         if (!response.ok) {
-            console.error(`[checkGitStatus] Error fetching git status: ${response.status} ${response.statusText}`); // <-- 添加日志
-            updateGitStatusUI('error', `无法获取推送状态 (${response.status})`);
-            return 'error'; // Indicate error fetching status
+            // Handle specific errors like 404 if the endpoint isn't ready?
+            if (response.status === 404) {
+                 console.warn('Git status endpoint not found (404). Server might be starting.');
+                 updateGitStatusUI({ status: 'error', message: '无法获取状态 (404)' });
+            } else {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        } else {
+            const statusData = await response.json();
+            console.log(`Received last status:`, statusData); // DEBUG
+            updateGitStatusUI(statusData); // Update the global UI
+
+            // Stop polling if the status is no longer pending
+            if (statusData.status !== 'pending') {
+                stopPolling();
+            }
         }
-        const statusData = await response.json();
-        updateGitStatusUI(type, statusData.status, statusData.message); // Pass type to update correct UI element
-        return statusData.status; // Return current status (idle, pending, success, error)
     } catch (error) {
-        console.error('[checkGitStatus] Exception caught while fetching git status:', error); // <-- 修改日志
-        updateGitStatusUI('error', '获取推送状态时出错');
-        return 'error';
+        console.error(`Error checking last Git status:`, error);
+        updateGitStatusUI({ status: 'error', message: '检查状态时出错' });
+        // Decide if polling should stop on error. Maybe keep trying?
+        // stopPolling(); // Uncomment to stop on error
+    } finally {
+        isPolling = false; // Allow next check
     }
 }
 
-function updateGitStatusUI(type, status, message) {
-    let statusDiv;
-    // Use the newly added IDs from index.html
-    if (type === 'works') statusDiv = document.getElementById('featured-works-git-status');
-    else if (type === 'blog') statusDiv = document.getElementById('blog-git-status'); // Use the ID directly
-    else if (type === 'tools') statusDiv = document.getElementById('tools-git-status'); // Use the ID directly
-    else return; // Unknown type
-
+// Function to update the global Git status UI
+// Accepts the full status object from the backend { status, message, timestamp, type }
+function updateGitStatusUI(statusData) {
+    const statusDiv = document.getElementById('git-status'); // Target the global div
     if (!statusDiv) {
-        console.warn(`Git status div not found for type: ${type}`); // Add warning if div not found
+        console.warn(`Global status div not found: #git-status`);
         return;
     }
-    statusDiv.textContent = `Git 推送状态: ${message || status}`;
-    statusDiv.className = `git-status status-${status}`; // Add class for potential styling
-    statusDiv.style.display = 'block'; // Make sure it's visible
-}
 
-function pollGitStatus(type) {
-    if (pollingIntervalId) {
-        clearInterval(pollingIntervalId); // Clear previous interval if any
-    }
-    updateGitStatusUI(type, 'pending', '检查推送状态...'); // Initial message for the specific type
+    let statusText = `最近推送状态: `;
+    let statusColor = '#666'; // Default idle/unknown color
+    let showDiv = true;
 
-    pollingIntervalId = setInterval(async () => {
-        const currentStatus = await checkGitStatus(type);
-        // Stop polling if status is success, error, or idle (after pending)
-        if (currentStatus === 'success' || currentStatus === 'error' || currentStatus === 'idle') {
-            clearInterval(pollingIntervalId);
-            pollingIntervalId = null;
-             // Optionally hide the status after a few seconds
-            setTimeout(() => {
-                // Find the correct status div again
-                let statusDiv;
-                if (type === 'works') statusDiv = document.getElementById('featured-works-git-status');
-                else if (type === 'blog') statusDiv = blogGitStatusDiv;
-                else if (type === 'tools') statusDiv = toolsGitStatusDiv;
+    // Handle potentially null or incomplete initial statusData
+    if (!statusData || !statusData.status) {
+        statusText += '未知';
+        statusColor = '#ccc';
+        showDiv = false; // Don't show if status is unknown initially
+    } else {
+        const timeString = statusData.timestamp ? `(${new Date(statusData.timestamp).toLocaleTimeString()})` : '';
+        const typeString = statusData.type ? `[${statusData.type}] ` : ''; // Show which type triggered it
 
-                if (statusDiv && (currentStatus === 'success' || currentStatus === 'idle')) { // Keep error message visible longer?
-                     statusDiv.style.display = 'none';
+        switch (statusData.status) {
+            case 'idle':
+                // Only show idle if there's a previous message/timestamp, otherwise hide
+                if (statusData.message || statusData.timestamp) {
+                     statusText += `${typeString}${statusData.message || '空闲'} ${timeString}`;
+                     statusColor = '#666'; // Darker grey for idle with info
+                } else {
+                     showDiv = false; // Hide if truly idle with no history
                 }
-            }, 5000); // Hide after 5 seconds for success/idle
+                break;
+            case 'pending':
+                statusText += `${typeString}推送中... ${timeString}`;
+                statusColor = '#e0a800'; // Amber/Yellow
+                break;
+            case 'success':
+                statusText += `${typeString}成功 ${timeString}`;
+                statusColor = '#28a745'; // Green
+                break;
+            case 'error':
+                statusText += `${typeString}失败: ${statusData.message} ${timeString}`;
+                statusColor = '#dc3545'; // Red
+                break;
+            default:
+                statusText += `${typeString}未知状态 (${statusData.status}) ${timeString}`;
+                statusColor = '#ccc';
         }
-    }, 3000); // Poll every 3 seconds
+    }
+
+
+    statusDiv.textContent = statusText;
+    statusDiv.style.borderColor = statusColor;
+    statusDiv.style.color = statusColor; // Change text color too for visibility
+    statusDiv.style.backgroundColor = lightenColor(statusColor, 90); // Light background tint
+    statusDiv.style.display = showDiv ? 'block' : 'none'; // Show or hide the div
 }
+
+// Helper to lighten border color for background
+function lightenColor(hex, percent) {
+    try {
+        hex = hex.replace(/^#/, '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(c => c + c).join('');
+        }
+        const bigint = parseInt(hex, 16);
+        let r = (bigint >> 16) & 255;
+        let g = (bigint >> 8) & 255;
+        let b = bigint & 255;
+
+        r = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
+        g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
+        b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
+
+        return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).padStart(6, '0')}`;
+    } catch (e) {
+        return '#f8f9fa'; // Fallback color
+    }
+}
+
+
+// Function to start polling Git status (if not already polling)
+function pollGitStatus() {
+    if (pollingIntervalId) {
+        console.log("Polling already active.");
+        return; // Don't start multiple intervals
+    }
+    console.log("Starting Git status polling..."); // DEBUG
+    checkGitStatus(); // Check immediately first
+    pollingIntervalId = setInterval(checkGitStatus, pollingInterval);
+}
+
+// Function to stop polling
+function stopPolling() {
+    if (pollingIntervalId) {
+        console.log("Stopping Git status polling."); // DEBUG
+        clearInterval(pollingIntervalId);
+        pollingIntervalId = null;
+        isPolling = false; // Reset polling flag
+        // Optionally hide the status after a few seconds, only if not an error
+        setTimeout(() => {
+            const statusDiv = document.getElementById('git-status');
+            // Check the current status from the div text content (simple check)
+            if (statusDiv && !statusDiv.textContent.includes('失败')) {
+                 statusDiv.style.display = 'none';
+                 statusDiv.textContent = '最近推送状态：无'; // Reset text when hiding
+            }
+        }, 5000); // Hide after 5 seconds for success/idle
+    }
+}
+
+// --- End Git Status Polling ---
 
 
 // --- Initialization ---
@@ -600,11 +693,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load data and set up listeners directly
     loadAllData();
 
+    // Initial Git status check (now global)
+    checkGitStatus(); // Check the last known status on load
+
     // Add form submit listeners
     featuredWorksForm.addEventListener('submit', (e) => handleFormSubmit(e, 'works'));
     blogForm.addEventListener('submit', (e) => handleFormSubmit(e, 'blog'));
     toolForm.addEventListener('submit', (e) => handleFormSubmit(e, 'tools')); // Add listener for tools form
     // diaryForm.addEventListener('submit', (e) => handleFormSubmit(e, 'diary')); // Removed
+
+    // --- Add listener for "Update Featured Blog" button ---
+    const updateFeaturedBlogButton = document.getElementById('update-featured-blog-button');
+    if (updateFeaturedBlogButton) {
+        updateFeaturedBlogButton.addEventListener('click', async () => {
+            const checkboxes = blogList.querySelectorAll('.featured-checkbox:checked');
+            const featuredIds = Array.from(checkboxes).map(cb => cb.dataset.id);
+
+            console.log('Updating featured blog posts with IDs:', featuredIds);
+            // alert(`将 ${featuredIds.length} 篇文章标记为精选。\n（注意：后端 API 尚未实现此功能）`); // Temporarily comment out alert
+
+            // TODO: Implement API call when backend is ready
+            // Placeholder for backend call - will be implemented next
+            try {
+                updateFeaturedBlogButton.disabled = true;
+                updateFeaturedBlogButton.textContent = '更新中...';
+                const response = await fetch(`${API_BASE_URL}/blog/featured`, { // Example endpoint
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: featuredIds }),
+                });
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+                }
+                const result = await response.json();
+                alert(`精选文章更新成功！ (${result.message || ''})`);
+                pollGitStatus(); // Trigger Git status check
+                // No need to reload data here, backend handles file update. Checkboxes state is visual only until next full load.
+                // loadAllData(); // Reload to reflect changes visually (checkboxes)
+            } catch (error) {
+                console.error('Error updating featured blogs:', error);
+                alert(`更新精选文章时出错: ${error.message}`);
+            } finally {
+                updateFeaturedBlogButton.disabled = false;
+                updateFeaturedBlogButton.textContent = '更新精选';
+            }
+
+        });
+    }
+    // --- End listener for "Update Featured Blog" button ---
 
      // Add cancel button listeners
     cancelEditWorkBtn.addEventListener('click', () => cancelEdit('works'));

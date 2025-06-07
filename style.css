@@ -869,3 +869,92 @@ body.dark-theme {
 .theme-toggle-btn .material-symbols-outlined {
   font-size: 24px; /* 图标大小 */
 }
+/* Centering container for blog page */
+.blog-main-container {
+    max-width: 1200px; /* 或你希望的最大宽度 */
+    margin: 2em auto; /* 上下边距，左右自动居中 */
+    padding: 0 1em; /* 左右内边距，防止内容贴边 */
+}
+
+/* Blog Table Styles - Refined */
+#blog-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5em;
+    font-size: 0.9em;
+    table-layout: fixed; /* 固定表格布局，以便 ellipsis 生效 */
+    border: 1px solid var(--lightest-navy); /* 给表格本身一个外边框 */
+}
+
+#blog-table th,
+#blog-table td {
+    border: 1px solid var(--lightest-navy); /* 单元格边框颜色统一 */
+    padding: 0.8em 1em;
+    text-align: left;
+    vertical-align: middle; /* 垂直居中对齐 */
+    white-space: nowrap; /* 防止换行 */
+    overflow: hidden; /* 隐藏溢出内容 */
+    text-overflow: ellipsis; /* 显示省略号 */
+}
+
+#blog-table th {
+    background-color: transparent; /* 移除表头背景色 */
+    font-weight: bold; /* 加粗 */
+    text-align: center; /* 居中 */
+    white-space: normal; /* 允许表头换行 */
+    color: var(--lightest-slate); /* 表头文字颜色 */
+    border-bottom: 2px solid var(--accent); /* 表头下方加重边框 */
+}
+
+/* 移除斑马条纹和悬停效果 */
+/* #blog-table tbody tr:nth-child(even) { ... } */
+/* #blog-table tbody tr:hover { ... } */
+
+/* 调整列宽 */
+#blog-table th:nth-child(1), /* 来源 */
+#blog-table td:nth-child(1) {
+    width: 12%;
+    text-align: center; /* 居中来源列 */
+}
+
+#blog-table th:nth-child(2), /* 标题 */
+#blog-table td:nth-child(2) {
+    width: 30%;
+}
+
+#blog-table th:nth-child(3), /* 摘要 */
+#blog-table td:nth-child(3) {
+    width: 43%;
+}
+
+#blog-table th:nth-child(4), /* 链接 */
+#blog-table td:nth-child(4) {
+    width: 15%;
+    text-align: center;
+    white-space: normal; /* 允许链接单元格换行 */
+    overflow: visible;
+    text-overflow: clip;
+}
+
+#blog-table td a {
+    color: var(--accent);
+    text-decoration: none;
+    display: inline-block;
+}
+
+#blog-table td a:hover {
+    text-decoration: underline;
+}
+
+/* 暗色主题下的调整（如果需要，可以覆盖上面的边框颜色等） */
+body.dark-theme #blog-table {
+    border-color: var(--lightest-navy);
+}
+body.dark-theme #blog-table th,
+body.dark-theme #blog-table td {
+    border-color: var(--lightest-navy);
+}
+body.dark-theme #blog-table th {
+     color: var(--lightest-slate);
+     border-bottom-color: var(--accent);
+}

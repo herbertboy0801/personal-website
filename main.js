@@ -84,8 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         console.log(`Found ${blogPosts.length} blog posts. Rendering...`); // DEBUG: Confirm rendering start
 
-        // Use global data (blogPosts) to render
-        blogPosts.forEach(post => {
+        // Filter for featured posts
+        const featuredPosts = blogPosts.filter(post => post.featured === true);
+        console.log(`Found ${featuredPosts.length} featured blog posts. Rendering...`); // DEBUG: Confirm filtering
+
+        if (featuredPosts.length === 0) {
+            console.log("No featured blog posts found. Rendering '暂无'."); // DEBUG: Check condition
+            blogListContainer.innerHTML = '<p>暂无精选博客文章。</p>';
+            return;
+        }
+
+        // Use filtered data (featuredPosts) to render
+        featuredPosts.forEach(post => {
             const article = document.createElement('article');
             article.classList.add('blog-post-summary');
             let sourceClass = '';

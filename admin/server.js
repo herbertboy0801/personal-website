@@ -307,6 +307,44 @@ app.get('/api/:type', async (req, res) => {
     }
 });
 
+// --- Specific route for updating featured blog posts ---
+app.post('/api/blog/featured', async (req, res) => {
+    const type = 'blog'; // Explicitly set type
+    const { ids: featuredIds } = req.body; // Expecting { ids: ["blog-id-1", "blog-id-2"] }
+
+    if (!Array.isArray(featuredIds)) {
+        return res.status(400).json({ message: 'Invalid data format: "ids" must be an array.' });
+    }
+
+    console.log(`Received request to update featured blogs. IDs: ${featuredIds.join(', ')}`);
+
+    try {
+        const currentData = await readDataFile(dataFiles[type].path, dataFiles[type].varName);
+
+        // Update featured status for all items
+        const updatedData = currentData.map(item => {
+            // Ensure each item has an ID before checking
+            if (item && item.id) {
+                item.featured = featuredIds.includes(item.id); // Set featured based on presence in the list
+            } else {
+                // Handle items without IDs if necessary, maybe log a warning
+                console.warn(`Blog item found without an ID during featured update:`, item);
+            }
+            return item;
+        });
+
+        // Write the entire updated array back
+        // Pass type, but null for changedItem as it's a bulk update
+        await writeDataFile(dataFiles[type].path, dataFiles[type].varName, updatedData, type, null);
+        res.json({ message: `Featured blog posts updated successfully.` });
+
+    } catch (error) {
+        console.error(`Error updating featured blog posts:`, error);
+        res.status(500).json({ message: `Error updating featured blog posts`, error: error.message });
+    }
+});
+// --- End specific route ---
+
 // Generic POST route (Add new item)
 app.post('/api/:type', async (req, res) => {
     const type = req.params.type;
@@ -324,6 +362,11 @@ app.post('/api/:type', async (req, res) => {
         // Consider using a more robust UUID library in production if needed
         newItem.id = `${type}-${Date.now()}`;
         console.log(`Generated ID for new ${type} item: ${newItem.id}`);
+
+        // Ensure new blog posts are not featured by default
+        if (type === 'blog') {
+            newItem.featured = false;
+        }
 
         currentData.push(newItem); // Add to the end
         // Pass type and the new item to writeDataFile
@@ -364,6 +407,11 @@ app.put('/api/:type/:id', async (req, res) => {
 
         // Ensure the ID in the body matches the ID in the URL (or assign it)
         updatedItem.id = itemId;
+
+        // Preserve existing 'featured' status if not provided in the update for blogs
+        if (type === 'blog' && typeof updatedItem.featured === 'undefined') {
+            updatedItem.featured = currentData[itemIndex].featured || false; // Keep existing or default to false
+        }
 
         currentData[itemIndex] = updatedItem; // Replace item at the found index
         // Pass type and the updated item to writeDataFile
@@ -433,6 +481,7 @@ app.listen(port, () => {
     console.log(`  POST   /api/{works|blog|tools|morningJournal}`);
     console.log(`  PUT    /api/{works|blog|tools|morningJournal}/{id}`); // ID is now unique string
     console.log(`  DELETE /api/{works|blog|tools|morningJournal}/{id}`); // ID is now unique string
+    console.log(`  POST   /api/blog/featured`); // New route for featured blogs
     console.log(`  GET    /api/git-status/last`); // Updated Git status endpoint
     console.log(`  POST   /api/update-backups`);
 });
