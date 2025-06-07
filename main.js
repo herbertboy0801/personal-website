@@ -59,9 +59,12 @@ const learningDiaryData = [
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 逻辑来自: generate-blog-list.js ---
-    (() => { // Removed async
+    // 定义博客渲染函数 (移到 DOMContentLoaded 内部)
+    function renderBlogPosts() {
+        console.log("--- Executing renderBlogPosts function ---"); // DEBUG: Check execution
         const blogListContainer = document.querySelector('#blog-summary .blog-posts-grid');
+        console.log("Blog list container found:", blogListContainer); // DEBUG: Check container element
+
         if (!blogListContainer) {
             console.error('Blog list container not found!');
             return;
@@ -70,12 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
         blogListContainer.innerHTML = ''; // Clear container
 
         // Use global data directly
-        const blogPosts = window.blogPostsData || [];
+        const blogPosts = window.blogPosts || []; // Corrected variable name
+        console.log("Checking window.blogPosts inside function:", window.blogPosts); // DEBUG: Check data availability
+        console.log("Assigned blogPosts variable:", blogPosts); // DEBUG: Check assigned variable
 
         if (!Array.isArray(blogPosts) || blogPosts.length === 0) {
+             console.log("No blog posts found or data is not an array. Rendering '暂无'."); // DEBUG: Check condition
              blogListContainer.innerHTML = '<p>暂无博客文章。</p>';
              return;
         }
+        console.log(`Found ${blogPosts.length} blog posts. Rendering...`); // DEBUG: Confirm rendering start
 
         // Use global data (blogPosts) to render
         blogPosts.forEach(post => {
@@ -109,8 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 article.appendChild(link);
                 blogListContainer.appendChild(article);
             });
-        // Removed try...catch block for fetch
-    })(); // End IIFE for blog
+    } // End renderBlogPosts function definition
+
+    // --- 调用博客渲染函数 ---
+    renderBlogPosts();
 
     // --- 逻辑来自: generate-featured-works.js ---
     (() => { // Removed async
@@ -546,6 +555,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // })(); // End admin link IIFE
 
 }); // 结束 DOMContentLoaded 事件监听器
-// ==========================================================================
-// == 结束: DOMContentLoaded 事件监听器 ==
-// ==========================================================================
