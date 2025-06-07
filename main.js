@@ -156,7 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 tag.classList.add('tech-tag');
                 tag.textContent = work.tag;
                 const link = document.createElement('a');
-                link.href = work.detailsLink || '#'; // Use '#' if link is missing
+                link.href = work.imageSrc; // Link directly to the image source
+                link.target = '_blank'; // Open in a new tab
+                link.rel = 'noopener noreferrer'; // Security best practice for target="_blank"
                 link.classList.add('details-link');
                 link.textContent = '查看详情 →';
                 workCard.appendChild(img);
