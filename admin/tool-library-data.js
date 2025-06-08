@@ -4,7 +4,7 @@ window.toolLibraryData = [
     "id": "tool-1",
     "name": "俄罗斯方块",
     "description": "经典的俄罗斯方块游戏。",
-    "url": "tools/enhanced-tetris/",
+    "url": "tools/enhanced-tetris/enhanced_tetris.html",
     "icon": "stadia_controller",
     "category": "休闲娱乐",
     "tags": [
@@ -28,7 +28,7 @@ window.toolLibraryData = [
     "id": "tool-3",
     "name": "财务小工具",
     "description": "用于基本财务计算的工具。",
-    "url": "tools/finance-tool/",
+    "url": "tools/finance-tool/finance-tool.html",
     "icon": "receipt_long",
     "category": "效率助手",
     "tags": [
@@ -40,7 +40,7 @@ window.toolLibraryData = [
     "id": "tool-4",
     "name": "节日倒计时",
     "description": "计算距离下一个节日的剩余时间。",
-    "url": "tools/holiday-countdown/",
+    "url": "tools/holiday-countdown/holiday_countdown.html",
     "icon": "event",
     "category": "效率助手",
     "tags": [
@@ -52,7 +52,7 @@ window.toolLibraryData = [
     "id": "tool-5",
     "name": "记忆游戏",
     "description": "匹配卡片的记忆力游戏。",
-    "url": "tools/memory-game/",
+    "url": "tools/memory-game/memory_game.html",
     "icon": "extension",
     "category": "休闲娱乐",
     "tags": [
@@ -64,7 +64,7 @@ window.toolLibraryData = [
     "id": "tool-6",
     "name": "照片画廊",
     "description": "一个简单的照片展示库。",
-    "url": "tools/photo-gallery/",
+    "url": "tools/photo-gallery/photo_wall.html",
     "icon": "photo_library",
     "category": "图像影音处理",
     "tags": [
@@ -88,7 +88,7 @@ window.toolLibraryData = [
     "id": "tool-8",
     "name": "透明度调整",
     "description": "调整图像透明度的工具。",
-    "url": "tools/Transparency adjustment/",
+    "url": "tools/Transparency adjustment/Transparency adjustment.html",
     "icon": "opacity",
     "category": "图像影音处理",
     "tags": [
@@ -100,7 +100,7 @@ window.toolLibraryData = [
     "id": "tool-9",
     "name": "单位换算器",
     "description": "在不同单位之间进行换算。",
-    "url": "tools/unit-converter/",
+    "url": "tools/unit-converter/unit_converter.html",
     "icon": "swap_horiz",
     "category": "效率助手",
     "tags": [
@@ -112,7 +112,7 @@ window.toolLibraryData = [
     "id": "tool-10",
     "name": "图片加水印",
     "description": "为图片添加水印。",
-    "url": "tools/watermark-tool/",
+    "url": "tools/watermark-tool/watermark_tool.html",
     "icon": "water_drop",
     "category": "图像影音处理",
     "tags": [
@@ -124,7 +124,7 @@ window.toolLibraryData = [
     "id": "tool-11",
     "name": "Wordle 猜词",
     "description": "流行的猜单词游戏。",
-    "url": "tools/wordle-game/",
+    "url": "tools/wordle-game/wordle_game.html",
     "icon": "password",
     "category": "休闲娱乐",
     "tags": [
@@ -226,5 +226,16 @@ window.toolLibraryData = [
       "图片调整"
     ],
     "url": "tools/image_editor.html"
+  },
+  {
+    "id": "tools-1749407944666",
+    "name": "随机决策工具",
+    "description": "设定选项，转盘决定( 用来确认吃啥/ 去哪/ 玩啥 )",
+    "icon": "🎞️",
+    "category": "效率助手",
+    "tags": [
+      "决策"
+    ],
+    "url": "tools/random_decision_tool.html"
   }
 ];
