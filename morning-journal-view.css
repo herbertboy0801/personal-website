@@ -1,0 +1,268 @@
+/* personal-website/morning-journal-view.css */
+/* Styles adapted from drawing-app/style.css for read-only view */
+
+/* --- Global & Base --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa; /* Base background color */
+    /* Optional: Add subtle background pattern if desired */
+    /* background-image: linear-gradient(45deg, #f0f2f5 25%, transparent 25%, transparent 75%, #f0f2f5 75%, #f0f2f5),
+                      linear-gradient(-45deg, #f0f2f5 25%, transparent 25%, transparent 75%, #f0f2f5 75%, #f0f2f5);
+    background-size: 20px 20px, 20px 20px; */
+    color: #333;
+}
+
+.container.view-container { /* Use specific class */
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 15px 20px 15px; /* Adjust padding */
+    /* Removed background/shadow as it's on body or card */
+}
+
+/* --- Header (from drawing-app) --- */
+.app-header {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 10px; /* Aggressively reduce margin */
+    text-align: center;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* margin-bottom: 15px; */ /* Removed bottom margin as no elements below */
+}
+
+.app-logo {
+    height: 32px;
+    margin-right: 12px;
+    vertical-align: middle;
+}
+
+.app-header h1 {
+    color: #007bff;
+    font-size: 1.6em;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* --- Date Navigation (from morning-journal-view) --- */
+.date-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* Aggressively reduce margin */
+    padding-bottom: 10px; /* Restore some padding */
+    border-bottom: 1px solid #eee;
+}
+
+.date-navigation button,
+.date-navigation input.flatpickr-input {
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+
+.date-navigation button:hover {
+    background-color: #eee;
+}
+
+.date-navigation input.flatpickr-input {
+    cursor: pointer;
+    text-align: center;
+    width: 150px;
+}
+
+/* --- Goal Banner (from drawing-app) --- */
+.goal-banner {
+   background-color: #007bff;
+   color: white;
+   padding: 10px 20px;
+   font-size: 1em;
+   font-weight: 500;
+   margin-bottom: 10px; /* Aggressively reduce margin */
+   border-radius: 4px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 10px;
+}
+
+.goal-banner .separator {
+   color: rgba(255, 255, 255, 0.7);
+   margin: 0 5px;
+}
+
+/* --- Main Content & Card --- */
+.diary-section {
+    /* No specific styles needed, container for card */
+}
+
+.diary-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* --- Journal Content Area --- */
+.journal-content.view-mode { /* Target specific class */
+    padding: 10px; /* Aggressively reduce padding */
+    margin-top: 0; /* Reset margin */
+}
+
+/* Diary Block Structure (from drawing-app, adapted for view) */
+.diary-block {
+    margin-bottom: 10px; /* Aggressively reduce margin */
+}
+
+.diary-block:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    color: #007bff;
+    font-size: 1.15em;
+    margin: 0 0 5px 0; /* Aggressively reduce bottom margin */
+    font-weight: 600;
+    /* line-height: 1.2; */ /* Remove explicit line-height */
+}
+
+/* Remove h3 margin reset, rely on .section-title margin */
+/* .diary-card h3 {
+    margin: 0;
+} */
+
+.section-title .icon { /* Use .icon if defined in HTML, otherwise use .emoji */
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+.section-title .emoji { /* Added .emoji selector */
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+
+.section-content {
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    padding: 12px; /* Restore padding from drawing-app */
+    /* min-height: 40px; */ /* Keep min-height commented out */
+    background-color: #f9f9f9; /* Light background for read-only */
+    line-height: 1.6; /* Restore line height from drawing-app body */
+    color: #333; /* Restore default text color */
+}
+
+.section-content p {
+    margin: 0 0 0.2em 0; /* Aggressively reduce paragraph bottom margin */
+}
+.section-content p:last-child {
+    margin-bottom: 0;
+}
+.section-content em { /* Style for '未填写' */
+    color: #999;
+    font-style: italic;
+}
+
+
+/* --- No Entry Message --- */
+.no-entry {
+    text-align: center;
+    color: #888;
+    padding: 40px 20px;
+    font-style: italic;
+    background-color: #f9f9f9;
+    border: 1px dashed #ddd;
+    border-radius: 5px;
+}
+
+/* --- Footer --- */
+footer {
+    margin-top: 30px;
+    padding: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #888;
+    border-top: 1px solid #e8e8e8;
+    background-color: #fff;
+}
+
+.back-link {
+    display: inline-block; /* Changed from block */
+    /* text-align: center; */ /* Removed, inline-block handles centering */
+    /* margin-top: 30px; */ /* Removed, handled by footer padding */
+    color: #007bff;
+    text-decoration: none;
+    font-size: 1em; /* Adjusted size */
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* --- Flatpickr Highlighting (from morning-journal-view) --- */
+.flatpickr-day.has-journal-entry {
+    background-color: #e6f7ff;
+    border-color: #91d5ff;
+    color: #1890ff;
+    font-weight: bold;
+    border-radius: 50%; /* Make highlight circular */
+}
+
+.flatpickr-day.has-journal-entry:hover {
+    background-color: #bae7ff;
+}
+
+.flatpickr-day.selected.has-journal-entry {
+    background: #1890ff;
+    border-color: #1890ff;
+    color: #fff;
+}
+/* Ensure selected non-entry day is also distinct */
+.flatpickr-day.selected {
+     background: #007bff;
+     border-color: #0056b3;
+     color: #fff;
+}
+
+
+/* --- Responsive Adjustments (Optional, from drawing-app) --- */
+@media (max-width: 600px) {
+    .container.view-container {
+        padding: 0 10px 15px 10px;
+        margin-top: 10px;
+    }
+    .app-header h1 {
+        font-size: 1.4em;
+    }
+    .goal-banner {
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+    .section-title {
+        font-size: 1.1em;
+    }
+    .date-navigation {
+        flex-wrap: wrap; /* Allow wrapping */
+        justify-content: center; /* Center items when wrapped */
+        gap: 10px; /* Add gap for wrapped items */
+    }
+     .date-navigation input.flatpickr-input {
+        width: 100%; /* Full width on small screens */
+        order: -1; /* Move date picker to top when wrapped */
+        margin-bottom: 10px;
+    }
+}

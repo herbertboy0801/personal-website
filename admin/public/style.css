@@ -164,3 +164,357 @@ button[type="button"]:hover {
 input[type="hidden"] {
     display: none;
 }
+/* --- Morning Journal Management Styles --- */
+
+#morning-journal-management .section-controls {
+    /* Existing styles apply, but ensure buttons have appropriate styling */
+    /* Specific button styles */
+    /* #journal-history-button, */ /* Removed */
+    #journal-settings-button {
+        background-color: #6c757d; /* Grey */
+    }
+    /* #journal-history-button:hover, */ /* Removed */
+    #journal-settings-button:hover {
+        background-color: #5a6268;
+    }
+    #import-journal-button {
+        background-color: #ffc107; /* Yellow */
+        color: #333;
+    }
+    #import-journal-button:hover {
+        background-color: #e0a800;
+    }
+    #journal-save-button {
+        background-color: #28a745; /* Green */
+    }
+    #journal-save-button:hover {
+        background-color: #218838;
+   }
+   /* #journal-clear-button { */ /* Removed */
+   /*    background-color: #dc3545; */ /* Red */
+   /* } */
+   /* #journal-clear-button:hover { */ /* Removed */
+   /*    background-color: #c82333; */
+   /* } */
+   #journal-current-date {
+       margin-left: auto;
+       font-weight: bold;
+        font-size: 1.1em;
+        color: #007bff;
+    }
+}
+
+
+/* Editor Grid Layout */
+.journal-editor-grid {
+    display: flex; /* Change to flex */
+    flex-direction: column; /* Stack items vertically */
+    gap: 15px; /* Adjust gap between rows if needed */
+    margin-top: 15px;
+    /* grid-template-columns removed */
+}
+
+.journal-editor-item {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.journal-editor-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #007bff; /* Blue labels */
+    font-size: 1.05em;
+}
+
+.journal-editable {
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 10px 12px;
+    min-height: 100px; /* Consistent minimum height */
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #fdfdfd; /* Slightly off-white background */
+    font-size: 1em;
+    line-height: 1.5;
+    resize: vertical; /* Allow vertical resize */
+    overflow-y: auto; /* Add scroll if content overflows */
+}
+
+.journal-editable:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+/* Add placeholder styling */
+.journal-editable[placeholder]:empty:before {
+    content: attr(placeholder);
+    color: #999;
+    pointer-events: none; /* Make placeholder text non-interactive */
+    display: block; /* For line break */
+}
+
+
+/* --- Modal Styles (Generic) --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+    align-items: center; /* Vertical center */
+    justify-content: center; /* Horizontal center */
+}
+
+.modal.active { /* Use .active to show */
+    display: flex;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 700px; /* Adjust max width as needed */
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    max-height: 85vh; /* Limit height */
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    background: none; /* Ensure no background */
+    border: none; /* Ensure no border */
+    padding: 0; /* Ensure no padding */
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+}
+
+/* Specific Modal Content Styling */
+/* #journal-history-content, */ /* Removed */
+#journal-settings-content {
+    flex-grow: 1; /* Allow content to take space */
+    overflow-y: auto; /* Scroll if content overflows */
+    padding: 10px;
+}
+
+/* Style for history datepicker input */
+/* #journal-history-datepicker { */ /* Removed */
+/*      width: auto; */
+/*      padding: 8px 10px; */
+/*      margin-bottom: 15px; */
+/*      border: 1px solid #ccc; */
+/*      border-radius: 4px; */
+/*      box-sizing: border-box; */
+/* } */
+
+/* Style for history entries container */
+/* #journal-history-entries { */ /* Removed */
+/*     max-height: 50vh; */
+/*     overflow-y: auto; */
+/* } */
+/* #journal-history-entries .history-entry { */ /* Removed */
+/*     border-bottom: 1px solid #eee; */
+/*     padding: 10px 0; */
+/*     margin-bottom: 10px; */
+/* } */
+/* #journal-history-entries .history-entry:last-child { */ /* Removed */
+/*     border-bottom: none; */
+/*     margin-bottom: 0; */
+/* } */
+/* #journal-history-entries .history-entry h4 { */ /* Removed */
+/*     margin: 0 0 5px 0; */
+/*     color: #333; */
+/* } */
+/* #journal-history-entries .history-entry div { */ /* Removed */
+/*     background-color: #f9f9f9; */
+/*     padding: 8px; */
+/*     border-radius: 4px; */
+/*     margin-top: 5px; */
+/*     font-size: 0.95em; */
+/*     white-space: pre-wrap; */
+/* } */
+
+/* Settings Modal Specifics */
+#journal-settings-content button {
+    margin-top: 10px;
+}
+
+/* Flatpickr Calendar Highlighting (Removed as history is removed) */
+/* .flatpickr-day.has-journal-entry { */
+/*     background: #e6f7ff !important; */
+/*     border-color: #91d5ff !important; */
+/*     font-weight: bold; */
+/*     border-radius: 50%; */
+/* } */
+/* .flatpickr-day.has-journal-entry.selected { */
+/*     background: #0056b3 !important; */
+/*     border-color: #003f80 !important; */
+/*     color: #fff !important; */
+/* } */
+/* .flatpickr-day.has-journal-entry:hover { */
+/*      background: #bae7ff !important; */
+/* } */
+/* --- Styles for New Morning Journal Buttons --- */
+
+/* Style for editor toolbar buttons (加粗, 颜色) */
+.journal-editor-item .editor-toolbar {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+}
+
+.journal-editor-item .editor-toolbar .format-btn {
+    padding: 4px 8px;
+    font-size: 0.9em;
+    background-color: #e9ecef; /* Light grey */
+    color: #495057;
+    border: 1px solid #ced4da;
+    margin-right: 0; /* Remove default margin */
+    cursor: pointer;
+}
+
+.journal-editor-item .editor-toolbar .format-btn:hover {
+    background-color: #dee2e6;
+    border-color: #adb5bd;
+}
+
+/* Style for list item copy button (复制) */
+.journal-list-item .journal-list-copy-btn {
+    padding: 3px 8px; /* Smaller padding */
+    font-size: 0.85em;
+    background-color: #6c757d; /* Grey */
+    color: white;
+    margin-left: 5px; /* Add some space from edit button */
+}
+
+.journal-list-item .journal-list-copy-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Style for the main paste button (贴上) */
+#journal-paste-button {
+     background-color: #ffc107; /* Yellow */
+     color: #333;
+}
+
+#journal-paste-button:hover {
+    background-color: #e0a800;
+}
+/* --- Morning Journal Two-Column Layout --- */
+#journal-layout-container {
+    display: flex;
+    flex-direction: row; /* Arrange columns side-by-side */
+    gap: 30px; /* Space between columns */
+    margin-top: 20px; /* Space above the layout */
+}
+
+.journal-column {
+    /* Base styling for columns */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff; /* White background for columns */
+}
+
+#journal-editor-column {
+    flex: 1; /* Set to equal width */
+}
+
+#journal-list-column {
+    flex: 1; /* Set to equal width */
+    /* Remove max-height and overflow-y to allow it to grow with content */
+    /* max-height: 70vh; */
+    /* overflow-y: auto; */
+}
+
+/* Remove top margin/border from the list itself as the column provides separation */
+#morning-journal-list {
+     margin-top: 0 !important;
+     border-top: none !important;
+     padding-top: 0 !important;
+}
+
+/* Adjust editor grid within the left column if needed */
+#journal-editor.journal-editor-grid {
+    /* Maybe remove internal grid if 5 items stack well vertically */
+    /* display: block; */ /* Uncomment to stack items */
+    gap: 15px; /* Slightly reduce gap if stacking */
+}
+
+/* Adjust list item styling within the right column */
+#morning-journal-list .journal-list-item {
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+/* Responsive adjustments (optional) */
+@media (max-width: 900px) { /* Adjust breakpoint as needed */
+    #journal-layout-container {
+        flex-direction: column; /* Stack columns on smaller screens */
+    }
+    #journal-list-column {
+         max-height: none; /* Remove height limit when stacked */
+         overflow-y: visible;
+    }
+}
+/* --- Flatpickr Journal Entry Highlighting (JS Controlled Colors) --- */
+
+/* Basic structural styling for all Flatpickr days in the current month */
+.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay) {
+    font-weight: normal;
+    border-radius: 50%; /* Make them circles */
+    /* Colors and borders are now set by JavaScript in onDayCreate */
+}
+
+/* Basic structural styling for prev/next month days */
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+   border-radius: 50%; /* Keep circular shape if desired */
+   /* Colors and borders are now set by JavaScript in onDayCreate,
+      or rely on Flatpickr's default for inactive days */
+}
+
+/* Basic structural styling for today's date */
+.flatpickr-day.today {
+   border-radius: 50%; /* Ensure today is also circular */
+   /* Flatpickr default usually adds a border for today; specific colors set by JS if it has/doesn't have an entry */
+}
+
+/* Let Flatpickr's default CSS handle .selected and :hover states for visual feedback,
+   as our JS logic primarily sets the base colors based on journal entry existence.
+   If Flatpickr's default selection/hover interferes too much with the JS-set colors,
+   we might need to add !important to the JS-set styles or very specific CSS overrides.
+*/

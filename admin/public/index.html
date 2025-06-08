@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人网站内容管理</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
         .admin-section {
             display: none; /* Hide sections by default */
@@ -37,7 +39,7 @@
         <button data-target="#featured-works-admin" class="nav-button active">精选作品管理</button>
         <button data-target="#blog-admin" class="nav-button">博客文章管理</button>
         <button data-target="#tools-section" class="nav-button">工具资源库管理</button>
-        <a href="morning-journal.html" class="nav-button">晨间日记管理</a> <!-- 新增晨间日记链接 -->
+        <button data-target="#morning-journal-management" class="nav-button">晨间日记管理</button> <!-- 修改为按钮，指向新区域 -->
         <button id="update-backup-button" style="margin-left: auto; padding: 8px 15px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">更新备份文件</button> <!-- Changed ID and Text -->
     </div>
 
@@ -101,7 +103,7 @@
          <div class="section-controls"> <!-- Move H2 inside -->
               <h2>博客文章管理</h2>
             <!-- Removed section-specific git status -->
-            <button id="update-featured-blog-button" style="background-color: #ffc107; color: #212529;">更新精选</button> <!-- 新增更新精选按钮 -->
+            <button id="update-featured-blog-button" style="background-color: #28a745; color: white;">更新精选</button> <!-- 新增更新精选按钮 -->
             <button id="add-blog-button">添加新博客</button>
          </div>
          <div id="blog-list">
@@ -180,8 +182,141 @@
         </form>
     </section>
 
-    <!-- 学习日记部分已移除 -->
+    <!-- Morning Journal Management Section - Refactored -->
+    <section id="morning-journal-management" class="admin-section">
+        <div class="section-controls" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+            <h2>晨间日记管理</h2>
+            <!-- Buttons moved to editor column -->
+            <input type="file" id="journal-file-input" accept=".json,.txt" style="display: none;"> <!-- Keep hidden file input here or move? Let's keep it simple and leave it -->
+            <!-- Date display removed -->
+             <!-- Hidden input to store the ID (date) of the entry being edited -->
+             <input type="hidden" id="journal-edit-id" name="id">
+        </div>
 
+        <!-- New Layout Container -->
+        <div id="journal-layout-container">
+
+            <!-- Left Column: Editor Area -->
+            <div id="journal-editor-column" class="journal-column">
+                <!-- Date Selector and Buttons Moved Here -->
+                <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;"> <!-- Added flex-wrap -->
+                    <label for="journal-date-selector" style="margin-bottom: 0; font-weight: bold;">选择编辑日期:</label>
+                    <input type="date" id="journal-date-selector" name="journal-date-selector" style="padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <!-- Moved Buttons -->
+                    <button id="journal-settings-button">设置</button>
+                    <button id="import-journal-button" style="background-color: #ffc107; color: #333;">从文件导入</button>
+                    <button id="journal-save-button" style="background-color: #28a745; color: white;">保存日记</button>
+                    <button id="journal-paste-button" type="button" style="background-color: #ffc107; color: #333;">贴上</button>
+                </div>
+                <hr style="margin-top: 0; margin-bottom: 15px;"> <!-- Optional separator -->
+
+                <div id="journal-editor" class="journal-editor-grid">
+                    <div class="journal-editor-item">
+                        <label for="journal-field-harvest"><span style="margin-right: 5px;">⚙️</span>今日收获:</label>
+                <div id="journal-field-harvest" class="journal-editable" contenteditable="true" placeholder="记录今天的成果和收获..."></div>
+                <div class="editor-toolbar" style="margin-top: 5px;">
+                     <button type="button" class="format-btn"><b>B</b> 加粗</button>
+                     <button type="button" class="format-btn">🎨 颜色</button>
+                 </div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-plan"><span style="margin-right: 5px;">📝</span>后续计划:</label>
+                <div id="journal-field-plan" class="journal-editable" contenteditable="true" placeholder="规划今天的重要任务..."></div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-gratitude"><span style="margin-right: 5px;">❤️</span>感恩:</label>
+                <div id="journal-field-gratitude" class="journal-editable" contenteditable="true" placeholder="记录值得感恩的事情..."></div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-investment"><span style="margin-right: 5px;">📈</span>定投:</label>
+                <div id="journal-field-investment" class="journal-editable" contenteditable="true" placeholder="记录昨天的学习和成长..."></div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-connect"><span style="margin-right: 5px;">🔗</span>与我链接:</label>
+                <div id="journal-field-connect" class="journal-editable" contenteditable="true" placeholder="记录与他人的互动和连接..."></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: List Area -->
+            <div id="journal-list-column" class="journal-column">
+                <div id="morning-journal-list" style="/* Remove inline styles, handle in CSS */">
+                     <h4 style="margin-bottom: 10px;">历史日记列表</h4>
+                    <!-- Journal entries will be loaded here by JS -->
+                    <!-- Removed loading placeholder -->
+                </div>
+            </div>
+            <!-- Removed extraneous/incorrect closing tags and loading text -->
+
+        </div> <!-- End #journal-layout-container -->
+
+
+        <!-- Modals -->
+        <!-- History Modal Removed -->
+        <!--
+        <div id="journal-history-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-button" data-modal="journal-history-modal">&times;</span>
+                <h2>历史记录</h2>
+                <div id="journal-history-content">
+                    <p>正在加载历史记录...</p>
+                     <input type="text" id="journal-history-datepicker" placeholder="选择日期查看">
+                     <div id="journal-history-entries"></div>
+                </div>
+            </div>
+        </div>
+        -->
+
+        <div id="journal-settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" data-modal="journal-settings-modal">&times;</span>
+                <h2>设置与输出</h2>
+                <div id="journal-settings-content" style="display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center;">
+
+                    <label for="setting-reference-date">参考日期:</label>
+                    <input type="date" id="setting-reference-date" name="referenceDate" style="width: 150px;">
+
+                    <label for="setting-reference-streak">参考日更天数:</label>
+                    <input type="number" id="setting-reference-streak" name="referenceStreak" min="0" style="width: 80px;">
+
+                    <button id="save-reference-settings" style="grid-column: 1 / -1; justify-self: start;">保存参考设置</button>
+
+                    <hr style="grid-column: 1 / -1; border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+
+                    <label for="setting-goal-days">目标天数:</label>
+                    <input type="number" id="setting-goal-days" name="goalDays" min="1" style="width: 80px;">
+
+                    <label for="setting-goal-reward">目标奖励:</label>
+                    <input type="text" id="setting-goal-reward" name="goalReward" placeholder="达到目标天数后的奖励">
+
+                    <button id="save-goal-settings" style="grid-column: 1 / -1; justify-self: start;">保存目标与奖励</button>
+
+                    <hr style="grid-column: 1 / -1; border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+
+                    <label for="setting-reminder-time">每日提醒时间:</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                       <input type="time" id="setting-reminder-time" name="reminderTime" style="width: 100px;">
+                       <button id="save-reminder-settings">设置</button>
+                    </div>
+
+                    <hr style="grid-column: 1 / -1; border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+
+                    <label>导入/导出:</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button id="import-journal-settings-button">导入 JSON</button> <!-- Triggers file input -->
+                        <button id="export-journal-json">导出为 JSON</button> <!-- Existing button -->
+                        <button id="export-journal-txt">导出为 TXT</button> <!-- New button -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Optional: Flatpickr Chinese locale -->
+    <!-- <script src="https://npmcdn.com/flatpickr/dist/l10n/zh.js"></script> --> {/* Temporarily commented out */}
     <script src="script.js"></script>
 </body>
 </html>

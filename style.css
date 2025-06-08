@@ -958,3 +958,102 @@ body.dark-theme #blog-table th {
      color: var(--lightest-slate);
      border-bottom-color: var(--accent);
 }
+/* === 晨间日记摘要 Section === */
+.journal-section {
+    background-color: var(--light-navy); /* 使用稍浅的背景以区分 */
+    padding: 60px 0; /* 调整内边距 */
+}
+
+.journal-section h2 {
+    text-align: center; /* 标题居中 */
+    margin-bottom: 2rem;
+}
+
+.journal-container {
+    display: flex;
+    align-items: flex-start; /* 顶部对齐 */
+    gap: 2.5rem; /* Logo 和列表之间的间距 */
+    max-width: 900px; /* 限制最大宽度 */
+    margin: 0 auto; /* 居中容器 */
+    background-color: var(--dark-bg); /* 内部容器使用深色背景 */
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(2, 12, 27, 0.5);
+}
+
+.journal-logo {
+    flex: 0 0 150px; /* 固定 Logo 宽度 */
+    text-align: center; /* Logo 居中 */
+}
+
+.journal-logo img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--lightest-navy);
+}
+
+.journal-entries-list {
+    flex-grow: 1; /* 列表占据剩余空间 */
+    border-left: 1px solid var(--lightest-navy); /* 左侧加分隔线 */
+    padding-left: 2rem; /* 分隔线和内容间距 */
+}
+
+.journal-entries-list .journal-entry {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px dashed var(--lightest-navy); /* 条目间使用虚线分隔 */
+}
+
+.journal-entries-list .journal-entry:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none; /* 最后一个条目无下边框 */
+}
+
+.journal-entries-list .entry-date {
+    font-size: var(--fz-xs);
+    color: var(--slate);
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.journal-entries-list .entry-title {
+    font-size: var(--fz-lg);
+    color: var(--lightest-slate);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.journal-entries-list .entry-content {
+    font-size: var(--fz-sm);
+    color: var(--light-slate);
+    line-height: 1.5;
+    /* 限制内容显示行数 (可选) */
+    /* display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis; */
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .journal-container {
+        flex-direction: column; /* 小屏幕垂直排列 */
+        align-items: center; /* 居中 */
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    .journal-logo {
+        flex-basis: auto; /* 恢复自动宽度 */
+        margin-bottom: 1rem;
+    }
+    .journal-entries-list {
+        border-left: none; /* 移除左边框 */
+        padding-left: 0; /* 移除左内边距 */
+        width: 100%; /* 占满宽度 */
+        border-top: 1px solid var(--lightest-navy); /* 顶部加分隔线 */
+        padding-top: 1.5rem; /* 分隔线和内容间距 */
+    }
+}

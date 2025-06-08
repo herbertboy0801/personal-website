@@ -64,17 +64,21 @@
 
     <!-- 学习日记 Section 已移除 -->
 
-    <!-- 重点推荐：晨间日记 Section -->
-    <section id="featured-tool-morning-journal" class="featured-tool-section section-padding alternate-bg">
+    <!-- 晨间日记摘要 Section -->
+    <section id="morning-journal" class="journal-section section-padding"> <!-- Changed ID and class -->
       <div class="container">
-        <h2>晨间日记摘要</h2> <!-- 更新标题 -->
-        <div id="morning-journal-summary">
-            <!-- 最新日记摘要将由 JavaScript 动态加载 -->
-            <p>正在加载最新日记...</p>
+        <h2>晨间日记摘要</h2>
+        <div class="journal-container"> <!-- New container for layout -->
+            <div class="journal-logo">
+                <img src="assets/morning-journal-logo.png" alt="晨间日记 Logo"> <!-- Updated Logo Path -->
+            </div>
+            <div id="journal-entries" class="journal-entries-list"> <!-- New ID for entries list -->
+                <!-- 最新三篇日记将由 JS 动态生成 -->
+                <p>正在加载最新日记...</p>
+            </div>
         </div>
-        <div style="text-align: center; margin-top: 1rem;">
-             <a href="admin/public/morning-journal.html" class="cta-button" target="_blank">管理晨间日记</a> <!-- 链接到管理页面 -->
-        </div>
+<a href="morning-journal-view.html" class="view-all-link">查看完整日记 →</a>
+        <!-- Removed management button -->
       </div>
     </section>
 
@@ -157,6 +161,7 @@
 <script src="admin/blog-posts-data.js"></script>
 <script src="admin/tool-library-data.js"></script>
 <script src="admin/morning-journal-data.js"></script> <!-- 添加晨间日记数据 -->
+<script src="admin/journal-settings.js"></script> <!-- 添加日记设置数据 -->
 <script src="main.js"></script> <!-- 合并后的 JavaScript 文件 -->
 <!-- <script src="learning-diary-data.js"></script> --> <!-- Removed -->
 <!-- <script src="generate-learning-diary.js"></script> --> <!-- Removed -->

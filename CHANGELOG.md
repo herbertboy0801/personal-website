@@ -1,13 +1,45 @@
 # 更新日志
 
+## [0.4.0] - 2025-06-07
 ## [Unreleased]
 
-### Planned
-- **博客列表页面**: 创建一个新的独立页面 (`blog.html`)，用于展示所有博客文章，并更新首页的链接。
-- **晨间日记后台管理**: 将“晨间日记”部分迁移到后台管理系统，允许通过管理界面更新设置和日记条目，并将数据存储在 `admin/morning-journal-data.js` 中。公共页面将动态加载并显示最新的 3 条日记摘要。
-
 ### 新增 (Added)
+- **博客页面**: 在博客文章列表页面 ([`blog.html`](personal-website/blog.html:1)) 的顶部添加了“返回首页”的链接，方便用户导航。
+
+### 修复 (Fixed)
+- **工具库链接**: 修正了管理后台数据文件 ([`admin/tool-library-data.js`](personal-website/admin/tool-library-data.js:1)) 中多个工具的 `url`，确保它们指向正确的 HTML 文件路径，解决了部分工具链接 404 的问题。
+- **晨间日记摘要**: 修复了首页晨间日记摘要功能，确保正确加载数据 (使用 `window.morningJournalEntries`) 并显示最新一条包含实际“今日收获”内容的日记条目，同时清晰展示日期。
+
+### 变更 (Changed)
+- **晨间日记摘要逻辑**: 调整了首页 ([`main.js`](personal-website/main.js:1)) 晨间日记摘要的显示逻辑，现在会优先查找并展示最新一条“今日收获”字段包含实际可见文本（去除 HTML 标签后）的日记。
+
+### Planned
+- **晨间日记查看页面重构**:
+    - 将 [`morning-journal-view.html`](personal-website/morning-journal-view.html:0) 页面重构为只读视图，用于展示后台管理的晨间日记数据 ([`admin/morning-journal-data.js`](personal-website/admin/morning-journal-data.js:0))。
+    - 调整 [`morning-journal-view.html`](personal-website/morning-journal-view.html:0) 的 HTML 结构和 CSS 样式，使其外观接近原本地编辑器 [`tools/drawing-app/index.html`](personal-website/tools/drawing-app/index.html:0)。
+    - 更新 [`morning-journal-view.js`](personal-website/morning-journal-view.js:0) 逻辑，确保从 `window.morningJournalEntries` 加载数据，并根据后台设置 ([`admin/journal-settings.js`](personal-website/admin/journal-settings.js:0)) 计算日更天数。
+    - 将原 [`tools/drawing-app/logo.png`](personal-website/tools/drawing-app/logo.png:0) 移动到 [`assets/`](personal-website/assets/) 目录，并更新 [`index.html`](personal-website/index.html:0) 和 [`morning-journal-view.html`](personal-website/morning-journal-view.html:0) 中的引用路径。
+    - (可选) 重构完成后，考虑移除不再需要的本地编辑器目录 [`tools/drawing-app/`](personal-website/tools/drawing-app/)。
+- **博客列表页面**: 创建一个新的独立页面 (`blog.html`)，用于展示所有博客文章，并更新首页的链接。
 - **图片编辑器**: 添加一个新的工具页面 ([`tools/image_editor.html`](personal-website/tools/image_editor.html:0))，允许用户上传 PNG 图片，进行按比例缩放，并能在图片上自由拖拽鼠标以预览切割选区。
+
+### 修复 (Fixed)
+- **管理后台设置加载**: 修复了后端 [`admin/server.js`](personal-website/admin/server.js) 中 `readDataFile` 函数的正则表达式，使其能够正确解析包含 `window.variableName = ...` 形式的设置文件 ([`admin/journal-settings.js`](personal-website/admin/journal-settings.js))，解决了设置模态框无法显示已保存值的问题。
+- **晨间日记查看页面设置加载**: 修正了 [`morning-journal-view.js`](personal-website/morning-journal-view.js:1) 中读取设置的逻辑，使其使用 [`admin/journal-settings.js`](personal-website/admin/journal-settings.js:1) 中正确的属性名称 (`referenceStreak`, `goalDays`, `goalReward`)，确保目标横幅能正确显示后台更新的日更天数和目标信息。
+
+### 变更 (Changed)
+- **晨间日记功能重构 (管理端)**:
+    - **管理后台**:
+        - 将晨间日记管理功能完全整合到主管理界面 ([`admin/public/index.html`](personal-website/admin/public/index.html:0), [`admin/public/script.js`](personal-website/admin/public/script.js:0))，移除了独立的管理页面 ([`admin/public/morning-journal.html`](personal-website/admin/public/morning-journal.html:0), [`admin/public/morning-journal.js`](personal-website/admin/public/morning-journal.js:0))。
+        - 更新数据结构 ([`admin/morning-journal-data.js`](personal-website/admin/morning-journal-data.js:0)) 为多字段对象 (`id`, `date`, `harvest`, `plan`, `gratitude`, `investment`, `connect`)，取代了原有的单一 `content` 字段。
+        - 更新后端 API ([`admin/server.js`](personal-website/admin/server.js:0)) 以支持新的数据结构，并添加了 `/api/morning-journal/import-localstorage` 端点用于从浏览器 LocalStorage 导入旧数据。
+        - 管理界面现在提供类似 `drawing-app` 的体验，包括：
+            - 多字段编辑器 (`contenteditable` div)。
+            - 历史记录浏览模态框，使用 Flatpickr 日历进行日期选择和条目查看。
+            - 设置模态框，包含“导出为 JSON”功能。
+            - “从 LocalStorage 导入”按钮，用于迁移旧的 `diaryEntries` 数据。
+    - **公共站点**:
+        - 更新了主页 ([`index.html`](personal-website/index.html:0)) 的晨间日记摘要渲染逻辑 ([`main.js`](personal-website/main.js:0))，使其从新的多字段数据中提取“收获”(`harvest`)字段内容进行展示。
 
 ---
 ## [0.3.2] - 2025-06-06

@@ -3,54 +3,21 @@
 // 包含来自以下文件的内容:
 // - blog-data.js
 // - featured-works-data.js
-// - learning-diary-data.js
+// - learning-diary-data.js (部分逻辑保留，但数据源改为 morning-journal-data.js)
 // - tool-library-data.js
 // - generate-blog-list.js
 // - generate-featured-works.js
-// - generate-learning-diary.js
+// - generate-learning-diary.js (部分逻辑保留，但数据源改为 morning-journal-data.js)
 // - generate-tool-library.js
 // - lightbox.js
 // ==========================================================================
 
 // ==========================================================================
-// == 内容来自: blog-data.js ==
-// ==========================================================================
-// const blogPosts = []; // Removed hardcoded data
-// ==========================================================================
-// == 结束: blog-data.js ==
-// ==========================================================================
-
-
-// ==========================================================================
-// == 内容来自: featured-works-data.js ==
-// ==========================================================================
-// const featuredWorksData = []; // Removed hardcoded data
-// ==========================================================================
-// == 结束: featured-works-data.js ==
-// ==========================================================================
-
-
-// ==========================================================================
-// == 内容来自: learning-diary-data.js ==
-// ==========================================================================
-const learningDiaryData = [
-  {
-    "title": "测试日记标题",
-    "summary": "这是测试日记的内容概要。",
-    "link": ""
-  }
-];
-// ==========================================================================
-// == 结束: learning-diary-data.js ==
-// ==========================================================================
-
-
-// ==========================================================================
-// == 内容来自: tool-library-data.js ==
-// ==========================================================================
-// const toolLibraryData = []; // Removed hardcoded data
-// ==========================================================================
-// == 结束: tool-library-data.js ==
+// == 全局数据 (由 index.html 中的 <script> 标签加载) ==
+// window.blogPosts
+// window.featuredWorksData
+// window.toolLibraryData
+// window.morningJournalData (替代旧的 learningDiaryData)
 // ==========================================================================
 
 
@@ -59,80 +26,9 @@ const learningDiaryData = [
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 定义博客渲染函数 (移到 DOMContentLoaded 内部)
-    function renderBlogPosts() {
-        console.log("--- Executing renderBlogPosts function ---"); // DEBUG: Check execution
-        const blogListContainer = document.querySelector('#blog-summary .blog-posts-grid');
-        console.log("Blog list container found:", blogListContainer); // DEBUG: Check container element
-
-        if (!blogListContainer) {
-            console.error('Blog list container not found!');
-            return;
-        }
-
-        blogListContainer.innerHTML = ''; // Clear container
-
-        // Use global data directly
-        const blogPosts = window.blogPosts || []; // Corrected variable name
-        console.log("Checking window.blogPosts inside function:", window.blogPosts); // DEBUG: Check data availability
-        console.log("Assigned blogPosts variable:", blogPosts); // DEBUG: Check assigned variable
-
-        if (!Array.isArray(blogPosts) || blogPosts.length === 0) {
-             console.log("No blog posts found or data is not an array. Rendering '暂无'."); // DEBUG: Check condition
-             blogListContainer.innerHTML = '<p>暂无博客文章。</p>';
-             return;
-        }
-        console.log(`Found ${blogPosts.length} blog posts. Rendering...`); // DEBUG: Confirm rendering start
-
-        // Filter for featured posts
-        const featuredPosts = blogPosts.filter(post => post.featured === true);
-        console.log(`Found ${featuredPosts.length} featured blog posts. Rendering...`); // DEBUG: Confirm filtering
-
-        if (featuredPosts.length === 0) {
-            console.log("No featured blog posts found. Rendering '暂无'."); // DEBUG: Check condition
-            blogListContainer.innerHTML = '<p>暂无精选博客文章。</p>';
-            return;
-        }
-
-        // Use filtered data (featuredPosts) to render
-        featuredPosts.forEach(post => {
-            const article = document.createElement('article');
-            article.classList.add('blog-post-summary');
-            let sourceClass = '';
-                if (post.source === '小红书') {
-                    sourceClass = 'source-xiaohongshu';
-                } else if (post.source === '公众号') {
-                    sourceClass = 'source-gongzhonghao';
-                }
-                if (sourceClass) {
-                    article.classList.add(sourceClass);
-                }
-                const sourceLabel = document.createElement('span');
-                sourceLabel.classList.add('source-label');
-                sourceLabel.textContent = post.source;
-                const heading = document.createElement('h3');
-                heading.textContent = post.title;
-                const summary = document.createElement('p');
-                summary.textContent = post.summary;
-                const link = document.createElement('a');
-                link.href = post.link;
-                link.classList.add('details-link');
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.textContent = '阅读全文 →';
-                article.appendChild(sourceLabel);
-                article.appendChild(heading);
-                article.appendChild(summary);
-                article.appendChild(link);
-                blogListContainer.appendChild(article);
-            });
-    } // End renderBlogPosts function definition
-
-    // --- 调用博客渲染函数 ---
-    renderBlogPosts();
-
-    // --- 逻辑来自: generate-featured-works.js ---
-    (() => { // Removed async
+    // --- 渲染精选作品 ---
+    function renderFeaturedWorks() {
+        console.log("--- Executing renderFeaturedWorks function ---");
         const worksGridContainer = document.querySelector('#featured-works .works-grid');
         if (!worksGridContainer) {
             console.error('Featured works grid container not found!');
@@ -141,34 +37,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         worksGridContainer.innerHTML = ''; // Clear container
 
-        // Use global data directly
         const worksData = window.featuredWorksData || [];
+        console.log("Checking window.featuredWorksData:", worksData);
 
         if (!Array.isArray(worksData) || worksData.length === 0) {
              worksGridContainer.innerHTML = '<p>暂无精选作品。</p>';
              return;
         }
+        console.log(`Found ${worksData.length} featured works. Rendering...`);
 
-        // Use global data (worksData) to render
         worksData.forEach(work => {
             const workCard = document.createElement('div');
             workCard.classList.add('work-card');
             const img = document.createElement('img');
-                // 注意：API 返回的可能是相对路径，需要确保它们相对于网站根目录是正确的
-                // 如果 API 返回的是 admin 目录下的路径，可能需要调整
-                img.src = work.imageSrc; // Assuming API returns correct path relative to website root
-                img.alt = work.altText;
+                img.src = work.imageSrc;
+                img.alt = work.altText || work.title || '精选作品图片'; // Add fallback alt text
                 const heading = document.createElement('h3');
-                heading.textContent = work.title;
+                heading.textContent = work.title || '无标题';
                 const description = document.createElement('p');
-                description.textContent = work.description;
+                description.textContent = work.description || '暂无描述';
                 const tag = document.createElement('span');
                 tag.classList.add('tech-tag');
-                tag.textContent = work.tag;
+                tag.textContent = work.tag || '通用';
                 const link = document.createElement('a');
-                link.href = work.imageSrc; // Link directly to the image source
-                link.target = '_blank'; // Open in a new tab
-                link.rel = 'noopener noreferrer'; // Security best practice for target="_blank"
+                // Link directly to image, or use detailsLink if provided and not '#'
+                link.href = (work.detailsLink && work.detailsLink !== '#') ? work.detailsLink : work.imageSrc;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
                 link.classList.add('details-link');
                 link.textContent = '查看详情 →';
                 workCard.appendChild(img);
@@ -178,58 +73,160 @@ document.addEventListener('DOMContentLoaded', () => {
                 workCard.appendChild(link);
                 worksGridContainer.appendChild(workCard);
             });
-        // Removed try...catch block for fetch
-    })(); // End IIFE for featured works
+    }
 
-    // --- 逻辑来自: generate-learning-diary.js ---
-    (() => {
-        const diaryListContainer = document.querySelector('#learning-diary-list');
-        if (!diaryListContainer) {
-            return; // Element might not be on the page
-        }
-        if (typeof learningDiaryData === 'undefined' || !Array.isArray(learningDiaryData)) {
-            console.error('learningDiaryData is not available or not an array.');
-            diaryListContainer.innerHTML = '<p>无法加载学习日记数据。</p>';
+    // --- 渲染博客摘要 (精选) ---
+    function renderBlogSummary() {
+        console.log("--- Executing renderBlogSummary function ---");
+        const blogListContainer = document.querySelector('#blog-summary .blog-posts-grid');
+        if (!blogListContainer) {
+            console.error('Blog summary container not found!');
             return;
         }
-        if (learningDiaryData.length === 0) {
-            diaryListContainer.innerHTML = '<p>暂无学习日记。</p>';
+
+        blogListContainer.innerHTML = ''; // Clear container
+
+        const blogPosts = window.blogPosts || [];
+        console.log("Checking window.blogPosts:", blogPosts);
+
+        if (!Array.isArray(blogPosts) || blogPosts.length === 0) {
+             blogListContainer.innerHTML = '<p>暂无博客文章。</p>';
+             return;
+        }
+
+        // Filter for featured posts
+        const featuredPosts = blogPosts.filter(post => post.featured === true);
+        console.log(`Found ${featuredPosts.length} featured blog posts. Rendering...`);
+
+        if (featuredPosts.length === 0) {
+            blogListContainer.innerHTML = '<p>暂无精选博客文章。</p>';
             return;
         }
-        learningDiaryData.forEach(entry => {
+
+        featuredPosts.forEach(post => {
             const article = document.createElement('article');
-            article.classList.add('diary-entry');
+            article.classList.add('blog-post-summary');
+            let sourceClass = '';
+                if (post.source === '小红书') sourceClass = 'source-xiaohongshu';
+                else if (post.source === '公众号') sourceClass = 'source-gongzhonghao';
+            if (sourceClass) article.classList.add(sourceClass);
+
+            const sourceLabel = document.createElement('span');
+            sourceLabel.classList.add('source-label');
+            sourceLabel.textContent = post.source || '未知来源';
             const heading = document.createElement('h3');
-            heading.textContent = entry.title;
+            heading.textContent = post.title || '无标题';
             const summary = document.createElement('p');
-            summary.textContent = entry.summary;
+            summary.textContent = post.summary || '暂无摘要';
+            const link = document.createElement('a');
+            link.href = post.link || '#';
+            link.classList.add('details-link');
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = '阅读全文 →';
+            article.appendChild(sourceLabel);
             article.appendChild(heading);
             article.appendChild(summary);
-            if (entry.link && entry.link !== '#') {
-                const link = document.createElement('a');
-                link.href = entry.link;
-                link.classList.add('details-link');
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.textContent = '相关链接 →';
-                article.appendChild(link);
-            }
-            diaryListContainer.appendChild(article);
-        });
-    })(); // IIFE to scope variables
+            article.appendChild(link);
+            blogListContainer.appendChild(article);
+            });
+    }
 
-    // --- 逻辑来自: generate-tool-library.js ---
-    (() => { // Removed async
+    // --- 渲染晨间日记摘要 (NEW) ---
+    function renderMorningJournalSummary() {
+        console.log("--- Executing renderMorningJournalSummary function (v3) ---");
+        const summaryContainer = document.getElementById('journal-entries');
+        if (!summaryContainer) {
+            console.error('Morning journal entries container (#journal-entries) not found!');
+            return;
+        }
+
+        summaryContainer.innerHTML = '';
+
+        // CORRECTED: Use window.morningJournalEntries as defined in the data file
+        const journalData = window.morningJournalEntries || [];
+        console.log("[MJ Summary v3] Initial window.morningJournalEntries (length):", journalData.length);
+
+        if (!Array.isArray(journalData) || journalData.length === 0) {
+            console.log("[MJ Summary v3] No morning journal entries found or data is not an array.");
+            summaryContainer.innerHTML = '<p>暂无晨间日记。</p>';
+            return;
+        }
+
+        const sortedEntries = [...journalData].sort((a, b) => {
+            try {
+                return new Date(b.date) - new Date(a.date);
+            } catch (e) {
+                console.error("[MJ Summary v3] Error parsing dates for sorting:", a.date, b.date, e);
+                return 0;
+            }
+        });
+
+        function stripHtml(html) {
+           if (!html) return "";
+           let tmp = document.createElement("DIV");
+           tmp.innerHTML = html;
+           return tmp.textContent || tmp.innerText || "";
+        }
+
+        const latestEntryWithContent = sortedEntries.find(entry => {
+            if (entry.harvest) {
+                const textContent = stripHtml(entry.harvest);
+                return textContent.trim() !== '';
+            }
+            return false;
+        });
+
+        if (!latestEntryWithContent) {
+            console.log("[MJ Summary v3] No morning journal entries with actual visible text content found.");
+            summaryContainer.innerHTML = '<p>暂无晨间日记。</p>';
+            return;
+        }
+
+        console.log(`Rendering latest morning journal entry with content from date: ${latestEntryWithContent.date}`);
+
+        const fragment = document.createDocumentFragment();
+        const entryDiv = document.createElement('div');
+        entryDiv.classList.add('journal-summary-item');
+
+        // Format date for display
+        let displayDate = '无日期';
+        try {
+            if (latestEntryWithContent.date) {
+                displayDate = new Date(latestEntryWithContent.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+            }
+        } catch (e) {
+            console.error("Error formatting date:", latestEntryWithContent.date, e);
+        }
+
+        // Use 'harvest' field for the snippet
+        const harvestContent = latestEntryWithContent.harvest; // Already checked it's not empty
+        const contentSnippet = harvestContent.length > 100
+            ? harvestContent.substring(0, 100) + '...'
+            : harvestContent;
+        
+        entryDiv.innerHTML = `
+            <h4>${displayDate}</h4>
+            <p>${contentSnippet.replace(/\n/g, '<br>')}</p>
+        `; // Replace newlines with <br>
+        fragment.appendChild(entryDiv);
+        summaryContainer.appendChild(fragment);
+    }
+
+
+    // --- 渲染工具资源库 ---
+    function renderToolLibrary() {
+        console.log("--- Executing renderToolLibrary function ---");
         const categoriesNavContainer = document.getElementById('tool-categories-nav');
         const toolListContainer = document.getElementById('tool-list-container');
         const searchInput = document.getElementById('tool-search-input');
         const paginationContainer = document.getElementById('pagination-container');
 
-        console.log("Tool Library Elements:", { categoriesNavContainer, toolListContainer, searchInput, paginationContainer }); // DEBUG
-
         if (!categoriesNavContainer || !toolListContainer || !searchInput || !paginationContainer) {
-            console.error('Tool library elements not found. Skipping initialization.'); // DEBUG
-            return; // Exit if essential elements are missing
+            console.error('Tool library elements not found. Skipping initialization.');
+            // Optionally display an error message in one of the containers if they exist partially
+            if (toolListContainer) toolListContainer.innerHTML = '<p>工具库组件加载失败。</p>';
+            return;
         }
 
         const itemsPerPage = 4;
@@ -237,42 +234,39 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentCategory = '全部';
         let currentSearchTerm = '';
         let filteredToolsCache = [];
-        // Use global data directly
         const toolsData = window.toolLibraryData || [];
-        console.log("Using global tools data:", toolsData); // DEBUG
+        console.log("Checking window.toolLibraryData:", toolsData);
 
         // --- Initial Render ---
-        toolListContainer.innerHTML = ''; // Clear container
+        toolListContainer.innerHTML = '';
         categoriesNavContainer.innerHTML = '';
         paginationContainer.innerHTML = '';
 
         if (!Array.isArray(toolsData)) {
              console.error('Global tools data is not an array:', toolsData);
              toolListContainer.innerHTML = '<p>工具数据格式不正确。</p>';
-             return; // Stop if data is invalid
+             return;
         }
 
-        console.log("Rendering initial categories and tools..."); // DEBUG
-        renderCategories(); // Render categories based on global data
-        renderToolList();   // Render the first page of tools
-        searchInput.addEventListener('input', handleSearchInput); // Add listener
-
-        // Removed try...catch...finally block for fetch
+        console.log("Rendering initial categories and tools...");
+        renderCategories();
+        renderToolList();
+        searchInput.removeEventListener('input', handleSearchInput); // Prevent duplicate listeners
+        searchInput.addEventListener('input', handleSearchInput);
 
         function renderCategories() {
-            // Uses the 'toolsData' variable from the IIFE scope (now assigned from window.toolLibraryData)
             const categoryIcons = {
                 '全部': 'apps', 'AI 生成': 'auto_awesome', '开发工具': 'code',
                 '效率助手': 'checklist', '图像影音处理': 'perm_media', '休闲娱乐': 'stadia_controller'
             };
-            const availableCategories = ['全部', ...new Set(toolsData.map(tool => tool.category))];
-            const sortedCategories = Object.keys(categoryIcons).filter(cat => availableCategories.includes(cat));
+            // Derive categories from data, ensuring '全部' is first
+            const availableCategories = ['全部', ...new Set(toolsData.map(tool => tool.category).filter(Boolean))].sort((a, b) => a === '全部' ? -1 : b === '全部' ? 1 : a.localeCompare(b, 'zh-CN'));
 
             categoriesNavContainer.innerHTML = '<h3>工具分类</h3>';
             const ul = document.createElement('ul');
             const fragment = document.createDocumentFragment();
 
-            sortedCategories.forEach(category => {
+            availableCategories.forEach(category => {
                 const li = document.createElement('li');
                 li.className = 'category-item';
                 const a = document.createElement('a');
@@ -285,8 +279,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 iconSpan.style.verticalAlign = 'bottom';
                 const textSpan = document.createElement('span');
                 textSpan.textContent = category;
+                
+                // Calculate and add count
+                const count = category === '全部'
+                    ? toolsData.length
+                    : toolsData.filter(tool => tool.category === category).length;
+                const countSpan = document.createElement('span');
+                countSpan.className = 'category-count';
+                countSpan.textContent = ` (${count})`;
+                countSpan.style.fontSize = '0.9em'; // Slightly smaller font for count
+                countSpan.style.color = 'var(--light-slate)'; // Lighter color for count
+
                 a.appendChild(iconSpan);
                 a.appendChild(textSpan);
+                a.appendChild(countSpan); // Add count to the link
                 if (category === currentCategory) {
                     li.classList.add('active');
                 }
@@ -295,31 +301,36 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             ul.appendChild(fragment);
             categoriesNavContainer.appendChild(ul);
-            categoriesNavContainer.removeEventListener('click', handleCategoryClick); // Ensure no duplicates
+            categoriesNavContainer.removeEventListener('click', handleCategoryClick); // Prevent duplicate listeners
             categoriesNavContainer.addEventListener('click', handleCategoryClick);
         }
 
         function renderToolList() {
-            // Uses the 'toolsData' variable from the IIFE scope
             let filteredByCategory = currentCategory === '全部'
-                ? toolsData // Use scoped variable
-                : toolsData.filter(tool => tool.category === currentCategory); // Use scoped variable
+                ? toolsData
+                : toolsData.filter(tool => tool.category === currentCategory);
+
             const lowerSearchTerm = currentSearchTerm.toLowerCase().trim();
             filteredToolsCache = lowerSearchTerm === ''
                 ? filteredByCategory
                 : filteredByCategory.filter(tool =>
-                    tool.name.toLowerCase().includes(lowerSearchTerm) ||
-                    (tool.description && tool.description.toLowerCase().includes(lowerSearchTerm)) ||
-                    (tool.tags && Array.isArray(tool.tags) && tool.tags.some(tag => tag.toLowerCase().includes(lowerSearchTerm))) // Added check for Array.isArray
+                    (tool.name || '').toLowerCase().includes(lowerSearchTerm) ||
+                    (tool.description || '').toLowerCase().includes(lowerSearchTerm) ||
+                    (tool.tags && Array.isArray(tool.tags) && tool.tags.some(tag => (tag || '').toLowerCase().includes(lowerSearchTerm)))
                   );
+
             const totalItems = filteredToolsCache.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage);
-            if (currentPage > totalPages) {
-                currentPage = totalPages || 1;
+            if (currentPage > totalPages && totalPages > 0) { // Adjust current page if it exceeds total pages
+                currentPage = totalPages;
+            } else if (totalPages === 0) {
+                 currentPage = 1; // Reset to 1 if no pages
             }
+
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
             const itemsToDisplay = filteredToolsCache.slice(startIndex, endIndex);
+
             toolListContainer.innerHTML = ''; // Clear previous items
             if (itemsToDisplay.length === 0) {
                 toolListContainer.innerHTML = '<p>没有找到匹配的工具。</p>';
@@ -332,9 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     cardHeader.className = 'card-header';
                     const iconSpan = document.createElement('span');
                     iconSpan.className = 'material-symbols-outlined tool-icon';
-                    iconSpan.textContent = tool.icon || 'category';
+                    iconSpan.textContent = tool.icon || 'build'; // Default icon
                     const title = document.createElement('h3');
-                    title.textContent = tool.name;
+                    title.textContent = tool.name || '未命名工具';
                     cardHeader.appendChild(iconSpan);
                     cardHeader.appendChild(title);
                     const description = document.createElement('p');
@@ -342,19 +353,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     description.textContent = tool.description || '暂无描述';
                     const tagsContainer = document.createElement('div');
                     tagsContainer.className = 'tool-tags';
-                    // Ensure tags is an array before trying to iterate
                     if (tool.tags && Array.isArray(tool.tags)) {
                         tool.tags.forEach(tagText => {
-                            const tagSpan = document.createElement('span');
-                            tagSpan.className = 'tag';
-                            tagSpan.textContent = tagText;
-                            tagsContainer.appendChild(tagSpan);
+                            if (tagText) { // Ensure tag is not empty
+                                const tagSpan = document.createElement('span');
+                                tagSpan.className = 'tag';
+                                tagSpan.textContent = tagText;
+                                tagsContainer.appendChild(tagSpan);
+                            }
                         });
                     }
                     const link = document.createElement('a');
                     link.className = 'tool-link';
-                    // API returns 'url' based on admin form, ensure consistency
-                    link.href = tool.url || '#'; // Use '#' if url is missing
+                    link.href = tool.url || '#';
                     link.textContent = '访问工具';
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
@@ -372,37 +383,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function handleCategoryClick(event) {
-            // This function implicitly uses the 'toolsData' from the outer scope
-            // when it calls renderToolList()
-            if (event.target.tagName !== 'A' && !event.target.closest('a')) return; // Handle clicks on icon/text inside link
+            const link = event.target.closest('a');
+            if (!link || !link.dataset.category) return;
             event.preventDefault();
-            const link = event.target.closest('a'); // Get the link element
-            if (!link) return;
 
             currentCategory = link.dataset.category;
-            currentPage = 1;
-            const listItem = link.parentElement;
+            currentPage = 1; // Reset page when category changes
+            currentSearchTerm = ''; // Reset search when category changes
+            searchInput.value = ''; // Clear search input visually
+
             const items = categoriesNavContainer.querySelectorAll('.category-item');
             items.forEach(item => item.classList.remove('active'));
-            listItem.classList.add('active');
+            link.parentElement.classList.add('active'); // Activate the parent LI
+
             renderToolList();
         }
 
         function handleSearchInput() {
-            // This function implicitly uses the 'toolsData' from the outer scope
-            // when it calls renderToolList()
             currentSearchTerm = searchInput.value;
-            currentPage = 1;
+            currentPage = 1; // Reset page when searching
             renderToolList();
         }
 
         function renderPaginationControls(totalItems) {
-            // This function implicitly uses the 'toolsData' from the outer scope
-            // when its event listeners call renderToolList()
             paginationContainer.innerHTML = '';
             const totalPages = Math.ceil(totalItems / itemsPerPage);
             if (totalPages <= 1) return;
+
             const fragment = document.createDocumentFragment();
+
+            // Previous Button
             const prevButton = document.createElement('button');
             prevButton.textContent = '上一页';
             prevButton.disabled = currentPage === 1;
@@ -413,11 +423,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             fragment.appendChild(prevButton);
+
+            // Page Info
             const pageInfo = document.createElement('span');
             pageInfo.textContent = `第 ${currentPage} / ${totalPages} 页`;
-            pageInfo.style.margin = '0 1rem';
+            pageInfo.style.margin = '0 0.8rem'; // Adjusted margin
             pageInfo.style.color = 'var(--slate)';
             fragment.appendChild(pageInfo);
+
+            // Next Button
             const nextButton = document.createElement('button');
             nextButton.textContent = '下一页';
             nextButton.disabled = currentPage === totalPages;
@@ -428,190 +442,136 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             fragment.appendChild(nextButton);
+
             paginationContainer.appendChild(fragment);
         }
-
-        // Initial calls are now inside the try block after successful fetch
-
-        // Initial calls are now directly executed after data check
-
-    })(); // End IIFE for tool library
-
-    // --- 新增：渲染晨间日记摘要 ---
-    function renderMorningJournalSummary() {
-        console.log("--- Executing renderMorningJournalSummary function ---");
-        const summaryContainer = document.getElementById('morning-journal-summary');
-        if (!summaryContainer) {
-            console.error('Morning journal summary container not found!');
-            return;
-        }
-
-        summaryContainer.innerHTML = ''; // Clear container
-
-        const journalEntries = window.morningJournalEntries || [];
-        console.log("Checking window.morningJournalEntries:", journalEntries);
-
-        if (!Array.isArray(journalEntries) || journalEntries.length === 0) {
-            console.log("No morning journal entries found.");
-            summaryContainer.innerHTML = '<p>暂无晨间日记。</p>';
-            return;
-        }
-
-        // Sort by date descending (newest first)
-        const sortedEntries = [...journalEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        // Take the latest 3 entries
-        const latestEntries = sortedEntries.slice(0, 3);
-        console.log(`Rendering ${latestEntries.length} latest morning journal entries.`);
-
-        latestEntries.forEach(entry => {
-            const entryDiv = document.createElement('div');
-            entryDiv.classList.add('journal-summary-item'); // Add a class for potential styling
-
-            // Simple content snippet (e.g., first 100 chars)
-            const contentSnippet = entry.content.length > 100
-                ? entry.content.substring(0, 100) + '...'
-                : entry.content;
-
-            entryDiv.innerHTML = `
-                <h4>${entry.date}</h4>
-                <p>${contentSnippet.replace(/\n/g, '<br>')}</p> <!-- Replace newlines with <br> for display -->
-            `;
-            summaryContainer.appendChild(entryDiv);
-        });
-    }
-
-    // --- 调用晨间日记渲染函数 ---
-    renderMorningJournalSummary();
+    } // End renderToolLibrary function definition
 
 
-    // --- 逻辑来自: lightbox.js ---
-    (() => {
+    // --- Lightbox ---
+    function initializeLightbox() {
+        console.log("--- Executing initializeLightbox function ---");
         const images = document.querySelectorAll('img.lightbox-trigger');
-        if (!images.length) return; // 如果页面没有 lightbox 图片，则提前退出此 IIFE
+        if (!images.length) {
+            console.log("No lightbox trigger images found.");
+            return;
+        }
 
         let lightbox = document.getElementById('lightbox');
         let lightboxImage = null;
 
-        // 创建 lightbox DOM (如果不存在)
         if (!lightbox) {
             lightbox = document.createElement('div');
             lightbox.id = 'lightbox';
-            lightbox.style.display = 'none'; // 初始隐藏
+            lightbox.style.display = 'none';
             document.body.appendChild(lightbox);
 
             lightboxImage = document.createElement('img');
             lightbox.appendChild(lightboxImage);
 
-            // 点击 lightbox 背景关闭
             lightbox.addEventListener('click', e => {
                 if (e.target !== lightboxImage) {
                     lightbox.style.display = 'none';
-                    lightboxImage.src = ''; // 清除图片源
+                    lightboxImage.src = '';
                 }
             });
 
-            // 按 ESC 关闭
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && lightbox.style.display !== 'none') {
                     lightbox.style.display = 'none';
-                    lightboxImage.src = ''; // 清除图片源
+                    lightboxImage.src = '';
                 }
             });
         } else {
-            // 如果 lightbox 已存在，获取其图片元素
             lightboxImage = lightbox.querySelector('img');
         }
 
-        // 为每个触发器图片添加点击事件
-        images.forEach(image => {
-            image.style.cursor = 'pointer'; // 添加手型光标
-            image.addEventListener('click', e => {
-                e.stopPropagation(); // 防止事件冒泡
-                if (lightboxImage) {
-                    lightboxImage.src = image.src; // 设置 lightbox 图片源
-                    lightbox.style.display = 'flex'; // 显示 lightbox
-                }
-            });
-        });
-    })(); // 结束 lightbox IIFE
+        if (!lightboxImage) { // Ensure lightboxImage exists
+             console.error("Lightbox image element could not be found or created.");
+             return;
+        }
 
-    // --- 新增：日夜模式切换逻辑 ---
-    (() => {
+        images.forEach(image => {
+            image.style.cursor = 'pointer';
+            image.removeEventListener('click', handleImageClick); // Prevent duplicate listeners
+            image.addEventListener('click', handleImageClick);
+        });
+
+        function handleImageClick(e) {
+             e.stopPropagation();
+             lightboxImage.src = e.target.src;
+             lightbox.style.display = 'flex';
+        }
+    }
+
+    // --- 日夜模式切换 ---
+    function initializeThemeToggle() {
+        console.log("--- Executing initializeThemeToggle function ---");
         const themeToggleButton = document.getElementById('theme-toggle-button');
         if (!themeToggleButton) {
             console.warn('Theme toggle button not found.');
-            return; // 如果按钮不存在，退出此 IIFE
+            return;
         }
         const body = document.body;
         const toggleIcon = themeToggleButton.querySelector('.material-symbols-outlined');
 
-        // Function to apply theme based on preference
         const applyTheme = (theme) => {
-            console.log(`Applying theme: ${theme}`);
             if (theme === 'dark') {
                 body.classList.add('dark-theme');
-                console.log('Added dark-theme class to body.');
                 if (toggleIcon) toggleIcon.textContent = 'dark_mode';
                 themeToggleButton.setAttribute('aria-label', '切换到日间模式');
             } else {
                 body.classList.remove('dark-theme');
-                console.log('Removed dark-theme class from body.');
                 if (toggleIcon) toggleIcon.textContent = 'light_mode';
                 themeToggleButton.setAttribute('aria-label', '切换到夜间模式');
             }
-            console.log('Current body classes:', body.className);
         };
 
-        // Get saved theme or system preference
         let currentTheme = localStorage.getItem('theme');
-        console.log(`Theme from localStorage: ${currentTheme}`);
         if (!currentTheme) {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             currentTheme = prefersDark ? 'dark' : 'light';
-            console.log(`No saved theme, using system preference: ${currentTheme}`);
         }
-
-        // Apply the initial theme
         applyTheme(currentTheme);
 
-        // Add click event listener
-        themeToggleButton.addEventListener('click', () => {
-            console.log('Theme toggle button clicked.');
+        themeToggleButton.removeEventListener('click', handleThemeToggle); // Prevent duplicate listeners
+        themeToggleButton.addEventListener('click', handleThemeToggle);
+
+        function handleThemeToggle() {
             let newTheme = body.classList.contains('dark-theme') ? 'light' : 'dark';
-            console.log(`Switching to theme: ${newTheme}`);
             applyTheme(newTheme);
             localStorage.setItem('theme', newTheme);
-            console.log(`Saved theme to localStorage: ${newTheme}`);
-        });
+        }
 
-        // Optional: Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-            console.log('System color scheme changed.');
-            // Only change if no theme is explicitly saved by the user
-            if (!localStorage.getItem('theme')) {
-                const newColorScheme = event.matches ? "dark" : "light";
-                console.log(`Applying system preferred theme: ${newColorScheme}`);
-                applyTheme(newColorScheme);
-            } else {
-                console.log('User has saved theme preference, ignoring system change.');
-            }
-        });
-    })(); // 结束 theme toggle IIFE
+        // System theme change listener (optional)
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        // Remove previous listener if exists (important for hot-reloading environments)
+        // Note: Storing the listener function might be needed for robust removal
+        try { mediaQuery.removeEventListener('change', handleSystemThemeChange); } catch(e) {}
+        mediaQuery.addEventListener('change', handleSystemThemeChange);
 
-    // --- Simplified Admin Entry Link (JS removed, rely on HTML href) ---
-    // (() => {
-    //     const adminLink = document.getElementById('admin-entry-link');
-    //     if (adminLink) {
-    //         adminLink.addEventListener('click', (event) => {
-    //             event.preventDefault(); // Prevent default link behavior
-    //             const adminUrl = '/admin'; // Incorrect for GitHub Pages
-    //             console.log('Admin link clicked, opening:', adminUrl);
-    //             window.open(adminUrl, '_blank'); // Open in new tab
-    //         });
-    //     } else {
-    //         console.warn('Admin entry link element not found.');
-    //     }
-    // })(); // End admin link IIFE
+        function handleSystemThemeChange(event) {
+             if (!localStorage.getItem('theme')) { // Only apply if user hasn't set preference
+                 const newColorScheme = event.matches ? "dark" : "light";
+                 applyTheme(newColorScheme);
+             }
+        }
+    }
+
+
+    // --- 初始化页面 ---
+    function initPage() {
+        console.log("--- Initializing Page ---");
+        renderFeaturedWorks();
+        renderBlogSummary();
+        renderMorningJournalSummary(); // Call the new function
+        renderToolLibrary();
+        initializeLightbox();
+        initializeThemeToggle();
+        // Add other initialization calls if needed
+    }
+
+    // --- 执行初始化 ---
+    initPage();
 
 }); // 结束 DOMContentLoaded 事件监听器
