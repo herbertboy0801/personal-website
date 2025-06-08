@@ -237,5 +237,17 @@ window.toolLibraryData = [
       "决策"
     ],
     "url": "tools/random_decision_tool.html"
+  },
+  {
+    "id": "tools-1749408165862",
+    "name": "图片去背工具",
+    "description": "移除图片背景",
+    "icon": "✂️",
+    "category": "图像影音处理",
+    "tags": [
+      "图片去背",
+      "图像调整"
+    ],
+    "url": "tools/background-remover.html"
   }
 ];
