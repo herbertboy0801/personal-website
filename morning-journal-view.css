@@ -7,26 +7,26 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa; /* Base background color */
+    background-color: #f0f2f5; /* 调整为截图中更浅的灰色背景 */
     /* Optional: Add subtle background pattern if desired */
     /* background-image: linear-gradient(45deg, #f0f2f5 25%, transparent 25%, transparent 75%, #f0f2f5 75%, #f0f2f5),
-                      linear-gradient(-45deg, #f0f2f5 25%, transparent 25%, transparent 75%, #f0f2f5 75%, #f0f2f5);
+                       linear-gradient(-45deg, #f0f2f5 25%, transparent 25%, transparent 75%, #f0f2f5 75%, #f0f2f5);
     background-size: 20px 20px, 20px 20px; */
     color: #333;
 }
 
 .container.view-container { /* Use specific class */
     max-width: 800px;
-    margin: 20px auto;
-    padding: 0 15px 20px 15px; /* Adjust padding */
+    margin: 5px auto;
+    padding: 0 10px 5px 10px;
     /* Removed background/shadow as it's on body or card */
 }
 
 /* --- Header (from drawing-app) --- */
 .app-header {
     background-color: #fff;
-    padding: 15px;
-    margin-bottom: 10px; /* Aggressively reduce margin */
+    padding: 5px; /* 进一步减少内边距 */
+    margin-bottom: 2px; /* 进一步减少外边距 */
     text-align: center;
     border-bottom: 1px solid #e8e8e8;
 }
@@ -39,14 +39,14 @@ body {
 }
 
 .app-logo {
-    height: 32px;
-    margin-right: 12px;
+    height: 28px; /* 减小logo高度 */
+    margin-right: 8px; /* 减小logo右边距 */
     vertical-align: middle;
 }
 
 .app-header h1 {
     color: #007bff;
-    font-size: 1.6em;
+    font-size: 1.4em; /* 减小标题字号 */
     margin: 0;
     font-weight: 600;
 }
@@ -56,14 +56,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px; /* Aggressively reduce margin */
-    padding-bottom: 10px; /* Restore some padding */
+    margin-bottom: 2px; /* 进一步减少外边距 */
+    padding-bottom: 2px; /* 进一步减少内边距 */
     border-bottom: 1px solid #eee;
 }
 
 .date-navigation button,
 .date-navigation input.flatpickr-input {
-    padding: 8px 15px;
+    padding: 4px 8px; /* 进一步减少按钮和输入框内边距 */
+    font-size: 0.9em; /* 减小字体 */
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #f8f8f8;
@@ -86,10 +87,10 @@ body {
 .goal-banner {
    background-color: #007bff;
    color: white;
-   padding: 10px 20px;
-   font-size: 1em;
+   padding: 5px 10px; /* 进一步减少内边距 */
+   font-size: 0.9em; /* 进一步减小字体 */
    font-weight: 500;
-   margin-bottom: 10px; /* Aggressively reduce margin */
+   margin-bottom: 2px; /* 进一步减少外边距 */
    border-radius: 4px;
    display: flex;
    justify-content: center;
@@ -109,22 +110,23 @@ body {
 }
 
 .diary-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    background-color: #ffffff; /* 确保卡片背景是纯白色 */
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 调整阴影使其更柔和 */
+    margin-bottom: 5px;
     overflow: hidden;
 }
 
 /* --- Journal Content Area --- */
 .journal-content.view-mode { /* Target specific class */
-    padding: 10px; /* Aggressively reduce padding */
+    padding: 0; /* 移除 journal-content 的内边距，由 diary-block 控制 */
     margin-top: 0; /* Reset margin */
 }
 
 /* Diary Block Structure (from drawing-app, adapted for view) */
 .diary-block {
-    margin-bottom: 10px; /* Aggressively reduce margin */
+    margin-bottom: 0; /* 移除区块间外边距 */
+    padding: 0; /* 移除 diary-block 的内边距 */
 }
 
 .diary-block:last-child {
@@ -135,10 +137,11 @@ body {
     display: flex;
     align-items: center;
     color: #007bff;
-    font-size: 1.15em;
-    margin: 0 0 5px 0; /* Aggressively reduce bottom margin */
+    font-size: 1em;
+    margin: 0; /* 移除标题外边距 */
     font-weight: 600;
-    /* line-height: 1.2; */ /* Remove explicit line-height */
+    padding: 4px 8px 2px 8px; /* 调整标题内边距 (上 右 下 左) */
+    /* line-height: 1.2; */
 }
 
 /* Remove h3 margin reset, rely on .section-title margin */
@@ -147,33 +150,33 @@ body {
 } */
 
 .section-title .icon { /* Use .icon if defined in HTML, otherwise use .emoji */
-    margin-right: 8px;
-    font-size: 1.2em;
+    margin-right: 6px; /* 减小图标右边距 */
+    font-size: 1.1em; /* 减小图标字号 */
 }
 .section-title .emoji { /* Added .emoji selector */
-    margin-right: 8px;
-    font-size: 1.2em;
+    margin-right: 6px; /* 减小图标右边距 */
+    font-size: 1.1em; /* 减小图标字号 */
 }
 
 
 .section-content {
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    padding: 12px; /* Restore padding from drawing-app */
-    /* min-height: 40px; */ /* Keep min-height commented out */
-    background-color: #f9f9f9; /* Light background for read-only */
-    line-height: 1.6; /* Restore line height from drawing-app body */
-    color: #333; /* Restore default text color */
+    border: none; /* 移除内容区的边框 */
+    border-radius: 0; /* 移除内容区的圆角 */
+    padding: 2px 8px 4px 8px; /* 调整内容区内边距 (上 右 下 左) */
+    /* min-height: 40px; */
+    background-color: #ffffff; /* 将背景色改为白色 */
+    line-height: 1.45; /* 调整行高 */
+    color: #333333; /* 将文字颜色改为深灰色以在白色背景上显示 */
 }
 
 .section-content p {
-    margin: 0 0 0.2em 0; /* Aggressively reduce paragraph bottom margin */
+    margin: 0 0 0.05em 0; /* 极力减少段落间距 */
 }
 .section-content p:last-child {
     margin-bottom: 0;
 }
 .section-content em { /* Style for '未填写' */
-    color: #999;
+    color: #888888; /* 调整未填写文字颜色以在白色背景上显示 */
     font-style: italic;
 }
 

@@ -10,6 +10,7 @@
     *   工具卡片使用 Material Symbols 图标，样式优化。
     *   支持分页浏览，每页最多显示 4 个工具。
     *   支持按分类筛选和关键词搜索。
+*   **HTML 预览工具增强**: ([`tools/html_previewer.html`](personal-website/tools/html_previewer.html:0)) 新增将预览内容导出为 PPTX 格式的功能，支持自定义页面尺寸 (16:9) 并尝试保留基本样式。
 *   **新增图片编辑器**: ([`tools/image_editor.html`](personal-website/tools/image_editor.html:0)) 提供 PNG 图片按比例缩放和自由选区预览功能。
 *   **博客/学习日记**: 分享 AI 相关的学习笔记、思考和实践经验。
     *   独立的博客列表页面 ([`blog.html`](personal-website/blog.html:1)) 用于展示所有文章，并包含返回首页的链接。
@@ -18,6 +19,7 @@
     *   **查看**:
         *   主页 ([`index.html`](personal-website/index.html:0)) 的摘要区域左侧显示 Logo (已移至 [`assets/morning-journal-logo.png`](personal-website/assets/morning-journal-logo.png:0))，右侧动态显示最新一条包含实际“今日收获”内容的日记，并清晰展示日期。
         *   **计划中**: 将重构 [`morning-journal-view.html`](personal-website/morning-journal-view.html:0) 页面，作为后台数据的只读视图，其外观将模仿原本地编辑器 ([`tools/drawing-app/index.html`](personal-website/tools/drawing-app/index.html:0))。其关联的 JavaScript ([`morning-journal-view.js`](personal-website/morning-journal-view.js:1)) 将被更新，以确保正确加载和显示来自后台设置文件 ([`admin/journal-settings.js`](personal-website/admin/journal-settings.js:1)) 的日更天数和目标信息。
+        *   **样式调整**: 调整了 [`morning-journal-view.css`](personal-website/morning-journal-view.css:1) 以减少页面元素之间的空白，使布局更紧凑。
 *   **日夜模式**: 支持浅色和深色主题切换，并保存用户偏好。
 *   **内容管理**: 内建一个简单的管理后台（位于 `/admin` 目录），用于更新精选作品 ([`admin/featured-works-data.js`](personal-website/admin/featured-works-data.js:1))、博客文章 ([`admin/blog-posts-data.js`](personal-website/admin/blog-posts-data.js:1))、工具资源库 ([`admin/tool-library-data.js`](personal-website/admin/tool-library-data.js:1)) 和晨间日记 ([`admin/morning-journal-data.js`](personal-website/admin/morning-journal-data.js:0)) 的数据。
     *   优化了页脚“管理入口”链接，点击时会检查本地服务器是否运行。

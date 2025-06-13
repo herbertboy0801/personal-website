@@ -4,6 +4,10 @@
 ## [Unreleased]
 
 ### 新增 (Added)
+- **HTML 预览工具**: 在 [`tools/html_previewer.html`](personal-website/tools/html_previewer.html) 中添加了将预览内容导出为 PPTX 格式的功能。
+    - 支持自定义页面尺寸 (16:9, 25.4cm x 14.29cm)。
+    - 尝试保留HTML内容的颜色、基本形状（如圆角矩形）和背景。
+    - 使用 PptxGenJS 库实现。
 - **博客页面**: 在博客文章列表页面 ([`blog.html`](personal-website/blog.html:1)) 的顶部添加了“返回首页”的链接，方便用户导航。
 
 ### 修复 (Fixed)
