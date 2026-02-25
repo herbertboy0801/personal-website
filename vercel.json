@@ -8,6 +8,13 @@
     }
   },
   "rewrites": [
+    { "source": "/api/blog/featured", "destination": "/api/blog?action=featured" },
+    { "source": "/api/blog/:id", "destination": "/api/blog?id=:id" },
+    { "source": "/api/tools/:id", "destination": "/api/tools?id=:id" },
+    { "source": "/api/gallery/:id", "destination": "/api/gallery?id=:id" },
+    { "source": "/api/works/:id", "destination": "/api/works?id=:id" },
+    { "source": "/api/journal/import", "destination": "/api/journal?action=import" },
+    { "source": "/api/journal/:id", "destination": "/api/journal?id=:id" },
     { "source": "/admin", "destination": "/admin/public/index.html" },
     { "source": "/admin/", "destination": "/admin/public/index.html" },
     { "source": "/admin/login", "destination": "/admin/public/login.html" },
