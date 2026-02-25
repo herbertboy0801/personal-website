@@ -3,11 +3,15 @@
   "buildCommand": "npm install",
   "outputDirectory": ".",
   "functions": {
-    "api/**/*.js": {
+    "api/*.js": {
       "maxDuration": 10
     }
   },
   "rewrites": [
+    { "source": "/api/login", "destination": "/api/auth?action=login" },
+    { "source": "/api/logout", "destination": "/api/auth?action=logout" },
+    { "source": "/api/auth-status", "destination": "/api/auth?action=status" },
+    { "source": "/api/change-password", "destination": "/api/auth?action=change-password" },
     { "source": "/api/blog/featured", "destination": "/api/blog?action=featured" },
     { "source": "/api/blog/:id", "destination": "/api/blog?id=:id" },
     { "source": "/api/tools/:id", "destination": "/api/tools?id=:id" },
