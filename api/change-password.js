@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
-import { getDb } from './lib/db.js';
-import { requireAuth } from './lib/auth.js';
-import { json, error, requireMethod } from './lib/response.js';
+import { getDb } from '../lib/db.js';
+import { requireAuth } from '../lib/auth.js';
+import { json, error, requireMethod } from '../lib/response.js';
 
 export default async function handler(req, res) {
   if (!requireMethod(req, res, 'POST')) return;

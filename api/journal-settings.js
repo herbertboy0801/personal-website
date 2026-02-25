@@ -1,7 +1,7 @@
-import { getDb } from './lib/db.js';
-import { requireAuth } from './lib/auth.js';
-import { json, error, requireMethod } from './lib/response.js';
-import { journalSettingsFromDb, journalSettingsToDb } from './lib/transformers.js';
+import { getDb } from '../lib/db.js';
+import { requireAuth } from '../lib/auth.js';
+import { json, error, requireMethod } from '../lib/response.js';
+import { journalSettingsFromDb, journalSettingsToDb } from '../lib/transformers.js';
 
 export default async function handler(req, res) {
   if (!requireMethod(req, res, ['GET', 'PUT'])) return;

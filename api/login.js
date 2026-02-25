@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
-import { getDb } from './lib/db.js';
-import { createToken, setAuthCookie } from './lib/auth.js';
-import { json, error, requireMethod } from './lib/response.js';
+import { getDb } from '../lib/db.js';
+import { createToken, setAuthCookie } from '../lib/auth.js';
+import { json, error, requireMethod } from '../lib/response.js';
 
 const loginAttempts = new Map();
 const MAX_ATTEMPTS = 5;

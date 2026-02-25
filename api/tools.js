@@ -1,7 +1,7 @@
-import { getDb } from './lib/db.js';
-import { requireAuth } from './lib/auth.js';
-import { json, error } from './lib/response.js';
-import { toolFromDb, toolToDb } from './lib/transformers.js';
+import { getDb } from '../lib/db.js';
+import { requireAuth } from '../lib/auth.js';
+import { json, error } from '../lib/response.js';
+import { toolFromDb, toolToDb } from '../lib/transformers.js';
 
 export default async function handler(req, res) {
   const db = getDb();
