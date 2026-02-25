@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>货币换算工具</title>
+    <!-- 引入 Chart.js (尝试更换 CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQd9O5fXXPCkvMq57QelYFJquztNutXcurrentNode/chartjs/dist/Chart.min.js" referrerpolicy="no-referrer"></script>
+     <!-- 也可以考虑下载本地文件: <script src="path/to/chart.min.js"></script> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px 30px 15px 30px; /* 减少底部内边距，给时间戳留空间 */
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .converter-section {
+            padding: 30px 30px 50px 30px; /* 增加底部内边距 */
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .currency-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .amount-input {
+            flex: 2;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .currency-select {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .currency-select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .swap-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .swap-btn:hover {
+            background: #45a049;
+            transform: rotate(180deg);
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .result-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .exchange-rate {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #1976D2;
+        }
+
+        .history-section {
+            margin-top: 30px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .history-header h3 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .clear-history {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .clear-history:hover {
+            background: #d32f2f;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-conversion {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .history-rate {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .currency-symbol {
+            font-weight: 700;
+            color: #4CAF50;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .converter-section {
+                padding: 20px;
+            }
+
+            .currency-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .amount-input,
+            .currency-select {
+                width: 100%;
+            }
+
+            .result-amount {
+                font-size: 28px;
+            }
+
+            .toast {
+                right: 10px;
+                left: 10px;
+                top: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .result-amount {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💱 货币换算工具</h1>
+            <p>支持多种常用货币实时换算</p>
+            <!-- 移动汇率更新时间到这里 -->
+            <div id="rates-timestamp" style="font-size: 12px; color: rgba(255, 255, 255, 0.8); text-align: center; padding-bottom: 15px; margin-top: 8px; /* 添加顶部外边距 */"></div>
+        </div>
+
+        <div class="converter-section">
+             <!-- 添加加载指示器 -->
+             <div id="loading-indicator" style="display: none; text-align: center; padding: 10px 0 20px 0; font-size: 14px; color: #666;">正在加载最新汇率...</div>
+            <div class="input-group">
+                <label for="from-amount">从</label>
+                <div class="currency-row">
+                    <input type="number" id="from-amount" class="amount-input" placeholder="输入金额" min="0" step="0.01">
+                    <select id="from-currency" class="currency-select">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <button class="swap-btn" id="swap-btn" title="交换货币">⇅</button>
+
+            <div class="input-group">
+                <label for="to-currency">到</label>
+                <div class="currency-row">
+<button id="convert-btn" style="display: block; width: 100%; padding: 15px; background-color: #4CAF50; color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; margin-top: 25px; transition: background-color 0.3s ease;">立即转换</button>
+                    <div class="amount-input" style="background: #f8f9fa; color: #666;" id="result-display">转换结果</div>
+                    <select id="to-currency" class="currency-select">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="result-section" id="result-section" style="display: none;">
+                <div class="result-amount" id="result-amount">0.00</div>
+                <div class="exchange-rate" id="exchange-rate">汇率: 1 USD = 7.20 CNY</div>
+                <button class="copy-btn" id="copy-btn" onclick="copyResult()">📋 复制结果</button>
+            </div>
+
+<!-- 图表容器 -->
+            <div class="chart-section" style="margin-top: 30px; margin-bottom: 50px; /* 增加底部外边距 */ height: 250px; position: relative; overflow: hidden;">
+                 <h3 style="text-align: center; margin-bottom: 15px; color: #333; font-size: 18px;">
+                     📈 近7天汇率趋势 (<span id="chart-currency-pair"></span>)
+                 </h3>
+                 <canvas id="historyChart" style="display: block; max-width: 100%; height: 100%; /* 填充容器高度 */"></canvas>
+                 <p id="chart-api-notice" style="font-size: 12px; color: #888; text-align: center; margin-top: 10px; display: none;">注意：免费API不支持历史汇率查询，图表显示模拟数据。</p>
+                 <!-- 图表加载指示器 -->
+                 <div id="chart-loading-indicator" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; color: #666;">加载图表中...</div>
+            </div>
+            <div class="history-section">
+                <div class="history-header">
+                    <h3>📈 换算记录</h3>
+                    <button class="clear-history" onclick="clearHistory()">清空记录</button>
+                </div>
+                <div class="history-list" id="history-list">
+                    <div class="empty-history">暂无换算记录</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 货币配置
+        const currencies = {
+            CNY: { symbol: '¥', name: '人民币' },
+            USD: { symbol: '$', name: '美元' },
+            EUR: { symbol: '€', name: '欧元' },
+            GBP: { symbol: '£', name: '英镑' },
+            JPY: { symbol: '¥', name: '日元' }
+        };
+
+        // 用于存储从API获取的汇率
+        let apiExchangeRates = {};
+        let ratesLastUpdated = null;
+
+        // 换算历史记录
+        let conversionHistory = JSON.parse(localStorage.getItem('conversionHistory')) || [];
+
+        // API 配置 (使用 ExchangeRate-API V6)
+        const API_URL = 'https://v6.exchangerate-api.com/v6/f567be40c53c8e54aa5f0279/latest/USD'; // 请替换 YOUR_API_KEY
+        // 注意：为了安全，API密钥不应直接硬编码在前端代码中。
+        // 在实际应用中，建议通过后端代理或服务器端函数来处理API请求。
+        // 这里需要您提供自己的API密钥。您可以从 https://www.exchangerate-api.com/ 获取免费API密钥。
+        const USER_API_KEY = 'f567be40c53c8e54aa5f0279'; // 请替换为您自己的有效API密钥
+        const actualApiUrl = `https://v6.exchangerate-api.com/v6/${USER_API_KEY}/latest/USD`;
+
+        // DOM元素
+        const fromAmountInput = document.getElementById('from-amount');
+        const fromCurrencySelect = document.getElementById('from-currency');
+        const toCurrencySelect = document.getElementById('to-currency');
+        const swapBtn = document.getElementById('swap-btn');
+        const resultSection = document.getElementById('result-section');
+        const resultAmount = document.getElementById('result-amount');
+        const exchangeRateDisplay = document.getElementById('exchange-rate');
+        const historyList = document.getElementById('history-list');
+        const toast = document.getElementById('toast');
+        const resultDisplay = document.getElementById('result-display'); // Get the result display element
+        const historyChartCanvas = document.getElementById('historyChart');
+        const chartCurrencyPairSpan = document.getElementById('chart-currency-pair');
+        const chartApiNotice = document.getElementById('chart-api-notice');
+        const convertBtn = document.getElementById('convert-btn'); // Get the new button
+        let historyChart = null; // 用于存储 Chart.js 实例
+
+         // 初始化应用
+         async function initApp() {
+            showLoadingState(true);
+            await fetchExchangeRates();
+            showLoadingState(false);
+            loadHistory();
+            attachEventListeners();
+            // 不再需要在初始化时绘制图表
+            // setTimeout(updateChart, 50);
+            // 初始隐藏结果区和图表区
+            hideResult();
+            if (historyChartCanvas) historyChartCanvas.style.display = 'none';
+            const chartSection = document.querySelector('.chart-section');
+            if (chartSection) chartSection.style.display = 'none';
+        }
+
+        // 从API获取汇率
+        async function fetchExchangeRates() {
+            console.log('开始获取汇率...'); // Log start
+            try {
+                console.log(`正在请求 API: ${actualApiUrl}`); // Log URL
+                const response = await fetch(actualApiUrl);
+                console.log(`API 响应状态: ${response.status}`); // Log status
+                if (!response.ok) {
+                     const errorText = await response.text(); // Try to get error text
+                     console.error(`API 响应错误文本: ${errorText}`);
+                    throw new Error(`API 请求失败: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.result === 'success') {
+                    apiExchangeRates = data.conversion_rates;
+                    ratesLastUpdated = new Date(data.time_last_update_unix * 1000);
+                    console.log('汇率获取成功:', apiExchangeRates);
+                    populateCurrencyOptions(apiExchangeRates); // 填充货币选项
+                    updateRatesTimestamp(); // 更新界面上的时间戳
+                } else {
+                    console.error('API返回错误:', data['error-type']);
+                    showToast(`获取汇率失败: ${data['error-type']}`, 'error');
+                    // 作为备选，可以加载一组默认/上次缓存的汇率
+                    apiExchangeRates = {}; // Ensure rates object is empty on failure
+                }
+            } catch (error) {
+                console.error('获取汇率时捕获到错误:', error); // Enhanced log
+                showToast(`获取汇率出错: ${error.message}`, 'error');
+                 apiExchangeRates = {}; // Ensure rates object is empty on error
+                // 处理网络错误等
+            } finally {
+                 console.log('获取汇率流程结束.'); // Log end
+            }
+        }
+
+        // 更新汇率更新时间显示 (现在放在 header 里)
+        function updateRatesTimestamp() {
+            const timestampElement = document.getElementById('rates-timestamp');
+            if (timestampElement && ratesLastUpdated) {
+                 timestampElement.textContent = `汇率更新于: ${ratesLastUpdated.toLocaleString('zh-CN', { dateStyle: 'short', timeStyle: 'short' })}`;
+                 timestampElement.style.display = 'block';
+            } else if (timestampElement) {
+                timestampElement.style.display = 'none'; // 如果没有时间戳则隐藏
+            }
+        }
+
+         // 填充货币下拉选项
+         function populateCurrencyOptions(rates) {
+             if (!rates || Object.keys(rates).length === 0) {
+                  console.error("无法填充货币选项，汇率数据无效。");
+                  showToast('无法加载货币列表，请稍后重试。', 'error'); // 添加用户提示
+                  // 即使失败，也尝试填充预定义货币作为备选
+                  const fallbackCurrencies = Object.keys(currencies);
+                  if (fallbackCurrencies.length > 0) {
+                     console.warn("正在使用预定义货币列表作为备选。");
+                     fallbackCurrencies.forEach(code => addOption(code));
+                     setDefaults(fallbackCurrencies);
+                  }
+                  return;
+             }
+             // 清空现有选项
+             fromCurrencySelect.innerHTML = '';
+             toCurrencySelect.innerHTML = '';
+
+             // 获取所有支持的货币代码 (来自 API 响应) 并排序
+             const supportedCurrencies = Object.keys(rates).sort();
+
+             // 添加每个货币到下拉列表
+             supportedCurrencies.forEach(currencyCode => {
+                 addOption(currencyCode);
+             });
+
+             // 设置默认选项
+             setDefaults(supportedCurrencies);
+
+              // 初始触发一次转换（如果金额已输入）
+             if (fromAmountInput.value) {
+                 handleConversion();
+             }
+         }
+
+         // Helper function to add an option to both selects
+         function addOption(currencyCode) {
+             const currencyInfo = currencies[currencyCode]; // Check our predefined list
+             const optionText = currencyInfo
+                 ? `${currencyInfo.symbol} ${currencyInfo.name || currencyCode}` // Use symbol and name if available
+                 : currencyCode; // Fallback to just the code
+
+             const optionFrom = document.createElement('option');
+             optionFrom.value = currencyCode;
+             optionFrom.textContent = optionText;
+             fromCurrencySelect.appendChild(optionFrom);
+
+             const optionTo = document.createElement('option');
+             optionTo.value = currencyCode;
+             optionTo.textContent = optionText;
+             toCurrencySelect.appendChild(optionTo);
+         }
+
+         // Helper function to set default selected currencies
+         function setDefaults(availableCurrencies) {
+             const defaultFrom = 'CNY';
+             const defaultTo = 'USD';
+
+             if (availableCurrencies.includes(defaultFrom)) {
+                 fromCurrencySelect.value = defaultFrom;
+             } else if (availableCurrencies.length > 0) {
+                 fromCurrencySelect.value = availableCurrencies[0]; // Fallback to first available
+             }
+
+             if (availableCurrencies.includes(defaultTo)) {
+                 toCurrencySelect.value = defaultTo;
+             } else if (availableCurrencies.length > 1) {
+                 // Try to pick a different default 'to' currency
+                 toCurrencySelect.value = availableCurrencies.find(c => c !== fromCurrencySelect.value) || availableCurrencies[0];
+             } else if (availableCurrencies.length > 0) {
+                  toCurrencySelect.value = availableCurrencies[0];
+             }
+         }
+
+
+        // 显示/隐藏主加载状态
+        function showLoadingState(isLoading) {
+           const loadingElement = document.getElementById('loading-indicator');
+           if (loadingElement) {
+               loadingElement.style.display = isLoading ? 'block' : 'none';
+           }
+           // 可以在加载时禁用输入
+            fromAmountInput.disabled = isLoading;
+            fromCurrencySelect.disabled = isLoading;
+            toCurrencySelect.disabled = isLoading;
+            swapBtn.disabled = isLoading;
+            // 同时隐藏/显示转换结果区和图表区
+            resultSection.style.display = isLoading ? 'none' : (fromAmountInput.value && parseFloat(fromAmountInput.value) > 0 ? 'block' : 'none');
+            const chartSection = document.querySelector('.chart-section');
+            if (chartSection) {
+                 chartSection.style.display = isLoading ? 'none' : 'block';
+            }
+
+       }
+
+
+        // 防抖函数
+        function debounce(func, delay) {
+            let timeoutId;
+            return function(...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+
+        // 绑定事件监听器
+        function attachEventListeners() {
+            // 输入和选择更改不再自动触发
+            // fromAmountInput.addEventListener('input', debounce(handleConversion, 300)); // Removed
+            // fromCurrencySelect.addEventListener('change', () => { /* handleConversion(); updateChart(); */ }); // Removed
+            // toCurrencySelect.addEventListener('change', () => { /* handleConversion(); updateChart(); */ }); // Removed
+
+            // 交换按钮只交换货币
+            swapBtn.addEventListener('click', swapCurrencies); // Removed updateChart call
+
+            // 为新的转换按钮添加点击事件
+            convertBtn.addEventListener('click', () => {
+                handleConversion(); // 执行转换、显示结果、保存历史
+                updateChart();    // 更新图表
+            });
+
+            // 支持在金额输入框按回车键触发转换按钮
+            fromAmountInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 阻止可能的表单提交
+                    convertBtn.click(); // 触发转换按钮点击
+                }
+            });
+        }
+
+        // 处理货币转换
+        function handleConversion() {
+            const amount = parseFloat(fromAmountInput.value);
+            const fromCurrency = fromCurrencySelect.value;
+            const toCurrency = toCurrencySelect.value;
+
+            if (!amount || amount <= 0) {
+                hideResult();
+                return;
+            }
+
+            // 确保汇率已加载
+            if (Object.keys(apiExchangeRates).length === 0) {
+                showToast('汇率数据尚未加载，请稍候...', 'warning');
+                return;
+            }
+
+            const convertedAmount = convertCurrency(amount, fromCurrency, toCurrency);
+            const rate = getExchangeRate(fromCurrency, toCurrency);
+
+            // 更新顶部结果显示 (确保 currencies[toCurrency] 存在或有回退)
+            const toSymbol = currencies[toCurrency] ? currencies[toCurrency].symbol : '';
+            resultDisplay.innerHTML = `<span class="currency-symbol">${toSymbol}</span> ${formatNumber(convertedAmount)}`;
+
+            displayResult(convertedAmount, fromCurrency, toCurrency, amount, rate);
+            saveToHistory(amount, fromCurrency, convertedAmount, toCurrency, rate);
+        }
+
+        // 货币转换核心逻辑
+        function convertCurrency(amount, fromCurrency, toCurrency) {
+            // 使用从API获取的汇率 (以USD为基准)
+            const fromRate = apiExchangeRates[fromCurrency];
+            const toRate = apiExchangeRates[toCurrency];
+
+            if (fromRate === undefined || toRate === undefined) {
+                 console.error(`无法找到货币 ${fromCurrency} 或 ${toCurrency} 的汇率`);
+                 showToast(`缺少汇率: ${fromCurrency} 或 ${toCurrency}`, 'error');
+                 return 0; // 或者返回 null/undefined 并处理
+            }
+
+            // 因为所有汇率都是相对于USD的，所以转换很简单
+            const usdAmount = amount / fromRate;
+            const convertedAmount = usdAmount * toRate;
+
+            return convertedAmount;
+        }
+
+        // 获取汇率
+        function getExchangeRate(fromCurrency, toCurrency) {
+             // 使用从API获取的汇率 (以USD为基准)
+            const fromRate = apiExchangeRates[fromCurrency];
+            const toRate = apiExchangeRates[toCurrency];
+
+            if (fromRate === undefined || toRate === undefined) {
+                 return 0; // 或者返回 null/undefined
+            }
+
+            // 计算从 fromCurrency 到 toCurrency 的直接汇率
+            return toRate / fromRate;
+        }
+
+        // 显示转换结果
+        function displayResult(convertedAmount, fromCurrency, toCurrency, originalAmount, rate) {
+            // 安全地获取符号，如果未在 currencies 中定义，则不显示符号
+            const fromSymbol = currencies[fromCurrency] ? currencies[fromCurrency].symbol : '';
+            const toSymbol = currencies[toCurrency] ? currencies[toCurrency].symbol : '';
+
+            resultAmount.innerHTML = `<span class="currency-symbol">${toSymbol}</span> ${formatNumber(convertedAmount)}`;
+            exchangeRateDisplay.textContent = `汇率: 1 ${fromCurrency} = ${formatNumber(rate)} ${toCurrency}`;
+
+            resultSection.style.display = 'block';
+        }
+
+        // 隐藏结果
+        function hideResult() {
+            resultSection.style.display = 'none';
+        }
+
+        // 交换货币 (只交换值)
+        function swapCurrencies() {
+            const fromCurrency = fromCurrencySelect.value;
+            const toCurrency = toCurrencySelect.value;
+            
+            fromCurrencySelect.value = toCurrency;
+            toCurrencySelect.value = fromCurrency;
+            
+            // 不再自动触发转换
+            // if (fromAmountInput.value) {
+            //     handleConversion();
+            // }
+        }
+
+        // 复制结果
+        function copyResult() {
+            const amount = fromAmountInput.value;
+            const fromCurrency = fromCurrencySelect.value;
+            const toCurrency = toCurrencySelect.value;
+            const convertedAmount = convertCurrency(parseFloat(amount), fromCurrency, toCurrency);
+            
+            // 安全地获取符号
+            const fromSymbol = currencies[fromCurrency] ? currencies[fromCurrency].symbol : '';
+            const toSymbol = currencies[toCurrency] ? currencies[toCurrency].symbol : '';
+
+            const copyText = `${fromSymbol}${amount} ${fromCurrency} = ${toSymbol}${formatNumber(convertedAmount)} ${toCurrency}`;
+
+            if (!amount || !convertedAmount || isNaN(convertedAmount)) { // 增加 NaN 检查
+                 showToast('没有有效的可复制结果', 'warning');
+                 return;
+            }
+
+            navigator.clipboard.writeText(copyText).then(() => {
+                showToast('结果已复制到剪切板！', 'success');
+            }).catch((err) => {
+                console.error('复制失败:', err);
+                showToast('复制失败，请检查浏览器权限或手动复制', 'error');
+            });
+        }
+
+        // 保存到历史记录
+        function saveToHistory(fromAmount, fromCurrency, toAmount, toCurrency, rate) {
+            const historyItem = {
+                id: Date.now(),
+                fromAmount: fromAmount,
+                fromCurrency: fromCurrency,
+                toAmount: toAmount,
+                toCurrency: toCurrency,
+                rate: rate,
+                timestamp: new Date().toLocaleString('zh-CN')
+            };
+
+            conversionHistory.unshift(historyItem);
+            
+            // 只保留最近5条记录
+            if (conversionHistory.length > 5) {
+                conversionHistory = conversionHistory.slice(0, 5);
+            }
+            
+            localStorage.setItem('conversionHistory', JSON.stringify(conversionHistory));
+            renderHistory();
+        }
+
+        // 渲染历史记录
+        function renderHistory() {
+            if (conversionHistory.length === 0) {
+                historyList.innerHTML = '<div class="empty-history">暂无换算记录</div>';
+                return;
+            }
+
+            const historyHTML = conversionHistory.map(item => {
+                // 安全地获取符号
+                const fromSymbol = currencies[item.fromCurrency] ? currencies[item.fromCurrency].symbol : '';
+                const toSymbol = currencies[item.toCurrency] ? currencies[item.toCurrency].symbol : '';
+
+                return `
+                    <div class="history-item">
+                        <div class="history-conversion">
+                            ${fromSymbol}${formatNumber(item.fromAmount)} ${item.fromCurrency}
+                            → ${toSymbol}${formatNumber(item.toAmount)} ${item.toCurrency}
+                        </div>
+                        <div class="history-rate">
+                            汇率: ${formatNumber(item.rate)} | ${item.timestamp}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            historyList.innerHTML = historyHTML;
+        }
+
+        // 加载历史记录
+        function loadHistory() {
+            renderHistory();
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清空所有换算记录吗？')) {
+                conversionHistory = [];
+                localStorage.removeItem('conversionHistory');
+                renderHistory();
+                showToast('历史记录已清空');
+            }
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'success') { // type: 'success', 'error', 'warning'
+            toast.textContent = message;
+            toast.className = 'toast'; // Reset classes
+            toast.classList.add(`toast-${type}`); // Add type specific class for styling
+            toast.classList.add('show');
+
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 格式化数字显示
+        function formatNumber(num) {
+            if (num >= 1) {
+                return num.toFixed(2);
+            } else {
+                return num.toFixed(4);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initApp);
+
+
+        // --- 图表相关函数 ---
+
+        // 获取历史汇率 (注意：此功能需要付费API)
+        async function fetchHistoricalRates(base, target, days = 7) {
+            console.log(`尝试获取 ${base} 到 ${target} 的 ${days} 天历史汇率...`);
+            chartApiNotice.style.display = 'block'; // 显示 API 不支持的提示
+
+            // **重要提示**: 下面的代码块模拟了API调用和数据处理过程。
+            // 实际使用 ExchangeRate-API 的免费计划无法获取历史数据。
+            // 如果您有付费密钥，需要替换这里的逻辑为真实的API调用。
+            // 真实的API端点类似: https://v6.exchangerate-api.com/v6/YOUR_API_KEY/history/BASE/YYYY/MM/DD
+
+            // 模拟数据生成 (用于演示)
+            const labels = [];
+            const rates = [];
+            const today = new Date();
+            let baseRate = getExchangeRate(base, target); // 使用当前汇率作为基准
+
+            // 更健壮的 baseRate 处理
+            if (isNaN(baseRate) || !isFinite(baseRate) || baseRate <= 0) {
+                console.warn(`无法获取有效的当前汇率 (${base}/${target}) 作为历史图表基准，图表可能不准确。将使用默认值 1。`);
+                baseRate = 1; // 设置一个默认基准避免后续计算错误
+            }
+            console.log(`Using baseRate ${baseRate} for simulation.`); // Log the base rate used
+
+           // 简单的伪随机种子生成函数 (基于字符串)
+           const pseudoRandomSeed = (str) => {
+               let hash = 0;
+               for (let i = 0; i < str.length; i++) {
+                   const char = str.charCodeAt(i);
+                   hash = ((hash << 5) - hash) + char;
+                   hash |= 0; // Convert to 32bit integer
+               }
+               return hash;
+           };
+
+           for (let i = days - 1; i >= 0; i--) {
+               const date = new Date(today);
+               date.setDate(today.getDate() - i);
+               const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+               labels.push(formattedDate);
+
+               // 使用基于日期和货币对的稳定种子生成伪随机波动
+               const seedString = `${formattedDate}-${base}-${target}`;
+               const seed = pseudoRandomSeed(seedString);
+               // 将种子转换为 -0.5 到 0.5 范围内的值 (简单方式)
+               const pseudoRandomValue = (seed % 1000) / 1000 - 0.5;
+               const fluctuation = pseudoRandomValue * 0.1 * baseRate; // +/- 5% 波动幅度不变
+
+               const simulatedRate = baseRate + fluctuation;
+               // Ensure rate is a valid number and push
+               const finalRate = simulatedRate > 0 ? simulatedRate : baseRate * 0.95;
+                if (isNaN(finalRate) || !isFinite(finalRate)) {
+                    console.error(`Generated invalid rate for date ${formattedDate}: ${finalRate}. Using baseRate instead.`);
+                    rates.push(baseRate); // Fallback to baseRate if simulation yields invalid number
+                } else {
+                   rates.push(finalRate);
+                }
+           }
+            // Log final generated data before validation
+            console.log("Final generated simulated data before validation:", { labels, rates });
+
+
+            // --- 真实 API 调用逻辑 (需要付费密钥，注释掉) ---
+            /*  <-- Start the multi-line comment correctly
+            const apiKey = USER_API_KEY; // 使用您自己的付费 API 密钥
+            const promises = [];
+            const labels = [];
+            const rates = [];
+            const today = new Date();
+
+            if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') { // 检查是否是付费密钥
+                 console.error("需要有效的付费 API 密钥才能获取历史汇率。");
+                 chartApiNotice.style.display = 'block';
+                 return null; // 无法获取数据
+            } else {
+                 chartApiNotice.style.display = 'none'; // 如果有密钥，隐藏提示
+            }
+
+
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day}`;
+                labels.push(formattedDate);
+
+                // 注意: 历史API通常返回基于基础货币的所有汇率，需要从中提取目标货币
+                // const url = `https://v6.exchangerate-api.com/v6/${apiKey}/history/${base}/${year}/${month}/${day}`;
+                // promises.push(fetch(url).then(res => res.json()));
+
+                 // 另一种可能的API (exchangerate.host - 可能免费但有限制)
+                 const url = `https://api.exchangerate.host/${formattedDate}?base=${base}&symbols=${target}`;
+                 promises.push(fetch(url).then(res => res.json()));
+            }
+
+            try {
+                const results = await Promise.all(promises);
+                results.forEach((data, index) => {
+                     // 处理 ExchangeRate-API 的历史数据结构 (如果使用)
+                     // if (data && data.result === 'success' && data.conversion_rates && data.conversion_rates[target]) {
+                     //     rates.push(data.conversion_rates[target]);
+                     // }
+                     // 处理 exchangerate.host 的数据结构 (如果使用)
+                     if (data && data.success && data.rates && data.rates[target]) {
+                         rates.push(data.rates[target]);
+                     } else {
+                        console.warn(`未能获取 ${labels[index]} 的汇率数据:`, data);
+                        rates.push(null); // 或者前一天的数据 rates[rates.length-1 || 0]
+                    }
+                });
+
+                 // 过滤掉 null 值，或者进行插值处理
+                const validRates = rates.filter(r => r !== null);
+                const validLabels = labels.filter((_, idx) => rates[idx] !== null);
+
+                 if (validRates.length === 0) {
+                     console.error("未能获取任何有效的历史汇率数据。");
+                     return null;
+                 }
+
+
+                return { labels: validLabels, rates: validRates };
+
+            } catch (error) {
+                console.error('获取历史汇率时出错:', error);
+                showToast('获取历史汇率失败', 'error');
+                return null;
+            }
+            */ // <-- End the multi-line comment correctly
+            // --- 结束真实 API 调用逻辑 ---
+
+            // 返回模拟数据前再次检查有效性
+            if (!Array.isArray(labels) || !Array.isArray(rates) || labels.length !== rates.length || labels.length === 0) {
+                 console.error("模拟历史数据生成失败、数据不匹配或为空。", { labels, rates });
+                 return null; // Indicate failure
+             }
+             console.log("成功生成并验证模拟历史数据");
+            return { labels, rates }; // 返回模拟数据
+        }
+
+        // 更新或绘制图表
+        async function updateChart() {
+            console.log("Attempting to update chart..."); // Log start
+            // 确保关键 DOM 元素存在
+            if (!historyChartCanvas || !chartCurrencyPairSpan || !chartApiNotice) {
+                console.error("Chart related DOM elements (canvas, span, notice) not found!");
+                return;
+            }
+
+            const fromCurrency = fromCurrencySelect.value;
+            const toCurrency = toCurrencySelect.value;
+             console.log(`Chart currencies: From ${fromCurrency}, To ${toCurrency}`);
+
+            if (!fromCurrency || !toCurrency || fromCurrency === toCurrency) {
+                console.log("Invalid or same currency pair, hiding chart.");
+                if (historyChart) {
+                    historyChart.destroy();
+                    historyChart = null;
+                     console.log("Destroyed existing chart instance.");
+                }
+                 historyChartCanvas.style.display = 'none';
+                 chartCurrencyPairSpan.textContent = '';
+                 // Hide API notice if chart is hidden due to same currency or no input
+                 if(chartApiNotice) chartApiNotice.style.display = 'none';
+                return;
+            }
+            // 只有在按钮点击后才显示图表区域
+            const chartSection = document.querySelector('.chart-section');
+            if (chartSection) chartSection.style.display = 'block';
+
+             // Try showing canvas early, but check element exists
+             historyChartCanvas.style.display = 'block';
+             chartCurrencyPairSpan.textContent = `${fromCurrency}/${toCurrency}`;
+             console.log("Set chart title span.");
+
+            showChartLoading(true); // Show loading indicator
+
+            let historicalData = null;
+            try {
+                 historicalData = await fetchHistoricalRates(fromCurrency, toCurrency);
+                 console.log("Fetched historical data:", historicalData);
+            } catch (error) {
+                console.error("Error fetching historical rates:", error);
+                showToast("获取图表数据时出错", "error");
+                 showChartLoading(false);
+                // Optionally hide chart canvas on fetch error
+                 historyChartCanvas.style.display = 'none';
+                 chartApiNotice.textContent = "获取图表数据失败。";
+                 chartApiNotice.style.display = 'block';
+                return;
+            }
+
+            showChartLoading(false); // Hide loading indicator
+
+            if (!historicalData || !historicalData.labels || !historicalData.rates || historicalData.rates.length === 0) {
+                console.warn("No valid historical data received to draw chart.");
+                 if (historyChart) {
+                     historyChart.destroy(); // Clean up existing chart
+                     historyChart = null;
+                     console.log("Destroyed existing chart instance due to no/invalid data.");
+                 }
+                  historyChartCanvas.style.display = 'none'; // Hide canvas if no data
+                  chartApiNotice.textContent = "无法加载图表数据。"; // Show specific message
+                  chartApiNotice.style.display = 'block';
+                return;
+            } else {
+                 historyChartCanvas.style.display = 'block'; // Ensure canvas is visible if data exists
+                 // Manage API notice visibility based on data source/validity
+                 if (chartApiNotice.textContent.includes("免费API")) {
+                      // Keep the API limitation notice visible
+                      chartApiNotice.style.display = 'block';
+                 } else {
+                      // Hide other notices like "无法加载" if data is now present
+                      chartApiNotice.style.display = 'none';
+                 }
+            }
+
+            const { labels, rates } = historicalData;
+            // Final check for data validity before creating chart data object
+            if (!Array.isArray(labels) || !Array.isArray(rates) || rates.some(isNaN) || rates.some(r => !isFinite(r))) {
+                 console.error("Invalid data received by chart renderer:", { labels, rates });
+                 showToast("图表数据无效", "error");
+                 historyChartCanvas.style.display = 'none'; // Hide canvas if data is bad
+                 if (historyChart) { historyChart.destroy(); historyChart = null; }
+                 return;
+            }
+            console.log("Processing valid chart data:", { labels, rates });
+
+            const chartData = {
+                labels: labels,
+                datasets: [{
+                    label: `1 ${fromCurrency} = X ${toCurrency}`,
+                    data: rates,
+                    fill: false, // Don't fill area under the line
+                    borderColor: '#4CAF50', // Ensure this is a visible color
+                    backgroundColor: '#4CAF50', // Added for point color, etc.
+                    borderWidth: 2, // Make line slightly thicker
+                    pointRadius: 3, // Show points slightly
+                    tension: 0.1 // Keep slight curve
+                }]
+            };
+            console.log("Chart.js chartData object:", JSON.stringify(chartData)); // Log the final data structure
+
+            const config = {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true, // Allow responsiveness within the container
+                    maintainAspectRatio: false, // Force chart to fill container dimensions
+                    scales: {
+                        y: { // Keep only one y-axis configuration
+                            beginAtZero: false, // Y轴不一定从0开始
+                             ticks: {
+                                 callback: function(value, index, values) {
+                                     return formatNumber(value); // 使用现有格式化函数
+                                 }
+                             }
+                        }
+                    },
+                    // Removed duplicate y-axis block
+                    plugins: {
+                        legend: {
+                            display: true // 显示图例
+                        },
+                        tooltip: {
+                             callbacks: {
+                                 label: function(context) {
+                                     let label = context.dataset.label || '';
+                                     if (label) { label += ': '; }
+                                     if (context.parsed.y !== null) {
+                                         label += formatNumber(context.parsed.y) + ` ${toCurrency}`;
+                                     }
+                                     return label;
+                                 }
+                             }
+                        }
+                    }
+                }
+            };
+            console.log("Chart.js config object:", JSON.stringify(config)); // Log the config object
+
+            try {
+                 console.log("Attempting to create or update Chart.js instance...");
+                 if (historyChart) {
+                     console.log("Updating existing chart instance.");
+                     historyChart.data = chartData; // Update data
+                     // It's often better to update options selectively or ensure full update if needed
+                     // historyChart.options = config.options; // Re-assigning options might reset some state
+                     historyChart.update(); // Update the chart
+                      console.log("Chart instance updated.");
+                 } else {
+                     console.log("Creating new chart instance.");
+                     if (historyChartCanvas instanceof HTMLCanvasElement) {
+                        // Destroy any lingering instance just in case
+                        // Chart.getChart(historyChartCanvas)?.destroy();
+                        historyChart = new Chart(historyChartCanvas, config);
+                        console.log("New chart instance created.");
+                     } else {
+                        console.error("historyChartCanvas is not a valid Canvas element during creation!");
+                        throw new Error("Invalid canvas element for chart.");
+                     }
+                 }
+                 // Ensure canvas is visible after successful draw/update
+                 historyChartCanvas.style.display = 'block';
+                 historyChartCanvas.style.visibility = 'visible';
+                 console.log("Chart drawn/updated successfully.");
+            } catch (error) { // Add the missing catch block
+                console.error("Error creating or updating Chart.js instance:", error);
+                showToast("绘制图表时出错", "error");
+                 // Attempt to clean up if creation failed
+                 if (historyChart) {
+                     try { historyChart.destroy(); } catch (e) { console.error("Error destroying chart:", e); }
+                     historyChart = null;
+                 }
+                 historyChartCanvas.style.display = 'none'; // Hide canvas on error
+                 chartApiNotice.textContent = "绘制图表失败。";
+                 chartApiNotice.style.display = 'block';
+            } // End of the correct catch block
+        } // End of updateChart function
+
+        // 显示图表加载状态的函数
+        function showChartLoading(isLoading) {
+           const indicator = document.getElementById('chart-loading-indicator');
+           if (indicator) {
+                indicator.style.display = isLoading ? 'block' : 'none';
+           }
+           // 加载时隐藏 canvas 本身避免看到旧图表
+           if (historyChartCanvas) { // 确保 canvas 元素存在
+               historyChartCanvas.style.visibility = isLoading ? 'hidden' : 'visible';
+           }
+        }
+
+
+   </script>
+    <style>
+        /* 添加 Toast 样式 */
+        .toast-success { background: #4CAF50; }
+        .toast-error { background: #f44336; }
+        .toast-warning { background: #ff9800; }
+
+        /* 添加加载指示器样式 */
+        #loading-indicator {
+            display: none; /* 默认隐藏 */
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+         /* 添加汇率更新时间戳样式 */
+        #rates-timestamp {
+            display: none; /* 默认隐藏 */
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: -10px; /* 调整位置 */
+            margin-bottom: 20px; /* 增加下边距 */
+        }
+    </style>
+    <!-- 加载指示器和时间戳已被移入 container -->
+</body>
+</html>

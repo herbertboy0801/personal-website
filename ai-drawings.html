@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 绘图作品集 - 贺伯AI实战笔记</title>
+  <meta name="description" content="贺伯的AI绘图创意作品集，包含多层地貌悬浮、手绘少女、雪岭红阳等AI生成艺术作品。">
+  <meta property="og:title" content="AI 绘图作品集 - 贺伯AI实战笔记">
+  <meta property="og:description" content="23幅AI绘图创意作品，展示AI艺术创作的无限可能。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/avatar.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-content { padding-top: 80px; max-width: 1200px; margin: 0 auto; padding-left: 32px; padding-right: 32px; padding-bottom: 60px; }
+    .page-header { margin-bottom: 40px; }
+    .page-header h1 { font-size: 1.6rem; color: var(--text-primary); margin: 0 0 6px; font-weight: 800; }
+    .page-header p { font-size: 0.88rem; color: var(--text-muted); margin: 0; }
+    .featured-section { margin-bottom: 48px; }
+    .section-label { font-size: 0.82rem; font-weight: 600; color: var(--amber); letter-spacing: 0.08em; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(212,168,83,0.3), transparent); }
+    .featured-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .featured-card { position: relative; border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; aspect-ratio: 3/4; background: var(--bg-card); border: 1px solid var(--border-subtle); transition: transform 0.3s, box-shadow 0.3s; }
+    .featured-card:hover { transform: translateY(-4px) scale(1.02); box-shadow: var(--shadow-card-hover); }
+    .featured-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+    .featured-card:hover img { transform: scale(1.05); }
+    .featured-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 16px 16px; background: linear-gradient(to top, rgba(15,17,32,0.95) 0%, rgba(15,17,32,0.6) 50%, transparent 100%); transform: translateY(calc(100% - 50px)); transition: transform 0.4s ease; }
+    .featured-card:hover .featured-overlay { transform: translateY(0); }
+    .featured-tag { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--amber-glow); color: var(--amber); margin-bottom: 6px; }
+    .featured-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; line-height: 1.4; }
+    .featured-desc { font-size: 0.78rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .gallery-item { position: relative; border-radius: var(--radius-md); overflow: hidden; cursor: pointer; aspect-ratio: 1; background: rgba(22,25,44,0.5); border: 1px solid rgba(255,255,255,0.04); transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
+    .gallery-item:hover { transform: translateY(-3px) scale(1.03); box-shadow: var(--shadow-card); border-color: var(--border-hover); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .gallery-item:hover img { transform: scale(1.08); }
+    .gallery-item::after { content: '🔍'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(15,17,32,0.5); opacity: 0; transition: opacity 0.3s; }
+    .gallery-item:hover::after { opacity: 1; }
+    .lightbox { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 40px; cursor: zoom-out; }
+    .lightbox.active { display: flex; animation: lbFadeIn 0.3s ease; }
+    @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); object-fit: contain; cursor: default; transition: transform 0.3s; }
+    .lightbox-close { position: absolute; top: 20px; right: 28px; font-size: 2rem; color: var(--text-secondary); background: none; border: none; cursor: pointer; transition: color 0.2s; line-height: 1; }
+    .lightbox-close:hover { color: #fff; }
+    .lightbox-info { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); text-align: center; color: var(--text-secondary); font-size: 0.85rem; }
+    .lightbox-info strong { color: var(--text-primary); font-size: 1rem; }
+    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); font-size: 2rem; color: var(--text-muted); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: color 0.2s, background 0.2s; }
+    .lightbox-nav:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .lightbox-prev { left: 20px; }
+    .lightbox-next { right: 20px; }
+    @media (max-width: 768px) {
+      .page-content { padding-left: 16px; padding-right: 16px; }
+      .featured-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .lightbox { padding: 16px; }
+      .lightbox-nav { width: 36px; height: 36px; font-size: 1.4rem; }
+    }
+    @media (max-width: 480px) {
+      .featured-grid { grid-template-columns: 1fr 1fr; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">贺伯AI实战笔记</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+        <li><a href="admin/public/login.html" class="nav-admin">管理后台</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="菜单" onclick="document.getElementById('navMenu').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-content">
+    <div class="page-header">
+      <h1>AI 绘图作品集</h1>
+      <p>使用 AI 工具创作的艺术作品，探索人工智能与创意的交汇</p>
+    </div>
+    <div class="featured-section" id="featuredSection">
+      <div class="loading-skeleton">加载中...</div>
+    </div>
+    <p class="section-label">全部作品</p>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lbClose">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lbPrev">&#8249;</button>
+    <button class="lightbox-nav lightbox-next" id="lbNext">&#8250;</button>
+    <img id="lbImg" src="" alt="">
+    <div class="lightbox-info" id="lbInfo"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">&copy; 2025 贺伯AI实战笔记. All rights reserved.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      var featuredSection = document.getElementById('featuredSection');
+      var galleryGrid = document.getElementById('galleryGrid');
+      var allImages = [];
+
+      try {
+        var res = await fetch('/api/gallery');
+        if (!res.ok) throw new Error('API error');
+        allImages = await res.json();
+      } catch (e) {
+        featuredSection.innerHTML = '<div class="loading-skeleton">数据加载失败，请稍后再试</div>';
+        return;
+      }
+
+      var featuredItems = allImages.filter(function(img) { return img.featured; });
+
+      if (featuredItems.length > 0) {
+        var fHtml = '<p class="section-label">精选作品</p><div class="featured-grid">';
+        featuredItems.forEach(function(f) {
+          fHtml += '<div class="featured-card" data-src="' + f.src + '"><img src="' + f.src + '" alt="' + (f.title || 'AI 绘图') + '" loading="lazy">' +
+            '<div class="featured-overlay"><span class="featured-tag">' + (f.style || 'AI 绘图') + '</span>' +
+            '<h3 class="featured-title">' + f.title + '</h3><p class="featured-desc">' + (f.description || '') + '</p></div></div>';
+        });
+        fHtml += '</div>';
+        featuredSection.innerHTML = fHtml;
+      } else {
+        featuredSection.innerHTML = '';
+      }
+
+      galleryGrid.innerHTML = allImages.map(function(img) {
+        return '<div class="gallery-item" data-src="' + img.src + '"><img src="' + img.src + '" alt="' + (img.title || 'AI 绘图作品') + '" loading="lazy"></div>';
+      }).join('');
+
+      // Lightbox
+      var lightbox = document.getElementById('lightbox');
+      var lbImg = document.getElementById('lbImg');
+      var lbInfo = document.getElementById('lbInfo');
+      var currentIndex = 0;
+
+      function openLightbox(index) {
+        currentIndex = index;
+        var img = allImages[index];
+        lbImg.src = img.src;
+        var hasTitle = img.title && img.title !== 'AI 绘图作品';
+        lbInfo.innerHTML = hasTitle
+          ? '<strong>' + img.title + '</strong>' + (img.description ? '<br>' + img.description : '') + (img.style ? '<br><small>' + img.style + '</small>' : '')
+          : (index + 1) + ' / ' + allImages.length;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeLightbox() { lightbox.classList.remove('active'); document.body.style.overflow = ''; }
+      function navigate(dir) { currentIndex = (currentIndex + dir + allImages.length) % allImages.length; openLightbox(currentIndex); }
+
+      document.addEventListener('click', function(e) {
+        var card = e.target.closest('.gallery-item, .featured-card');
+        if (!card) return;
+        var src = card.dataset.src;
+        var idx = allImages.findIndex(function(img) { return img.src === src; });
+        if (idx >= 0) openLightbox(idx);
+      });
+
+      document.getElementById('lbClose').addEventListener('click', closeLightbox);
+      document.getElementById('lbPrev').addEventListener('click', function(e) { e.stopPropagation(); navigate(-1); });
+      document.getElementById('lbNext').addEventListener('click', function(e) { e.stopPropagation(); navigate(1); });
+      lightbox.addEventListener('click', function(e) { if (e.target === lightbox) closeLightbox(); });
+
+      document.addEventListener('keydown', function(e) {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') navigate(-1);
+        if (e.key === 'ArrowRight') navigate(1);
+      });
+
+      document.querySelectorAll('.nav-menu a').forEach(function(a) {
+        a.addEventListener('click', function() { document.getElementById('navMenu').classList.remove('open'); });
+      });
+    });
+  </script>
+
+</body>
+</html>

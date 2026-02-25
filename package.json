@@ -1,0 +1,17 @@
+{
+  "name": "herbert-ai-website",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "贺伯AI实战笔记 - Vercel + Turso 架构",
+  "scripts": {
+    "dev": "vercel dev",
+    "setup-db": "node scripts/setup-db.js",
+    "migrate": "node scripts/migrate-to-turso.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.0"
+  }
+}

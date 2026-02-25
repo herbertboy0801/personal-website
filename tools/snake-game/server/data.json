@@ -1,0 +1,39 @@
+{
+  "scores": {
+    "herbert": [
+      {
+        "score": 381,
+        "difficulty": 3,
+        "timestamp": 1748626626248
+      },
+      {
+        "score": 143,
+        "difficulty": 2,
+        "timestamp": 1748626059417
+      },
+      {
+        "score": 107,
+        "difficulty": 2,
+        "timestamp": 1748626018604
+      }
+    ],
+    "amber": [
+      {
+        "score": 20,
+        "difficulty": 1,
+        "timestamp": 1748626209967
+      },
+      {
+        "score": 0,
+        "difficulty": 1,
+        "timestamp": 1748626380023
+      },
+      {
+        "score": 0,
+        "difficulty": 1,
+        "timestamp": 1748626491588
+      }
+    ]
+  },
+  "playCount": 6
+}

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机决策工具</title>
+    <style>
+        /* CSS 样式将在这里添加 */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1877f2;
+            margin-bottom: 25px;
+        }
+
+        .options-input-area {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px; /* 输入框和按钮之间的间距 */
+        }
+
+        .options-input-area input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .options-input-area button {
+            padding: 10px 15px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .options-input-area button:hover {
+            background-color: #166fe5;
+        }
+
+        .options-display-area h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #options-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #options-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            background-color: #fff;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        #options-list li:last-child {
+            border-bottom: none;
+        }
+
+        #options-list li span {
+            flex-grow: 1;
+            margin-right: 10px; /* 文本和按钮组的间距 */
+        }
+
+        .option-buttons button {
+            margin-left: 8px;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-option-btn {
+            background-color: #ffc107; /* 黄色 */
+            color: #333;
+        }
+
+        .edit-option-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-option-btn {
+            background-color: #dc3545; /* 红色 */
+            color: white;
+        }
+
+        .delete-option-btn:hover {
+            background-color: #c82333;
+        }
+
+        .decision-controls, .decision-result-area, .wheel-area {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .decision-controls h2, .decision-result-area h2, .wheel-area h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .mode-selection {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 20px; /* 选项间距 */
+        }
+
+        .mode-selection label {
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #start-decision-btn {
+            padding: 12px 25px;
+            background-color: #28a745; /* 绿色 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+            display: block; /* 让按钮占据整行或根据需要调整 */
+            margin: 0 auto; /* 居中 */
+            min-width: 150px;
+        }
+
+        #start-decision-btn:hover {
+            background-color: #218838;
+        }
+
+        #start-decision-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #decision-result-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1877f2;
+            text-align: center;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-radius: 4px;
+            min-height: 30px;
+        }
+        
+        .wheel-area {
+            text-align: center; /* 使 canvas 居中 */
+        }
+
+        #decision-wheel-canvas {
+            border: 1px solid #ccc;
+            border-radius: 50%; /* 如果希望canvas本身也是圆的（虽然内容会是圆的） */
+        }
+
+        .history-area {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .history-area h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        #history-list {
+            list-style-type: none;
+            padding: 0;
+            max-height: 200px; /* 限制最大高度，出现滚动条 */
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        #history-list li {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        #history-list li:last-child {
+            border-bottom: none;
+        }
+
+        #clear-history-btn {
+            background-color: #6c757d; /* 灰色 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            display: block; /* or inline-block depending on layout preference */
+            margin-top: 10px;
+        }
+
+        #clear-history-btn:hover {
+            background-color: #5a6268;
+        }
+
+
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .options-input-area {
+                flex-direction: column;
+            }
+            .options-input-area input[type="text"] {
+                margin-bottom: 10px;
+            }
+            #options-list li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .option-buttons {
+                margin-top: 8px;
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+            }
+            .option-buttons button {
+                margin-left: 0;
+                margin-right: 8px; /* 按钮间距调整 */
+            }
+            .option-buttons button:last-child {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>随机决策工具</h1>
+
+        <div class="options-input-area">
+            <input type="text" id="option-input" placeholder="输入选项...">
+            <button id="add-option-btn">添加选项</button>
+        </div>
+
+        <div class="options-display-area">
+            <h2>当前选项：</h2>
+            <ul id="options-list">
+                <!-- 选项将在这里显示 -->
+            </ul>
+        </div>
+
+        <div class="decision-controls">
+            <h2>决策模式：</h2>
+            <div class="mode-selection">
+                <label>
+                    <input type="radio" name="decision-mode" value="simple" checked> 简单模式
+                </label>
+                <label>
+                    <input type="radio" name="decision-mode" value="wheel"> 转盘模式
+                </label>
+            </div>
+            <button id="start-decision-btn">开始决策</button>
+        </div>
+
+        <div class="decision-result-area">
+            <h2>决策结果：</h2>
+            <p id="decision-result-text">- 等待决策 -</p>
+        </div>
+
+        <div class="wheel-area" style="display: none;"> <!-- 初始隐藏转盘区域 -->
+            <h2>决策转盘：</h2>
+            <canvas id="decision-wheel-canvas" width="300" height="300"></canvas>
+            <!-- 转盘动画相关的元素可以后续添加 -->
+        </div>
+
+        <div class="history-area">
+            <h2>决策历史：</h2>
+            <ul id="history-list">
+                <!-- 历史记录将在这里显示 -->
+            </ul>
+            <button id="clear-history-btn" style="display:none;">清空历史</button>
+        </div>
+        
+        <!-- 其他功能模块将在这里添加 -->
+
+    </div>
+
+    <script>
+        const optionInput = document.getElementById('option-input');
+        const addOptionBtn = document.getElementById('add-option-btn');
+        const optionsList = document.getElementById('options-list');
+        const startDecisionBtn = document.getElementById('start-decision-btn');
+        const decisionResultText = document.getElementById('decision-result-text');
+        const decisionModes = document.querySelectorAll('input[name="decision-mode"]');
+        const wheelArea = document.querySelector('.wheel-area');
+        const decisionResultArea = document.querySelector('.decision-result-area');
+        const decisionWheelCanvas = document.getElementById('decision-wheel-canvas');
+        const ctx = decisionWheelCanvas.getContext('2d');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+        let options = [];
+        let editingIndex = -1; // -1 表示不在编辑模式, 大于等于0表示正在编辑的选项的索引
+        let decisionHistory = JSON.parse(localStorage.getItem('decisionHistory')) || []; // 从localStorage加载历史
+        const MAX_HISTORY_LENGTH = 5;
+
+        const MAX_OPTIONS = 10;
+        const MIN_OPTIONS_FOR_DECISION = 2;
+
+        function renderOptions() {
+            optionsList.innerHTML = ''; // 清空列表
+            options.forEach((option, index) => {
+                const listItem = document.createElement('li');
+                
+                const textSpan = document.createElement('span');
+                textSpan.textContent = option;
+                listItem.appendChild(textSpan);
+
+                const editBtn = document.createElement('button');
+                editBtn.textContent = '编辑';
+                editBtn.classList.add('edit-option-btn');
+                editBtn.onclick = () => startEditOption(index);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '删除';
+                deleteBtn.classList.add('delete-option-btn');
+                deleteBtn.onclick = () => deleteOption(index);
+
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.classList.add('option-buttons');
+                buttonsDiv.appendChild(editBtn);
+                buttonsDiv.appendChild(deleteBtn);
+                listItem.appendChild(buttonsDiv);
+
+                optionsList.appendChild(listItem);
+            });
+        }
+
+        function addOrUpdateOption() {
+            const optionText = optionInput.value.trim();
+            if (optionText === "") {
+                alert("选项不能为空！");
+                return;
+            }
+
+            if (editingIndex > -1) { // 更新模式
+                if (options.some((opt, idx) => opt === optionText && idx !== editingIndex)) {
+                    alert("该选项已存在！");
+                    return;
+                }
+                options[editingIndex] = optionText;
+                editingIndex = -1;
+                addOptionBtn.textContent = '添加选项';
+            } else { // 添加模式
+                if (options.length >= MAX_OPTIONS) {
+                    alert(`最多只能添加 ${MAX_OPTIONS} 个选项！`);
+                    return;
+                }
+                if (options.includes(optionText)) {
+                    alert("该选项已存在！");
+                    return;
+                }
+                options.push(optionText);
+            }
+            renderOptions();
+            optionInput.value = '';
+            optionInput.focus();
+        }
+
+        function startEditOption(index) {
+            optionInput.value = options[index];
+            editingIndex = index;
+            addOptionBtn.textContent = '更新选项';
+            optionInput.focus();
+        }
+
+        function deleteOption(index) {
+            if (!confirm(`确定要删除选项 "${options[index]}" 吗？`)) {
+                return;
+            }
+            options.splice(index, 1);
+            renderOptions();
+            if (editingIndex === index || options.length === 0) {
+                editingIndex = -1;
+                optionInput.value = '';
+                addOptionBtn.textContent = '添加选项';
+            } else if (editingIndex > index) {
+                editingIndex--;
+            }
+        }
+
+        addOptionBtn.addEventListener('click', addOrUpdateOption);
+
+        optionInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                addOrUpdateOption();
+            }
+        });
+
+        decisionModes.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'simple' && radio.checked) {
+                    decisionResultArea.style.display = 'block';
+                    wheelArea.style.display = 'none';
+                    decisionResultText.textContent = '- 等待决策 -'; // 重置结果
+                } else if (radio.value === 'wheel' && radio.checked) {
+                    decisionResultArea.style.display = 'none';
+                    wheelArea.style.display = 'block';
+                    if (options.length >= MIN_OPTIONS_FOR_DECISION) {
+                        drawWheel();
+                    } else {
+                        ctx.clearRect(0, 0, decisionWheelCanvas.width, decisionWheelCanvas.height);
+                        ctx.save();
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = '#777';
+                        ctx.font = '16px Arial';
+                        ctx.fillText('请至少添加2个选项才能绘制转盘', decisionWheelCanvas.width / 2, decisionWheelCanvas.height / 2);
+                        ctx.restore();
+                    }
+                }
+            });
+        });
+
+        const wheelColors = ["#FFC0CB", "#ADD8E6", "#90EE90", "#FFD700", "#FFA07A", "#DDA0DD", "#87CEFA", "#F0E68C", "#FFB6C1", "#E6E6FA"];
+
+        function drawWheel(rotationAngle = 0) {
+            const numOptions = options.length;
+            if (numOptions < MIN_OPTIONS_FOR_DECISION) {
+                 ctx.clearRect(0, 0, decisionWheelCanvas.width, decisionWheelCanvas.height);
+                 ctx.save();
+                 ctx.textAlign = 'center';
+                 ctx.fillStyle = '#777';
+                 ctx.font = '16px Arial';
+                 ctx.fillText('选项不足', decisionWheelCanvas.width / 2, decisionWheelCanvas.height / 2);
+                 ctx.restore();
+                return;
+            }
+
+            const arcSize = (2 * Math.PI) / numOptions;
+            const centerX = decisionWheelCanvas.width / 2;
+            const centerY = decisionWheelCanvas.height / 2;
+            const radius = Math.min(centerX, centerY) * 0.9; // 留出一些边距
+
+            ctx.clearRect(0, 0, decisionWheelCanvas.width, decisionWheelCanvas.height);
+            ctx.save(); // 保存初始状态
+            ctx.translate(centerX, centerY); // 将原点移到画布中心
+            ctx.rotate(rotationAngle); // 应用旋转角度 (用于动画)
+            ctx.translate(-centerX, -centerY); // 将原点移回
+
+            for (let i = 0; i < numOptions; i++) {
+                const angle = i * arcSize;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
+                ctx.lineTo(centerX, centerY);
+                ctx.closePath();
+
+                ctx.fillStyle = wheelColors[i % wheelColors.length];
+                ctx.fill();
+                ctx.strokeStyle = '#555'; // 扇形边框颜色
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // 绘制文字
+                ctx.save();
+                ctx.translate(centerX, centerY); // 将原点移到画布中心以便旋转文字
+                ctx.rotate(angle + arcSize / 2); // 旋转到扇形中间
+
+                ctx.textAlign = "right"; // 文字基线对齐扇形中心线右侧
+                ctx.fillStyle = "#333"; // 文字颜色
+                ctx.font = "bold 14px Arial";
+                
+                // 限制文字长度
+                let optionText = options[i];
+                const maxTextWidth = radius * 0.7; // 文字最大宽度不超过半径的70%
+                if (ctx.measureText(optionText).width > maxTextWidth) {
+                    while(ctx.measureText(optionText + '...').width > maxTextWidth && optionText.length > 0) {
+                        optionText = optionText.substring(0, optionText.length - 1);
+                    }
+                    optionText += '...';
+                }
+                ctx.fillText(optionText, radius * 0.95, 0); // 在半径的95%处绘制文字，0表示在旋转后的x轴上
+                ctx.restore(); // 恢复保存的画布状态（主要是旋转和平移）
+            }
+            ctx.restore(); // 恢复初始状态
+
+            // 绘制指针
+            ctx.save();
+            ctx.translate(centerX, centerY); // 中心点
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.moveTo(0, -radius * 0.1); // 指针顶部
+            ctx.lineTo(radius * 0.05, 0);  // 指针右下角
+            ctx.lineTo(-radius * 0.05, 0); // 指针左下角
+            ctx.closePath();
+            ctx.fill();
+
+            // 中心圆点
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
+            ctx.fillStyle = '#666';
+            ctx.fill();
+            ctx.restore();
+        }
+
+        let currentRotationAngle = 0; // 当前转盘的旋转角度，动画结束后会是最终角度
+        let spinAnimationId = null; // 用于存储 requestAnimationFrame 的 ID
+        let isSpinning = false; // 防止重复点击
+
+        function spinWheel() {
+            if (isSpinning || options.length < MIN_OPTIONS_FOR_DECISION) return;
+            isSpinning = true;
+            startDecisionBtn.disabled = true; // 禁用按钮防止动画期间再次点击
+
+            if (spinAnimationId) cancelAnimationFrame(spinAnimationId);
+
+            const numOptions = options.length;
+            const arcSize = (2 * Math.PI) / numOptions;
+            const targetOptionIndex = Math.floor(Math.random() * numOptions);
+            
+            // 目标是让指针（固定向上）指向目标扇区的中间。
+            // 目标扇区的中心角度（从0度，即画布右侧，逆时针计算）
+            const targetSectorCenterAngle = targetOptionIndex * arcSize + arcSize / 2;
+            // 我们希望目标扇区的中心对准画布顶部（-Math.PI / 2 或 3 * Math.PI / 2）。
+            // 转盘需要旋转的角度 = -(目标扇区中心角度 - 画布顶部的角度)
+            // 注意：画布的旋转是顺时针为正，所以要对准顶部(-PI/2)，扇区需要逆时针转到那个位置，所以是负的。
+            // 或者说，画布需要顺时针旋转 (targetSectorCenterAngle - (-PI/2)) = targetSectorCenterAngle + PI/2
+            // 但由于我们 drawWheel(rotationAngle) 中的 rotationAngle 是让画布内容逆时针转，所以这里应该是
+            // -(targetSectorCenterAngle - (-Math.PI / 2)) = -targetSectorCenterAngle - Math.PI/2
+            // 修正：指针向上是-PI/2。如果一个扇区的中心是A，我们想让它转到-PI/2，那么画布（内容）需要转动 -(A - (-PI/2)) = -A - PI/2
+            let targetRotation = -(targetSectorCenterAngle + Math.PI / 2);
+
+
+            const baseRotations = 5; // 至少旋转圈数
+            const randomExtraRotations = Math.random() * 5; // 额外随机圈数
+            const totalCompleteRotations = (baseRotations + randomExtraRotations) * 2 * Math.PI;
+            
+            // 我们希望最终停在 targetRotation，但为了动画效果，我们让它从 currentRotationAngle 转起
+            // 所以总的旋转量是 totalCompleteRotations + (targetRotation - (currentRotationAngle % (2*Math.PI)))
+            // 为了确保总是正向旋转且至少转几圈：
+            // 1. 将 currentRotationAngle 规范化到 [0, 2PI)
+            const normalizedCurrentAngle = (currentRotationAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            // 2. 将 targetRotation 规范化到 [0, 2PI) 相对于当前位置
+            let normalizedTargetAngle = (targetRotation % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+
+            // 计算从 normalizedCurrentAngle 到 normalizedTargetAngle 需要的最小正向旋转
+            let diffAngle = normalizedTargetAngle - normalizedCurrentAngle;
+            if (diffAngle < 0) {
+                diffAngle += 2 * Math.PI; // 确保是正向旋转
+            }
+
+            const finalTargetRotation = currentRotationAngle + totalCompleteRotations + diffAngle;
+
+            const duration = 4000 + Math.random() * 2000; // 动画持续时间 4-6 秒
+            let startTime = null;
+
+            decisionResultArea.style.display = 'none';
+            decisionResultText.textContent = `- 转盘转动中... -`;
+
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsedTime = timestamp - startTime;
+                let newAngle;
+
+                if (elapsedTime < duration) {
+                    const progress = elapsedTime / duration;
+                    const easeOutProgress = 1 - Math.pow(1 - progress, 4); // easeOutQuart
+                    // 从 currentRotationAngle 开始增加，而不是从0
+                    newAngle = currentRotationAngle + easeOutProgress * (finalTargetRotation - currentRotationAngle);
+                    drawWheel(newAngle);
+                    spinAnimationId = requestAnimationFrame(animate);
+                } else {
+                    newAngle = finalTargetRotation; // 确保精确停在目标位置
+                    drawWheel(newAngle);
+                    currentRotationAngle = newAngle; // 更新当前角度，以便下次旋转从此开始
+                    
+                    cancelAnimationFrame(spinAnimationId);
+                    spinAnimationId = null;
+                    isSpinning = false;
+                    startDecisionBtn.disabled = false;
+
+                    const resultOption = options[targetOptionIndex];
+                    decisionResultText.textContent = `🎉 结果是： ${resultOption} 🎉`;
+                    decisionResultArea.style.display = 'block';
+                    addDecisionToHistory(resultOption, '转盘');
+                }
+            }
+            spinAnimationId = requestAnimationFrame(animate);
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (decisionHistory.length === 0) {
+                const emptyMsg = document.createElement('li');
+                emptyMsg.textContent = '暂无历史记录';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.color = '#777';
+                historyList.appendChild(emptyMsg);
+                clearHistoryBtn.style.display = 'none';
+            } else {
+                decisionHistory.forEach(item => {
+                    const listItem = document.createElement('li');
+                    const timeStr = new Date(item.timestamp).toLocaleString('zh-CN', { hour12: false });
+                    listItem.textContent = `[${item.mode}] ${item.result} (${timeStr})`;
+                    historyList.appendChild(listItem);
+                });
+                clearHistoryBtn.style.display = 'block';
+            }
+        }
+
+        function addDecisionToHistory(result, mode) {
+            const newHistoryItem = {
+                result: result,
+                mode: mode,
+                timestamp: Date.now()
+            };
+            decisionHistory.unshift(newHistoryItem);
+            if (decisionHistory.length > MAX_HISTORY_LENGTH) {
+                decisionHistory.pop();
+            }
+            localStorage.setItem('decisionHistory', JSON.stringify(decisionHistory));
+            renderHistory();
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            if (confirm("确定要清空所有历史记录吗？")) {
+                decisionHistory = [];
+                localStorage.removeItem('decisionHistory');
+                renderHistory();
+            }
+        });
+
+
+        startDecisionBtn.addEventListener('click', () => {
+            if (isSpinning) return; // 如果正在旋转，则不执行任何操作
+
+            if (options.length < MIN_OPTIONS_FOR_DECISION) {
+                alert(`请至少添加 ${MIN_OPTIONS_FOR_DECISION} 个选项才能开始决策！`);
+                return;
+            }
+
+            let selectedModeValue = 'simple';
+            decisionModes.forEach(radio => {
+                if (radio.checked) {
+                    selectedModeValue = radio.value;
+                }
+            });
+
+            if (selectedModeValue === 'simple') {
+                decisionResultArea.style.display = 'block';
+                wheelArea.style.display = 'none';
+                const randomIndex = Math.floor(Math.random() * options.length);
+                const result = options[randomIndex];
+                decisionResultText.textContent = `结果是： ${result}`;
+                addDecisionToHistory(result, '简单');
+            } else if (selectedModeValue === 'wheel') {
+                decisionResultArea.style.display = 'none'; // 点击旋转时先隐藏旧结果
+                wheelArea.style.display = 'block';
+                if (options.length >= MIN_OPTIONS_FOR_DECISION) {
+                    spinWheel();
+                } else {
+                    alert("请先添加足够选项再使用转盘模式！");
+                }
+            }
+        });
+
+        // 初始化
+        renderOptions(); // 初始渲染选项（如果将来从localStorage加载选项）
+        renderHistory(); // 初始渲染历史记录
+
+        // 初始时，如果转盘模式被选中且有足够选项，也绘制一下
+        if (document.querySelector('input[name="decision-mode"][value="wheel"]').checked && options.length >= MIN_OPTIONS_FOR_DECISION) {
+            drawWheel();
+        } else if (document.querySelector('input[name="decision-mode"][value="wheel"]').checked) {
+            ctx.clearRect(0, 0, decisionWheelCanvas.width, decisionWheelCanvas.height);
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#777';
+            ctx.font = '16px Arial';
+            ctx.fillText('请至少添加2个选项才能绘制转盘', decisionWheelCanvas.width / 2, decisionWheelCanvas.height / 2);
+            ctx.restore();
+        }
+    </script>
+</body>
+</html>

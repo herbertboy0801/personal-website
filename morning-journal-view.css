@@ -1,0 +1,260 @@
+/* morning-journal-view.css - 深色主题 */
+
+/* morning-journal-view.css - 日记页专有样式 */
+
+/* 补充 line-height */
+body { line-height: 1.6; }
+
+/* --- 页面容器 --- */
+.journal-page {
+  padding-top: 80px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 60px;
+  min-height: calc(100vh - 140px);
+}
+
+/* --- 页面标题 --- */
+.journal-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+.journal-header h1 {
+  font-size: 1.5rem; font-weight: 800; color: #f1f5f9;
+  margin: 0 0 6px;
+}
+.journal-header p {
+  font-size: 0.88rem; color: #6b7280; margin: 0;
+}
+
+/* --- 目标进度条 --- */
+.goal-banner {
+  background: linear-gradient(135deg, #0a1628 0%, #1a365d 40%, #2b6cb0 75%, #1e4a6e 100%);
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.goal-banner .separator {
+  color: rgba(255,255,255,0.5);
+  margin: 0 4px;
+}
+
+/* --- 日期导航 --- */
+.date-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.date-navigation button {
+  padding: 8px 18px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  background: rgba(22,25,44,0.8);
+  color: #c8cdd8;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.date-navigation button:hover {
+  background: rgba(212,168,83,0.1);
+  color: #f1f5f9;
+  border-color: rgba(212,168,83,0.3);
+}
+.date-navigation button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.date-navigation input.flatpickr-input {
+  padding: 8px 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  background: rgba(22,25,44,0.8);
+  color: #f1f5f9;
+  cursor: pointer;
+  text-align: center;
+  width: 160px;
+  transition: border-color 0.2s;
+}
+.date-navigation input.flatpickr-input:focus {
+  outline: none;
+  border-color: rgba(212,168,83,0.5);
+}
+
+/* --- 日记卡片 --- */
+.diary-card {
+  background: rgba(22,25,44,0.7);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+}
+.diary-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 20px; right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,168,83,0.2), rgba(43,108,176,0.2), transparent);
+}
+
+/* --- 日记内容区 --- */
+.journal-content.view-mode {
+  padding: 0;
+  margin: 0;
+}
+
+/* --- 日记区块 --- */
+.diary-block {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.diary-block:last-child {
+  border-bottom: none;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  color: #d4a853;
+  font-size: 0.92rem;
+  margin: 0;
+  font-weight: 700;
+  padding: 12px 20px 4px 20px;
+}
+.section-title .icon,
+.section-title .emoji {
+  margin-right: 6px;
+  font-size: 1rem;
+}
+
+.section-content {
+  padding: 4px 20px 14px 20px;
+  line-height: 1.7;
+  color: #c8cdd8;
+  font-size: 0.9rem;
+}
+.section-content p {
+  margin: 0 0 0.3em 0;
+}
+.section-content p:last-child {
+  margin-bottom: 0;
+}
+.section-content em {
+  color: #4b5563;
+  font-style: italic;
+}
+
+/* --- 空状态 --- */
+.no-entry {
+  text-align: center;
+  color: #4b5563;
+  padding: 50px 20px;
+  font-size: 0.92rem;
+}
+
+/* --- Flatpickr 深色主题覆盖 --- */
+.flatpickr-calendar {
+  background: #1a1d35 !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+}
+.flatpickr-months {
+  background: rgba(22,25,44,0.9);
+  border-radius: 12px 12px 0 0;
+}
+.flatpickr-months .flatpickr-month {
+  color: #f1f5f9 !important;
+  fill: #f1f5f9 !important;
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+  color: #7a8194 !important;
+  fill: #7a8194 !important;
+}
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+  color: #d4a853 !important;
+  fill: #d4a853 !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+}
+.flatpickr-current-month input.cur-year {
+  color: #f1f5f9 !important;
+}
+span.flatpickr-weekday {
+  color: #7a8194 !important;
+  font-weight: 600;
+}
+.flatpickr-day {
+  color: #c8cdd8 !important;
+  border-radius: 8px !important;
+}
+.flatpickr-day:hover {
+  background: rgba(212,168,83,0.15) !important;
+  border-color: transparent !important;
+}
+.flatpickr-day.today {
+  border-color: rgba(212,168,83,0.4) !important;
+}
+.flatpickr-day.selected {
+  background: linear-gradient(135deg, #d4a853, #2b6cb0) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+  color: #3b3f54 !important;
+}
+.flatpickr-day.flatpickr-disabled {
+  color: #2a2d42 !important;
+}
+
+/* 有日记记录的日期高亮 */
+.flatpickr-day.has-journal-entry {
+  background: rgba(212,168,83,0.15) !important;
+  border-color: rgba(212,168,83,0.3) !important;
+  color: #e8c170 !important;
+  font-weight: 700;
+}
+.flatpickr-day.has-journal-entry:hover {
+  background: rgba(212,168,83,0.25) !important;
+}
+.flatpickr-day.selected.has-journal-entry {
+  background: linear-gradient(135deg, #d4a853, #2b6cb0) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+/* --- 响应式 (仅页面特有) --- */
+@media (max-width: 768px) {
+  .journal-page { padding-left: 16px; padding-right: 16px; }
+  .date-navigation { flex-wrap: wrap; gap: 8px; }
+  .date-navigation input.flatpickr-input {
+    width: 100%; order: -1;
+  }
+  .goal-banner { font-size: 0.82rem; padding: 8px 14px; }
+  .section-title { padding: 10px 16px 4px; }
+  .section-content { padding: 4px 16px 12px; }
+}

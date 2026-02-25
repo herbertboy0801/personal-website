@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>贺伯工具库 - 贺伯AI实战笔记</title>
+  <meta name="description" content="贺伯用AI开发的100+实用工具合集，包含效率助手、休闲游戏、图像处理、开发工具等。">
+  <meta property="og:title" content="贺伯工具库 - 贺伯AI实战笔记">
+  <meta property="og:description" content="100+个AI编程开发的实用工具，包含效率助手、休闲游戏、图像处理等。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/avatar.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tools-main { flex: 1; padding-bottom: 60px; }
+    .tools-header { margin-bottom: 24px; }
+    .tools-header h1 { font-size: 1.4rem; color: var(--text-primary); margin: 0 0 4px; font-weight: 800; }
+    .tools-header p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+    .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .tool-card { display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; text-decoration: none; color: inherit; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
+    .tool-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-card); border-color: var(--border-hover); }
+    .tool-banner { padding: 20px 16px; background: var(--gradient-card-banner); display: flex; align-items: center; justify-content: center; position: relative; }
+    .tool-banner::after { content:''; position: absolute; bottom: 0; left: 0; right: 0; height: 16px; background: linear-gradient(to bottom, transparent, var(--bg-card)); }
+    .tool-icon { font-size: 2rem; position: relative; z-index: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
+    .tool-body { padding: 14px 16px 18px; flex: 1; display: flex; flex-direction: column; }
+    .tool-name { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+    .tool-desc { font-size: 0.78rem; color: #7a8194; line-height: 1.5; margin: 0 0 12px; flex: 1; }
+    .tool-cta { font-size: 0.8rem; font-weight: 600; color: var(--amber); }
+    .tool-card:hover .tool-cta { color: var(--amber-light); }
+    .tool-tag { display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: var(--amber-glow); color: var(--amber); margin-bottom: 8px; }
+    @media (max-width: 768px) { .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+    @media (max-width: 480px) { .tools-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">贺伯AI实战笔记</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html" class="nav-active">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+        <li><a href="admin/public/login.html" class="nav-admin">管理后台</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="菜单" onclick="document.getElementById('navMenu').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <h3>工具分类</h3>
+      <ul class="cat-list" id="catList"></ul>
+    </aside>
+    <section class="tools-main">
+      <div class="tools-header">
+        <h1>贺伯工具库</h1>
+        <p id="toolsCount"></p>
+      </div>
+      <div class="tools-grid" id="toolsGrid">
+        <div class="loading-skeleton">加载中...</div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">&copy; 2025 贺伯AI实战笔记. All rights reserved.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      var grid = document.getElementById('toolsGrid');
+      var catList = document.getElementById('catList');
+      var countEl = document.getElementById('toolsCount');
+      var tools = [];
+
+      try {
+        var res = await fetch('/api/tools');
+        if (!res.ok) throw new Error('API error');
+        tools = await res.json();
+      } catch (e) {
+        grid.innerHTML = '<div class="loading-skeleton">数据加载失败，请稍后再试</div>';
+        return;
+      }
+
+      var cats = {};
+      tools.forEach(function(t) { var c = t.category || '其他'; cats[c] = (cats[c] || 0) + 1; });
+      var catIcons = { '全部工具': '📦', '休闲娱乐': '🎮', '效率助手': '⚡', '图像影音处理': '🖼️', '开发工具': '💻', 'AI 智能工具': '🤖', '其他': '📂' };
+
+      var catHtml = '<li><a href="#" class="active" data-cat="all"><span class="cat-icon">📦</span>全部工具<span class="cat-count">' + tools.length + '</span></a></li>';
+      Object.keys(cats).sort().forEach(function(c) {
+        catHtml += '<li><a href="#" data-cat="' + c + '"><span class="cat-icon">' + (catIcons[c] || '📂') + '</span>' + c + '<span class="cat-count">' + cats[c] + '</span></a></li>';
+      });
+      catList.innerHTML = catHtml;
+
+      function renderTools(category) {
+        var filtered = category === 'all' ? tools : tools.filter(function(t) { return t.category === category; });
+        countEl.textContent = '共 ' + filtered.length + ' 个工具';
+        grid.innerHTML = filtered.map(function(t) {
+          return '<a href="' + t.url + '" class="tool-card"><div class="tool-banner"><span class="tool-icon">' + (t.icon || '🔧') + '</span></div>' +
+            '<div class="tool-body"><span class="tool-tag">' + (t.category || '工具') + '</span>' +
+            '<h3 class="tool-name">' + t.name + '</h3><p class="tool-desc">' + t.description + '</p>' +
+            '<span class="tool-cta">打开工具 →</span></div></a>';
+        }).join('');
+      }
+
+      renderTools('all');
+
+      catList.addEventListener('click', function(e) {
+        var a = e.target.closest('a');
+        if (!a) return;
+        e.preventDefault();
+        catList.querySelectorAll('a').forEach(function(el) { el.classList.remove('active'); });
+        a.classList.add('active');
+        renderTools(a.dataset.cat);
+      });
+
+      document.querySelectorAll('.nav-menu a').forEach(function(a) {
+        a.addEventListener('click', function() { document.getElementById('navMenu').classList.remove('open'); });
+      });
+    });
+  </script>
+
+</body>
+</html>

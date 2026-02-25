@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章字数统计工具</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            min-height: 200px;
+            resize: vertical;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9e9e9;
+            border-radius: 4px;
+        }
+        .results p {
+            margin: 5px 0;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        #clear-button {
+            background-color: #f44336;
+            color: white;
+        }
+        #clear-button:hover {
+            background-color: #d32f2f;
+        }
+        #copy-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #copy-button:hover {
+            background-color: #388E3C;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文章字数统计工具</h1>
+        <textarea id="text-input" placeholder="请在此输入或粘贴您的文章..."></textarea>
+        <div class="buttons">
+            <button id="clear-button">清空</button>
+            <button id="copy-button">复制统计结果</button>
+        </div>
+        <div class="results" id="results-area">
+            <p><strong>统计结果:</strong></p>
+            <p>字符数 (含空格): <span id="char-count-with-spaces">0</span></p>
+            <p>字符数 (不含空格): <span id="char-count-without-spaces">0</span></p>
+            <p>单词数: <span id="word-count">0</span></p>
+            <p>段落数: <span id="paragraph-count">0</span></p>
+            <p>预计阅读时间: <span id="reading-time">0</span> 分钟</p>
+        </div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('text-input');
+        const charCountWithSpaces = document.getElementById('char-count-with-spaces');
+        const charCountWithoutSpaces = document.getElementById('char-count-without-spaces');
+        const wordCount = document.getElementById('word-count');
+        const paragraphCount = document.getElementById('paragraph-count');
+        const readingTime = document.getElementById('reading-time');
+        const clearButton = document.getElementById('clear-button');
+        const copyButton = document.getElementById('copy-button');
+
+        const updateStats = () => {
+            const text = textInput.value;
+
+            // 统计字符数 (含空格)
+            const charsWithSpaces = text.length;
+            charCountWithSpaces.textContent = charsWithSpaces;
+
+            // 统计字符数 (不含空格)
+            const charsWithoutSpaces = text.replace(/\s/g, '').length;
+            charCountWithoutSpaces.textContent = charsWithoutSpaces;
+
+            // 统计单词数
+            // 使用正则表达式匹配单词，考虑中文、英文和数字
+            const words = text.match(/[\u4e00-\u9fa5]|[a-zA-Z0-9]+/g);
+            const numWords = words ? words.length : 0;
+            wordCount.textContent = numWords;
+
+            // 统计段落数
+            // 以连续的换行符为分隔符
+            const paragraphs = text.split(/\r\n|\r|\n/).filter(p => p.trim() !== '');
+            paragraphCount.textContent = paragraphs.length;
+
+            // 计算预计阅读时间 (每分钟200个单词)
+            const estimatedReadingTime = Math.ceil(numWords / 200);
+            readingTime.textContent = estimatedReadingTime;
+        };
+
+        // 实时统计
+        textInput.addEventListener('input', updateStats);
+
+        // 清空按钮功能
+        clearButton.addEventListener('click', () => {
+            textInput.value = '';
+            updateStats(); // 清空后更新统计
+        });
+
+        // 复制统计结果按钮功能
+        copyButton.addEventListener('click', () => {
+            const resultsText = `
+统计结果:
+字符数 (含空格): ${charCountWithSpaces.textContent}
+字符数 (不含空格): ${charCountWithoutSpaces.textContent}
+单词数: ${wordCount.textContent}
+段落数: ${paragraphCount.textContent}
+预计阅读时间: ${readingTime.textContent} 分钟
+            `.trim();
+
+            navigator.clipboard.writeText(resultsText).then(() => {
+                alert('统计结果已复制到剪贴板！');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制。');
+            });
+        });
+
+        // 页面加载时进行初始统计
+        updateStats();
+    </script>
+</body>
+</html>

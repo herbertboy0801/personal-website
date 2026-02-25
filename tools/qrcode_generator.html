@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码生成器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f9;
+            color: #333;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="color"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        input[type="color"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #409eff;
+            outline: none;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .color-inputs {
+            display: flex;
+            gap: 15px;
+        }
+        .color-inputs > div {
+            flex: 1;
+        }
+
+        button {
+            background-color: #409eff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #66b1ff;
+        }
+        
+        #qrcode-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px dashed #dcdfe6;
+            border-radius: 5px;
+            min-height: 200px;
+            background-color: #f9fafc;
+        }
+
+        canvas#qrcode-canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #eee;
+        }
+        
+        .responsive-img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 10px;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .color-inputs {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>二维码生成器</h1>
+
+        <div class="form-group">
+            <label for="qr-data">文本、URL 或联系信息:</label>
+            <textarea id="qr-data" placeholder="例如: https://www.example.com"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="qr-size">二维码尺寸:</label>
+            <select id="qr-size">
+                <option value="128">小 (128x128)</option>
+                <option value="256" selected>中 (256x256)</option>
+                <option value="512">大 (512x512)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>二维码颜色:</label>
+            <div class="color-inputs">
+                <div>
+                    <label for="qr-fg-color" style="font-size: 0.9em; margin-bottom: 4px;">前景色:</label>
+                    <input type="color" id="qr-fg-color" value="#000000">
+                </div>
+                <div>
+                    <label for="qr-bg-color" style="font-size: 0.9em; margin-bottom: 4px;">背景色:</label>
+                    <input type="color" id="qr-bg-color" value="#ffffff">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="qr-logo">中央 Logo (可选):</label>
+            <input type="file" id="qr-logo" accept="image/png, image/jpeg, image/gif">
+        </div>
+
+        <button id="generate-qr">生成/更新二维码</button>
+        
+        <div id="qrcode-preview-container">
+            <canvas id="qrcode-canvas"></canvas>
+        </div>
+
+        <button id="download-qr" style="background-color: #67c23a; margin-top: 20px;">下载二维码 (PNG)</button>
+    </div>
+
+    <script>
+        const qrDataInput = document.getElementById('qr-data');
+        const qrSizeSelect = document.getElementById('qr-size');
+        const qrFgColorInput = document.getElementById('qr-fg-color');
+        const qrBgColorInput = document.getElementById('qr-bg-color');
+        const qrLogoInput = document.getElementById('qr-logo');
+        const generateQrButton = document.getElementById('generate-qr');
+        const downloadQrButton = document.getElementById('download-qr');
+        const qrCanvas = document.getElementById('qrcode-canvas');
+        const ctx = qrCanvas.getContext('2d');
+        let qrInstance = null;
+        let logoImage = null;
+
+        function drawLogo() {
+            if (!logoImage || !qrInstance) return;
+
+            const canvasSize = parseInt(qrSizeSelect.value);
+            // Logo size: up to 25-30% of QR code size for better scannability
+            const maxLogoSize = canvasSize * 0.3; 
+            
+            let logoWidth = logoImage.width;
+            let logoHeight = logoImage.height;
+
+            if (logoWidth > maxLogoSize || logoHeight > maxLogoSize) {
+                if (logoWidth > logoHeight) {
+                    logoHeight = (maxLogoSize / logoWidth) * logoHeight;
+                    logoWidth = maxLogoSize;
+                } else {
+                    logoWidth = (maxLogoSize / logoHeight) * logoWidth;
+                    logoHeight = maxLogoSize;
+                }
+            }
+            
+            const x = (canvasSize - logoWidth) / 2;
+            const y = (canvasSize - logoHeight) / 2;
+            
+            // Optional: Add a white background/padding behind the logo
+            // This can help if the logo has transparent parts or to make it stand out
+            const padding = logoWidth * 0.05; // Small padding
+            ctx.fillStyle = qrBgColorInput.value; // Use background color for padding
+            ctx.fillRect(x - padding, y - padding, logoWidth + padding*2, logoHeight + padding*2);
+
+            ctx.drawImage(logoImage, x, y, logoWidth, logoHeight);
+        }
+
+        function generateQRCode() {
+            const data = qrDataInput.value;
+            if (!data) {
+                alert('请输入要生成二维码的内容！');
+                // Clear canvas if no data
+                ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+                qrCanvas.width = 0; // Effectively hide it if there's no content
+                qrCanvas.height = 0;
+                qrInstance = null;
+                return;
+            }
+
+            const size = parseInt(qrSizeSelect.value);
+            const fgColor = qrFgColorInput.value;
+            const bgColor = qrBgColorInput.value;
+
+            // Set canvas size explicitly for qrious to draw on
+            qrCanvas.width = size;
+            qrCanvas.height = size;
+
+            qrInstance = new QRious({
+                element: qrCanvas, // qrious will draw directly on this canvas
+                value: data,
+                size: size,
+                foreground: fgColor,
+                background: bgColor,
+                level: 'H' // High error correction for logo
+            });
+            
+            // If a logo is loaded, draw it after QR code is generated
+            if (logoImage) {
+                 // qrious might draw async, ensure it's done or wait slightly.
+                 // For simplicity here, we draw immediately. If issues, a small timeout might be needed.
+                drawLogo();
+            }
+        }
+
+        qrLogoInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoImage = new Image();
+                    logoImage.onload = function() {
+                        // Logo loaded, re-generate QR code to include it
+                        generateQRCode(); 
+                    }
+                    logoImage.onerror = function() {
+                        alert('无法加载Logo图片。请确保文件格式正确。');
+                        logoImage = null;
+                    }
+                    logoImage.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                logoImage = null;
+                // If logo is removed, regenerate QR without it
+                generateQRCode();
+            }
+        });
+
+        generateQrButton.addEventListener('click', generateQRCode);
+        
+        // Generate a default QR on load if there's initial data (optional)
+        // qrDataInput.value = "你好，世界！"; // Example initial data
+        // generateQRCode();
+
+
+        downloadQrButton.addEventListener('click', function() {
+            if (!qrInstance) {
+                alert('请先生成二维码！');
+                return;
+            }
+            const dataUrl = qrCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = 'qrcode.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Add event listeners for real-time updates (optional, can be heavy)
+        // For simplicity, relying on the "Generate/Update" button for now.
+        // If real-time preview is desired for color/size changes without hitting the button:
+        // qrSizeSelect.addEventListener('change', generateQRCode);
+        // qrFgColorInput.addEventListener('input', generateQRCode); // 'input' for live color change
+        // qrBgColorInput.addEventListener('input', generateQRCode);
+        // qrDataInput.addEventListener('input', generateQRCode); // For text changes
+
+        // Initial generation with default or empty values
+        // To ensure canvas is ready with a default size but possibly no QR code yet:
+        qrCanvas.width = parseInt(qrSizeSelect.value);
+        qrCanvas.height = parseInt(qrSizeSelect.value);
+        // generateQRCode(); // You could call this to draw an initial QR if qrDataInput has a default value
+        if (qrDataInput.value) { // Generate if there's already some data (e.g. from browser cache)
+            generateQRCode();
+        }
+
+
+    </script>
+    <div style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #777;">
+        <p>提示: 在二维码中央添加较大的Logo可能会影响其可扫描性。建议使用高容错级别 (H)。</p>
+    </div>
+</body>
+</html>

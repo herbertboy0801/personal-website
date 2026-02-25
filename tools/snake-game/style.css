@@ -1,0 +1,395 @@
+/* 基本重置和全局设置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif; /* 暂时使用通用字体，后续可替换为赛博朋克风格字体 */
+    background-color: #0a0a1f; /* 深蓝色背景 */
+    color: #00ffff; /* 霓虹青色文字 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden; /* 防止滑动时页面滚动 */
+    flex-direction: column; /* 让开始屏幕和游戏容器垂直排列（虽然一次只显示一个） */
+}
+
+/* --- 开始屏幕样式 --- */
+#startScreen {
+    background-color: rgba(10, 10, 31, 0.9);
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 15px #00ffff, inset 0 0 10px #00ffff;
+    padding: 30px;
+    text-align: center;
+    max-width: 90%;
+    width: 500px;
+    border-radius: 10px;
+    color: #00ffff;
+}
+
+#startScreen h1 {
+     color: #ff00ff;
+     text-shadow: 0 0 5px #ff00ff;
+     margin-bottom: 25px;
+     font-size: 2.8em;
+}
+
+#preGamePlayerNameInput {
+    display: block;
+    width: 80%;
+    max-width: 300px;
+    margin: 0 auto 20px auto;
+    padding: 12px;
+    font-size: 1.1em;
+    border: 1px solid #00ffff;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #00ff00;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#preGamePlayerNameInput::placeholder {
+    color: #aaa;
+}
+
+#startGameWithNameButton {
+    background-color: #00ff00;
+    color: #0a0a1f;
+    box-shadow: 0 0 8px #00ff00;
+    padding: 12px 25px;
+    font-size: 1.2em;
+    margin-bottom: 30px; /* 与排行榜预览的间距 */
+    border: none; /* 确保按钮样式一致 */
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    font-weight: bold;
+}
+#startGameWithNameButton:hover {
+     background-color: #33ff33;
+     box-shadow: 0 0 12px #00ff00, 0 0 20px #00ff00;
+}
+
+#globalLeaderboardPreview {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.5);
+    border-radius: 5px;
+    max-width: 90%;
+    text-align: left;
+}
+
+#globalLeaderboardPreview h2 {
+    color: #00ffff;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 1.3em;
+}
+
+#globalLeaderboardPreview ol {
+    list-style-position: inside;
+    padding-left: 10px;
+    color: #eee;
+}
+
+#globalLeaderboardPreview ol li {
+     margin-bottom: 5px;
+     font-size: 1em;
+}
+
+
+/* --- 游戏容器样式 --- */
+.game-container { /* 这个现在是游戏进行时的容器 */
+    background-color: rgba(10, 10, 31, 0.8); /* 半透明背景增加层次感 */
+    border: 2px solid #ff00ff; /* 霓虹粉色边框 */
+    box-shadow: 0 0 15px #ff00ff, inset 0 0 10px #ff00ff; /* 霓虹辉光效果 */
+    padding: 20px;
+    text-align: center;
+    max-width: 90%;
+    width: 500px;
+    border-radius: 10px;
+    position: relative;
+    /* 初始隐藏，由 JS 控制显示 */
+}
+
+.player-info {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.score-board {
+    display: flex; /* 让得分和最高分并排显示 */
+    justify-content: space-around; /* 分散对齐 */
+    align-items: center; /* 垂直居中 */
+    flex-wrap: wrap; /* 允许换行 */
+    font-size: 1.1em; /* 稍微调整大小以适应更多项 */
+    margin-bottom: 15px;
+    color: #00ff00;
+    text-shadow: 0 0 3px #00ff00;
+    padding-top: 25px; /* 为顶部的玩家信息留出空间 */
+}
+.score-board > div {
+    margin: 0 5px; /* 给各项之间一点间距 */
+}
+
+
+#gameCanvas {
+    border: 2px solid #00ffff; /* 加粗边框 */
+    background-color: #000; /* 纯黑画布背景 */
+    /* 添加细微的网格背景效果 */
+    background-image:
+        linear-gradient(to right, rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px; /* 网格大小与 gridSize 一致 */
+    display: block; /* 消除画布下方的空隙 */
+    margin: 0 auto 15px auto; /* 居中并添加底部边距 */
+    max-width: 100%; /* 确保画布在小屏幕上能缩放 */
+    box-shadow: 0 0 15px #00ffff, inset 0 0 8px rgba(0, 255, 255, 0.5); /* 增强内外辉光 */
+    image-rendering: pixelated; /* 保持像素风格 */
+}
+
+.controls-info {
+    font-size: 0.9em;
+    color: #aaa; /* 灰色提示信息 */
+    margin-bottom: 20px;
+}
+
+.button-group {
+    margin-bottom: 20px; /* 给按钮组下方留出空间 */
+}
+
+button { /* 通用按钮样式 */
+    color: #0a0a1f; /* 深蓝文字 */
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    font-weight: bold;
+    margin: 5px; /* 给按钮之间一些间距 */
+}
+
+button:hover {
+    /* 悬停效果在具体按钮上定义 */
+}
+
+/* 特定按钮样式 */
+#pauseButton {
+    background-color: #00ffff; /* 暂停按钮用青色 */
+    box-shadow: 0 0 5px #00ffff;
+}
+#pauseButton:hover {
+    background-color: #33ffff;
+    box-shadow: 0 0 10px #00ffff, 0 0 15px #00ffff;
+}
+
+#endButton {
+    background-color: #ff3333; /* 结束按钮用红色 */
+    box-shadow: 0 0 5px #ff3333;
+}
+#endButton:hover {
+    background-color: #ff6666;
+    box-shadow: 0 0 10px #ff3333, 0 0 15px #ff3333;
+}
+
+#restartButton { /* 现在是返回主菜单按钮 */
+     background-color: #ff00ff; /* 霓虹粉色按钮 */
+     box-shadow: 0 0 5px #ff00ff;
+}
+#restartButton:hover {
+     background-color: #ff33ff;
+     box-shadow: 0 0 10px #ff00ff, 0 0 15px #ff00ff;
+}
+
+
+/* --- 游戏结束画面 --- */
+#gameOverScreen {
+    background-color: rgba(0, 0, 0, 0.85);
+    position: absolute; /* 覆盖在画布上 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 30px;
+    border-radius: 10px;
+    border: 2px solid #ff00ff;
+    box-shadow: 0 0 20px #ff00ff;
+    width: 80%;
+    max-width: 300px;
+    z-index: 10; /* 确保在最上层 */
+    text-align: center; /* 确保内容居中 */
+}
+
+#gameOverScreen h2 {
+    color: #ff3333; /* 红色游戏结束标题 */
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px #ff3333;
+}
+
+#gameOverScreen p {
+    margin-bottom: 20px;
+    color: #00ff00; /* 绿色最终得分 */
+}
+
+#newHighScoreMsg {
+    color: #ffdd00; /* 金黄色新纪录提示 */
+    font-weight: bold;
+    margin-top: -10px; /* 向上移动一点 */
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px #ffdd00;
+}
+
+
+/* --- 通用类 --- */
+.hidden {
+    display: none;
+}
+
+/* --- 响应式调整 --- */
+@media (max-width: 600px) {
+    #startScreen, .game-container {
+        width: 95%;
+        padding: 15px;
+    }
+    #startScreen h1 {
+        font-size: 2em;
+    }
+    #preGamePlayerNameInput {
+        padding: 10px;
+        font-size: 1em;
+    }
+    #startGameWithNameButton {
+         padding: 10px 20px;
+         font-size: 1.1em;
+    }
+    .score-board {
+        font-size: 1em;
+        padding-top: 30px; /* 调整间距 */
+    }
+    button {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+    #gameOverScreen {
+        padding: 20px;
+        width: 90%;
+    }
+}
+/* --- 语言切换器样式 --- */
+.language-switcher {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 100; /* 确保在最上层 */
+}
+
+#langButton {
+    background-color: rgba(0, 255, 255, 0.7); /* 半透明青色 */
+    color: #0a0a1f;
+    border: 1px solid #00ffff;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 3px #00ffff;
+}
+
+#langButton:hover {
+    background-color: rgba(51, 255, 255, 0.9);
+    box-shadow: 0 0 6px #00ffff;
+}
+
+/* 响应式调整 */
+@media (max-width: 600px) {
+    .language-switcher {
+        top: 10px;
+        right: 10px;
+    }
+    #langButton {
+        font-size: 0.7em;
+        padding: 4px 8px;
+    }
+}
+/* --- 游玩人次样式 --- */
+.play-count-info {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 0.8em;
+    color: #aaa;
+    z-index: 5; /* 低于游戏结束画面，但高于一般内容 */
+}
+
+/* 响应式调整 */
+@media (max-width: 600px) {
+    .play-count-info {
+        bottom: 5px;
+        right: 10px;
+        font-size: 0.7em;
+    }
+}
+/* --- 虚拟 D-pad 样式 --- */
+#dpad {
+    position: absolute;
+    bottom: 60px; /* 调整位置，避免与游玩人次重叠 */
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 50; /* 确保在游戏元素之上 */
+}
+
+#dpad button {
+    background-color: rgba(0, 255, 255, 0.5); /* 半透明青色 */
+    color: #0a0a1f;
+    border: 1px solid #00ffff;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 2px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none; /* 防止文本选中 */
+    -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+    transition: background-color 0.1s, transform 0.1s;
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
+}
+
+#dpad button:active {
+    background-color: rgba(51, 255, 255, 0.8);
+    transform: scale(0.95); /* 轻微缩小反馈 */
+}
+
+.dpad-middle-row {
+    display: flex;
+    justify-content: space-between;
+    width: 106px; /* 2 * button width + 2 * margin */
+}
+
+/* 响应式调整 */
+@media (max-width: 600px) {
+    #dpad {
+        bottom: 50px;
+        right: 10px;
+    }
+    #dpad button {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3em;
+    }
+    .dpad-middle-row {
+        width: 96px;
+    }
+}

@@ -1,0 +1,878 @@
+/* 全局样式 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    /* background-color: #f0f2f5; */ /* 移除单一背景色 */
+    /* 添加背景图片和微妙的背景图案 */
+    background-color: #f8f9fa; /* 设定一个基础背景色 */
+    background-image: url('images/bg.png'), /* 背景图片 */
+                      linear-gradient(45deg, #f0f2f5 25%, transparent 25%, transparent 75%, #f0f2f5 75%, #f0f2f5), /* 图案 */
+                      linear-gradient(-45deg, #f0f2f5 25%, transparent 25%, transparent 75%, #f0f2f5 75%, #f0f2f5); /* 图案 */
+    background-size: cover, 20px 20px, 20px 20px; /* 背景图片覆盖，图案保持原大小 */
+    background-repeat: no-repeat, repeat, repeat; /* 背景图片不重复，图案重复 */
+    background-position: center center, 0 0, 0 0; /* 背景图片居中，图案默认 */
+    background-attachment: fixed, scroll, scroll; /* 背景图片固定，图案滚动 */
+    color: #333;
+}
+
+.container {
+    max-width: 800px; /* 调整宽度以适应单列布局 */
+    margin: 0 auto; /* 顶部无边距，左右居中 */
+    padding: 0 15px 20px 15px; /* 顶部无内边距，左右和底部留白 */
+    /* 移除背景和阴影，因为背景在 body 上 */
+}
+
+/* --- 页眉样式 --- */
+.app-header {
+    background-color: #fff; /* 页眉白色背景 */
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.app-logo {
+    height: 32px; /* 设置 Logo 高度，宽度会自动调整 */
+    margin-right: 12px; /* Logo 和标题的间距 */
+    vertical-align: middle; /* 确保垂直居中对齐 */
+}
+
+/* .app-icon { ... } */ /* 移除旧图标样式 */
+
+.app-header h1 {
+    color: #007bff; /* 主题蓝 */
+    font-size: 1.6em;
+    margin: 0; /* 移除默认边距 */
+    font-weight: 600;
+}
+
+.reminder-info {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* 添加垂直居中对齐 */
+    gap: 10px; /* 胶囊之间的间距 */
+    flex-wrap: wrap; /* 换行适应小屏幕 */
+}
+
+.info-pill {
+    background-color: #e6f7ff; /* 淡蓝色背景 */
+    color: #0056b3; /* 深蓝色文字 */
+    padding: 8px 15px;
+    border-radius: 20px; /* 胶囊形状 */
+    font-size: 0.9em;
+    display: inline-flex; /* 使图标和文字在同一行 */
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.info-pill .icon {
+    margin-right: 6px;
+    font-size: 1.1em; /* 图标稍大 */
+}
+
+/* --- 页眉操作按钮 (历史回顾 & 设定输出) --- */
+.header-action-button {
+    display: flex;
+    flex-direction: column; /* 图标在上，文字在下 */
+    align-items: center; /* 水平居中 */
+    text-align: center;
+    gap: 2px; /* 图标和文字的间距 */
+}
+
+/* 按钮容器通用样式 (移除特定容器的样式) */
+/* .history-review-container { ... } */
+/* .settings-output-container { ... } */
+
+/* 图标按钮通用样式 */
+.header-action-button button {
+    background-color: #6c757d; /* 灰色背景 */
+    color: white;
+    border: none;
+    border-radius: 50%; /* 圆形按钮 */
+    width: 40px; /* 固定宽度 */
+    height: 40px; /* 固定高度 */
+    font-size: 1.5em; /* 图标大小 */
+    /* line-height: 40px; */ /* 移除 line-height，使用 flex 居中 */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+    padding: 0; /* 移除内边距 */
+    cursor: pointer;
+    display: flex; /* 使用 flex 居中图标 */
+    align-items: center; /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
+}
+
+.header-action-button button:hover {
+   background-color: #5a6268; /* 深灰色 */
+}
+
+/* 文字标签样式 */
+.header-action-button .button-label {
+    font-size: 0.75em; /* 较小的字体 */
+    color: #555; /* 深灰色文字 */
+    margin-top: 2px; /* 与按钮的微小间距 */
+}
+
+/* 移除旧的、重复的按钮样式 */
+/* #history-review-btn { ... } */
+/* #settings-output-btn { ... } */
+
+/* 设定与输出按钮 */
+#settings-output-btn {
+   background-color: #6c757d; /* 灰色背景 */
+   color: white;
+   border: none;
+   border-radius: 50%; /* 圆形按钮 */
+   width: 40px; /* 固定宽度 */
+   height: 40px; /* 固定高度 */
+   font-size: 1.5em; /* 图标大小 */
+   line-height: 40px; /* 垂直居中图标 */
+   text-align: center;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+   transition: background-color 0.3s ease;
+   padding: 0; /* 移除内边距 */
+   /* margin-bottom: 2px; */ /* 移除底部间距 */
+}
+
+#settings-output-btn:hover {
+   background-color: #5a6268; /* 深灰色 */
+}
+
+/* 解锁按钮特定样式 (如果需要覆盖通用样式) */
+#unlock-btn {
+    /* 可以添加特定样式，例如不同的背景色 */
+    /* background-color: #ffc107; */ /* 例如黄色 */
+}
+/* #unlock-btn:hover {
+    background-color: #e0a800;
+} */
+
+/* --- 主要内容区域 --- */
+.diary-section {
+    /* 单列布局，无需 flex */
+}
+
+/* --- 日记卡片样式 --- */
+.diary-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden; /* 确保圆角生效 */
+}
+
+.diary-header {
+    padding: 15px 20px;
+    background-color: #f8f9fa; /* 卡片头部浅灰色 */
+    border-bottom: 1px solid #e8e8e8;
+    display: flex; /* 使用 Flexbox 布局 */
+    justify-content: space-between; /* 主内容和按钮分开 */
+    align-items: center; /* 垂直居中 */
+}
+
+.header-main h2 { /* 调整标题选择器 */
+    color: #007bff;
+    font-size: 1.3em;
+    margin: 0 0 5px 0;
+}
+
+.header-main p#diary-title-date { /* 调整日期选择器 */
+    font-size: 0.95em;
+    color: #555;
+    margin: 0;
+}
+
+.history-pagination button {
+    background: none;
+    border: 1px solid #ccc;
+    color: #555;
+    padding: 2px 8px; /* 调整按钮大小 */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.2em; /* 增大箭头大小 */
+    line-height: 1;
+    margin-left: 5px; /* 按钮间距 */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.history-pagination button:hover {
+    background-color: #e9ecef;
+    border-color: #bbb;
+}
+
+.history-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: transparent;
+    border-color: #ccc;
+}
+
+/* 新增：主页面目标进度条样式 (包含日期/天数) */
+.goal-banner {
+   background-color: #007bff; /* 主题蓝背景 */
+   color: white;
+   padding: 10px 20px;
+   /* text-align: center; */ /* 移除居中，使用 flex */
+   font-size: 1em;
+   font-weight: 500;
+   margin-bottom: 20px; /* 添加下方外边距，与日记卡片分隔 */
+   border-radius: 4px; /* 轻微圆角 */
+   display: flex; /* 使用 Flexbox 布局 */
+   justify-content: center; /* 改为居中对齐 */
+   align-items: center; /* 垂直居中 */
+   flex-wrap: wrap; /* 允许换行 */
+   gap: 10px; /* 元素间距 */
+}
+
+/* 分隔符样式 */
+.goal-banner .separator {
+   color: rgba(255, 255, 255, 0.7); /* 半透明白色 */
+   margin: 0 5px; /* 左右留白 */
+}
+
+/* 响应式调整已移除，默认居中 */
+
+/* --- 可编辑区域 (卡片主体) --- */
+.editable-area {
+    padding: 20px;
+}
+
+.diary-block {
+    margin-bottom: 25px;
+}
+
+.diary-block:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    color: #007bff;
+    font-size: 1.15em;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.section-title .icon {
+    margin-right: 8px;
+    font-size: 1.2em; /* 标题图标稍大 */
+}
+
+.section-content {
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    padding: 12px;
+    min-height: 80px; /* 最小高度 */
+    outline: none; /* 移除默认聚焦边框 */
+    transition: border-color 0.3s ease, background-color 0.3s ease; /* 添加背景色过渡 */
+    background-color: rgba(255, 255, 255, 0.5); /* 白色背景，50% 透明度 */
+}
+
+.section-content:focus-within { /* 当内部元素聚焦时 */
+    border-color: #007bff; /* 聚焦时边框变蓝 */
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+/* 新增：锁定状态下的编辑区域样式 */
+.section-content.locked {
+    background-color: #f8f9fa; /* 浅灰色背景表示禁用 */
+    cursor: not-allowed; /* 禁用光标 */
+    opacity: 0.7; /* 轻微透明 */
+}
+.section-content.locked:focus-within {
+    border-color: #d9d9d9; /* 锁定状态下聚焦也不变蓝 */
+    box-shadow: none;
+}
+
+.section-content p {
+    margin-top: 0;
+    margin-bottom: 0.5em; /* 段落间距 */
+}
+.section-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* --- 编辑工具栏 --- */
+.editor-toolbar {
+    margin-top: 10px; /* 与上方内容区域的间距 */
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0; /* 分隔线 */
+    display: flex;
+    gap: 8px;
+}
+
+.editor-toolbar button {
+    background-color: #f5f5f5; /* 浅灰色背景 */
+    border: 1px solid #d9d9d9;
+    color: #555;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.editor-toolbar button:hover {
+    background-color: #e8e8e8;
+    border-color: #ccc;
+}
+
+.editor-toolbar button .icon {
+    margin-right: 5px;
+    font-weight: bold; /* 使 B 图标加粗 */
+    font-size: 1.1em; /* 图标稍大 */
+}
+/* 隐藏原生颜色选择器，但保留其功能 */
+#color-picker {
+    display: none;
+}
+
+
+/* --- 卡片底部 --- */
+.card-footer {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e8e8e8;
+    display: flex; /* Use flex for better alignment */
+    justify-content: flex-end; /* Align buttons to the right */
+    align-items: center; /* Vertically center items */
+    gap: 10px; /* Space between buttons and status */
+}
+
+#paste-diary-content-btn, /* Add Paste button */
+#copy-diary-content-btn,
+#save-diary {
+    padding: 8px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.3s ease;
+}
+
+/* Specific style for copy and paste buttons */
+#paste-diary-content-btn,
+#copy-diary-content-btn {
+    background-color: #6c757d; /* Grey color */
+}
+
+
+#paste-diary-content-btn:hover,
+#copy-diary-content-btn:hover,
+#save-diary:hover {
+    background-color: #0056b3; /* Default hover */
+}
+#paste-diary-content-btn:hover,
+#copy-diary-content-btn:hover {
+     background-color: #5a6268; /* Darker grey on hover */
+}
+
+
+#save-status {
+    /* margin-left: 10px; Remove margin, use gap */
+    font-size: 0.9em;
+    color: green;
+    margin-left: auto; /* Push status text to the left of buttons */
+    margin-right: 10px; /* Add some space before buttons */
+}
+
+/* --- 页脚 --- */
+footer {
+    margin-top: 30px;
+    padding: 20px 15px 15px 15px; /* 增加内边距 */
+    text-align: center;
+    font-size: 0.9em;
+    color: #888;
+    border-top: 1px solid #e8e8e8; /* 添加顶部边框 */
+    background-color: #fff; /* 页脚白色背景 */
+}
+
+/* .footer-controls 样式已移除，因为元素已移动 */
+
+.day-count-setting {
+   grid-area: daycount; /* 分配到 Grid 区域 */
+   display: flex;
+   align-items: center;
+   gap: 5px;
+   font-size: 0.95em;
+}
+
+.day-count-setting input[type="number"] {
+    width: 50px; /* 较小的宽度 */
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.goal-setting-footer {
+   grid-area: goalsetting; /* 分配到 Grid 区域 */
+   display: flex;
+   align-items: center;
+   gap: 5px;
+   font-size: 0.95em;
+}
+
+.goal-setting-footer input[type="number"] {
+   width: 50px;
+   padding: 4px 6px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   text-align: center;
+}
+.goal-setting-footer input[type="text"] {
+   padding: 4px 8px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   flex-grow: 1; /* 允许奖励输入框扩展 */
+   min-width: 100px;
+}
+
+/* 新增：导出按钮容器 */
+.export-buttons-container {
+   grid-area: export; /* 分配到 Grid 区域 */
+   display: flex;
+   gap: 10px; /* 按钮间距 */
+   justify-self: end; /* 靠右对齐 */
+}
+
+/* 新增：提醒设置容器 */
+.reminder-setting-container {
+    grid-area: reminder; /* 分配到 Grid 区域 */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.95em;
+    justify-self: end; /* 靠右对齐 */
+}
+
+
+.goal-setting-footer button,
+.day-count-setting button,
+#export-diary-json-btn,
+#export-diary-txt-btn,
+.reminder-setting-container button { /* 包含提醒设置按钮 */
+    padding: 5px 12px;
+    background-color: #6c757d; /* 灰色按钮 */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+.goal-setting-footer button:hover,
+.day-count-setting button:hover,
+#export-diary-json-btn:hover,
+#export-diary-txt-btn:hover,
+.reminder-setting-container button:hover {
+    background-color: #5a6268;
+}
+
+footer p { /* 调整版权文本边距 */
+    margin: 0;
+}
+
+/* --- 设置模态框特定样式 --- */
+.settings-modal-content {
+   max-width: 600px; /* 调整宽度 */
+   padding: 25px;
+}
+
+.settings-modal-content h4 {
+   text-align: center;
+   margin-top: 0;
+   margin-bottom: 20px;
+   color: #007bff;
+}
+
+.settings-modal-grid {
+   display: grid;
+   /* grid-template-columns: 1fr; */ /* 改为两列布局 */
+   grid-template-columns: auto 1fr; /* 左列自动宽度（标签），右列填充剩余空间 */
+   gap: 15px 10px; /* 行间距 15px, 列间距 10px */
+   align-items: center; /* 垂直居中对齐 */
+}
+
+/* 移除旧的设置项容器样式 */
+/* .day-count-setting,
+.goal-setting-footer,
+.reminder-setting,
+.export-buttons-container { ... } */
+
+/* 标签样式 */
+.settings-modal-grid label {
+   text-align: right; /* 标签右对齐 */
+   font-weight: 500;
+   color: #333;
+}
+
+/* 控件容器样式 */
+.setting-control {
+   display: flex;
+   align-items: center;
+   gap: 8px; /* 控件内部间距 */
+}
+
+/* 特定控件调整 */
+.setting-control input[type="number"],
+.setting-control input[type="time"] {
+   width: 80px; /* 调整数字和时间输入框宽度 */
+   padding: 5px 8px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+}
+.setting-control input[type="text"] {
+   flex-grow: 1; /* 文本输入框填充空间 */
+   padding: 5px 8px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+}
+.setting-control button {
+   padding: 5px 12px;
+   background-color: #6c757d;
+   color: white;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   font-size: 0.9em;
+   transition: background-color 0.3s ease;
+}
+.setting-control button:hover {
+    background-color: #5a6268;
+}
+
+/* 导出按钮特定样式 */
+.setting-control.export-buttons {
+   gap: 15px; /* 导出按钮间距稍大 */
+}
+
+/* --- 移除不再使用的样式 --- */
+.history-nav { /* 仅移除侧边栏日历 */
+    display: none;
+}
+/* .pagination 样式已被 .history-pagination 替代 */
+
+/* --- 响应式调整 (可选，当前布局已比较适合移动端) --- */
+@media (max-width: 600px) {
+    .container {
+        padding: 0 10px 15px 10px;
+    }
+    .app-header h1 {
+        font-size: 1.4em;
+    }
+    .info-pill {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+    .diary-header h2 {
+        font-size: 1.2em;
+    }
+    .section-title {
+        font-size: 1.1em;
+    }
+}
+/* --- 历史回顾功能样式 --- */
+
+/* 按钮容器 */
+.history-review-container {
+    /* display: inline-block; */ /* 移除，让其成为 flex item */
+    /* vertical-align: middle; */ /* 移除，使用 flex 对齐 */
+    /* margin-left: 10px; */ /* 移除，使用父元素的 gap */
+    /* 可以添加 align-self: center; 如果垂直对齐有问题 */
+    align-self: center; /* 确保垂直居中对齐 */
+}
+
+/* 历史回顾按钮 */
+#history-review-btn {
+    background-color: #6c757d; /* 灰色背景 */
+    color: white;
+    border: none;
+    border-radius: 50%; /* 圆形按钮 */
+    width: 40px; /* 固定宽度 */
+    height: 40px; /* 固定高度 */
+    font-size: 1.5em; /* 图标大小 */
+    line-height: 40px; /* 垂直居中图标 */
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+#history-review-btn:hover {
+    background-color: #5a6268; /* 深灰色 */
+}
+
+/* 模态框基础样式 */
+.modal {
+    display: none; /* 默认隐藏 */
+    position: fixed; /* 固定定位，覆盖整个视口 */
+    z-index: 1000; /* 确保在顶层 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* 如果内容过多则允许滚动 */
+    background-color: rgba(0, 0, 0, 0.6); /* 半透明黑色背景 */
+    align-items: center; /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
+}
+
+/* 模态框可见状态 */
+.modal.modal-visible {
+    display: flex; /* 使用 flex 居中 */
+}
+
+/* 模态框内容区域 */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto; /* 另一种居中方式 */
+    padding: 20px; /* 稍微减少内边距 */
+    border: 1px solid #888;
+    width: 90%; /* 增加宽度 */
+    max-width: 800px; /* 增加最大宽度 */
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-height: 85vh;
+    display: flex; /* 改为 flex 以便内部 grid 生效 */
+    flex-direction: column; /* 保持列方向 */
+    overflow: hidden;
+}
+
+/* 关闭按钮 */
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-close-btn:hover,
+.modal-close-btn:focus {
+    color: black;
+    text-decoration: none;
+}
+
+/* 新增：模态框主体 Grid 布局 */
+.modal-body-grid {
+   display: grid;
+   grid-template-columns: 250px 1fr; /* 左侧固定宽度，右侧自适应 */
+   gap: 20px; /* 列间距 */
+   flex-grow: 1; /* 占据 modal-content 的剩余空间 */
+   overflow: hidden; /* 防止内部滚动条影响布局 */
+   padding-top: 10px; /* 与关闭按钮的间距 */
+}
+
+.modal-left-column {
+   display: flex;
+   flex-direction: column;
+   gap: 15px; /* 日历和目标进度间距 */
+   overflow-y: auto; /* 如果左侧内容过多则允许滚动 */
+   padding-right: 10px; /* 右侧留出一点边距 */
+}
+
+.modal-right-column {
+   display: flex;
+   flex-direction: column;
+   overflow: hidden; /* 防止书本内容溢出 */
+}
+
+/* 新增：模态框内目标进度样式 */
+#modal-goal-progress {
+   background-color: #e6f7ff;
+   color: #0056b3;
+   padding: 15px;
+   border-radius: 6px;
+   text-align: center;
+   font-size: 0.95em;
+   line-height: 1.4;
+   border: 1px solid #b3e0ff;
+   flex-shrink: 0; /* 防止被压缩 */
+}
+
+#modal-goal-progress span {
+   font-weight: bold;
+   font-size: 1.1em;
+}
+
+
+/* 书本和页面样式 - 调整以适应右侧栏 */
+.book {
+   flex-grow: 1; /* 占据右侧栏剩余空间 */
+   overflow: hidden;
+   margin-bottom: 10px; /* 调整与导航按钮的间距 */
+   border: 1px solid #eee;
+   padding: 0;
+   background-color: #fff;
+   position: relative;
+   perspective: 1000px;
+   min-height: 200px; /* 调整最小高度 */
+}
+
+.page {
+    position: absolute; /* 绝对定位，用于翻页动画 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 15px; /* 将内边距移到页面内部 */
+    overflow-y: auto; /* 页面内部滚动 */
+    background-color: #fff; /* 确保页面有背景色 */
+    transform-origin: left center; /* 设置翻页轴心在左侧 */
+    backface-visibility: hidden; /* 隐藏背面 */
+    transition: transform 0.6s ease-in-out, opacity 0.5s ease-in-out; /* 平滑过渡 */
+    opacity: 1;
+    transform: rotateY(0deg);
+    box-sizing: border-box; /* 包含内边距和边框 */
+}
+/* 初始隐藏状态，用于进入动画 */
+.page.hidden-right {
+    opacity: 0;
+    transform: rotateY(-90deg);
+}
+.page.hidden-left {
+    opacity: 0;
+    transform: rotateY(90deg);
+}
+
+
+#history-modal-date {
+    color: #007bff;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+#history-modal-content {
+    line-height: 1.5;
+    color: #333;
+    white-space: pre-wrap; /* 保留换行和空格 */
+}
+
+/* 模态框导航 - 调整以适应右侧栏 */
+.modal-navigation {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding-top: 10px; /* 调整上边距 */
+   border-top: 1px solid #eee;
+   flex-shrink: 0; /* 防止被压缩 */
+}
+
+.modal-navigation button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-navigation button:hover {
+    background-color: #0056b3;
+}
+
+.modal-navigation button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+#history-page-indicator {
+    font-size: 0.9em;
+    color: #555;
+}
+/* 历史回顾模态框内的日历样式 */
+.history-calendar {
+    margin-bottom: 10px; /* 减小与下方书本内容的间距 */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px; /* 给日历一些内边距 */
+    background-color: #fff; /* 确保日历有背景色 */
+    /* 可以考虑缩小字体或尺寸，但 Flatpickr 内部样式较复杂，优先调整间距 */
+    flex-shrink: 0; /* 防止日历在 flex 布局中被过度压缩 */
+}
+
+/* Flatpickr 日历高亮有日记的日期 */
+.flatpickr-day.has-diary {
+    background-color: #e6f7ff !important; /* 淡蓝色背景，使用 !important 提高优先级 */
+    border-color: #91d5ff !important; /* 蓝色边框 */
+    color: #0056b3 !important; /* 深蓝色文字 */
+    font-weight: bold;
+    border-radius: 50%; /* 圆形高亮 */
+}
+.flatpickr-day.has-diary:hover {
+    background-color: #bae7ff !important; /* 悬停时更深的蓝色 */
+}
+/* 当前选中的日期（无论是否有日记） */
+.flatpickr-day.selected {
+     background: #007bff !important;
+     border-color: #0056b3 !important;
+     color: #fff !important;
+}
+/* 选中的且有日记的日期 */
+.flatpickr-day.has-diary.selected {
+    background: #0056b3 !important; /* 选中且有日记时用更深的蓝色 */
+    border-color: #003f80 !important;
+    color: #fff !important;
+}
+/* 今天且有日记 */
+.flatpickr-day.today.has-diary {
+    border-color: #007bff !important; /* 今天用主题蓝边框 */
+    box-shadow: 0 0 0 1px #007bff; /* 添加阴影强调 */
+}
+/* 历史回顾翻页动画 */
+/* .book .page { ... } */ /* 基础样式已在上面定义 */
+
+/* 页面向左翻出 (查看更早日期 - 点击上一页按钮) */
+.book .page.page-turning-out-left {
+    transform-origin: left center; /* 轴心在左 */
+    transform: rotateY(90deg);
+    opacity: 0;
+}
+
+/* 页面从右侧翻入 (查看更早日期 - 点击上一页按钮) */
+.book .page.page-turning-in-right {
+    transform-origin: left center; /* 轴心在左 */
+    /* 初始状态在 hidden-right 定义 */
+    /* 最终状态是默认的 rotateY(0deg), opacity: 1 */
+}
+
+
+/* 页面向右翻出 (查看更新日期 - 点击下一页按钮) */
+.book .page.page-turning-out-right {
+    transform-origin: right center; /* 轴心在右 */
+    transform: rotateY(-90deg);
+    opacity: 0;
+}
+
+/* 页面从左侧翻入 (查看更新日期 - 点击下一页按钮) */
+.book .page.page-turning-in-left {
+     transform-origin: right center; /* 轴心在右 */
+    /* 初始状态在 hidden-left 定义 */
+    /* 最终状态是默认的 rotateY(0deg), opacity: 1 */
+}

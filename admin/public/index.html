@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人网站内容管理</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<!-- Styles handled by style.css -->
+</head>
+<body>
+    <h1>个人网站内容管理</h1>
+<div id="admin-nav">
+        <button data-target="#featured-works-admin" class="nav-button active">精选作品</button>
+        <button data-target="#blog-admin" class="nav-button">博客文章</button>
+        <button data-target="#tools-section" class="nav-button">工具资源库</button>
+        <button data-target="#gallery-admin" class="nav-button">AI 绘图</button>
+        <button data-target="#morning-journal-management" class="nav-button">晨间日记</button>
+        <span class="nav-spacer"></span>
+        <!-- backup button removed: Turso handles data persistence -->
+        <button id="logout-button" class="nav-util logout">退出</button>
+    </div>
+
+    <!-- Git status removed: Vercel auto-deploys on push -->
+
+    <section id="featured-works-admin" class="admin-section active">
+        <div class="section-controls"> <!-- Move H2 inside -->
+             <h2>精选作品管理</h2>
+           <!-- Removed section-specific git status -->
+           <button id="add-work-button">添加新作品</button>
+        </div>
+        <div id="featured-works-list">
+            <!-- 现有作品列表将由 JS 填充 -->
+            <p>正在加载作品列表...</p>
+        </div>
+        <form id="featured-works-form" style="display: none;">
+            <h3>添加/编辑精选作品</h3>
+            <input type="hidden" id="work-edit-id" name="id"> <!-- 用于编辑 -->
+            <div>
+                <label for="work-type">类型:</label>
+                <select id="work-type" name="type" required>
+                    <!-- Options will be populated by JS -->
+                </select>
+                <input type="text" id="work-type-new" name="type-new" placeholder="或输入新类型" style="display: none; margin-top: 5px;">
+            </div>
+            <div>
+                <label for="work-imageSrc">图片路径:</label>
+                <input type="text" id="work-imageSrc" name="imageSrc" placeholder="例如: assets/ai-drawings/image.jpg (相对于网站根目录)" required>
+            </div>
+            <div>
+                <label for="work-altText">图片 Alt 文本:</label>
+                <input type="text" id="work-altText" name="altText" required>
+            </div>
+            <div>
+                <label for="work-title">标题:</label>
+                <input type="text" id="work-title" name="title" required>
+            </div>
+            <div>
+                <label for="work-description">描述:</label>
+                <textarea id="work-description" name="description" required></textarea>
+            </div>
+            <div>
+                <label for="work-tag">标签:</label>
+                <input type="text" id="work-tag" name="tag" required>
+            </div>
+            <div>
+                <label for="work-detailsLink">详情链接:</label>
+                <input type="text" id="work-detailsLink" name="detailsLink" value="#">
+            </div>
+            <button type="submit">保存作品</button>
+            <button type="button" id="cancel-edit-work" style="display: none;">取消编辑</button>
+        </form>
+    </section>
+
+    <!-- <hr> Removed -->
+
+    <section id="blog-admin" class="admin-section">
+         <div class="section-controls"> <!-- Move H2 inside -->
+              <h2>博客文章管理</h2>
+            <!-- Removed section-specific git status -->
+            <button id="update-featured-blog-button">更新精选</button>
+            <button id="add-blog-button">添加新博客</button>
+         </div>
+         <div id="blog-list">
+            <!-- 现有博客列表将由 JS 填充 -->
+            <p>正在加载博客列表...</p>
+        </div>
+        <form id="blog-form" style="display: none;">
+            <h3>添加/编辑博客文章</h3>
+             <input type="hidden" id="blog-edit-id" name="id">
+            <div class="form-grid-2">
+                <div>
+                    <label for="blog-source">来源:</label>
+                    <select id="blog-source" name="source" required>
+                         <!-- Options will be populated by JS -->
+                    </select>
+                     <input type="text" id="blog-source-new" name="source-new" placeholder="或输入新来源" style="display: none; margin-top: 5px;">
+                </div>
+                <div>
+                    <label for="blog-category">分类:</label>
+                    <select id="blog-category" name="category" required>
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label for="blog-title">标题:</label>
+                <input type="text" id="blog-title" name="title" required>
+            </div>
+            <div>
+                <label for="blog-summary">摘要:</label>
+                <textarea id="blog-summary" name="summary" required></textarea>
+            </div>
+            <div class="form-grid-3">
+                <div>
+                    <label for="blog-date">发布日期:</label>
+                    <input type="date" id="blog-date" name="date">
+                </div>
+                <div>
+                    <label for="blog-dayNumber">Day 编号:</label>
+                    <input type="number" id="blog-dayNumber" name="dayNumber" min="1" placeholder="如 92">
+                </div>
+                <div>
+                    <label for="blog-difficulty">难度:</label>
+                    <select id="blog-difficulty" name="difficulty">
+                        <option value="beginner">入门</option>
+                        <option value="intermediate">进阶</option>
+                        <option value="advanced">高级</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-grid-2">
+                <div>
+                    <label for="blog-readTime">阅读时长:</label>
+                    <input type="text" id="blog-readTime" name="readTime" placeholder="如 6分钟">
+                </div>
+                <div>
+                    <label for="blog-link">文章链接:</label>
+                    <input type="text" id="blog-link" name="link" placeholder="公众号链接或 #">
+                </div>
+            </div>
+            <div>
+                <label for="blog-tags">标签 (逗号分隔):</label>
+                <input type="text" id="blog-tags" name="tags" placeholder="如 Claude Code, Skill, 防呆">
+            </div>
+            <button type="submit">保存博客</button>
+             <button type="button" id="cancel-edit-blog" style="display: none;">取消编辑</button>
+        </form>
+    </section>
+
+<!-- <hr> Removed -->
+
+    <!-- Tool Library Section -->
+    <section id="tools-section" class="admin-section">
+        <div class="section-controls"> <!-- Move H2 inside -->
+            <h2>工具资源库管理</h2>
+            <!-- Removed section-specific git status -->
+            <button id="add-tool-button">添加新工具</button>
+        </div>
+        <div id="tools-list"><!-- Tools will be loaded here --></div>
+        <form id="tool-form" style="display: none;">
+            <h3>添加/编辑工具</h3>
+            <input type="hidden" id="tool-id" name="id"> <!-- Store unique ID for editing, Added name attribute -->
+            <div>
+                <label for="tool-name">工具名称:</label>
+                <input type="text" id="tool-name" name="name" required> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-description">描述:</label>
+                <textarea id="tool-description" name="description" rows="2"></textarea> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-icon">图标 (Emoji 或 Material Icon):</label>
+                <input type="text" id="tool-icon" name="icon"> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-category">分类:</label>
+                <select id="tool-category" name="category" required>
+                    <!-- Options will be populated by JS (fixed categories) -->
+                </select>
+                <!-- No 'new' option for tool category -->
+            </div>
+            <div>
+                <label for="tool-tags">标签 (逗号分隔):</label>
+                <input type="text" id="tool-tags" name="tags"> <!-- Added name attribute -->
+            </div>
+            <div>
+                <label for="tool-url">工具链接 (相对路径):</label>
+                <input type="text" id="tool-url" name="url" required placeholder="例如: tools/my-tool/index.html"> <!-- Added name attribute -->
+            </div>
+            <button type="submit">保存工具</button>
+            <button type="button" id="cancel-tool-edit">取消</button>
+        </form>
+    </section>
+
+    <!-- Gallery Management Section -->
+    <section id="gallery-admin" class="admin-section">
+        <div class="section-controls">
+            <h2>AI 绘图管理</h2>
+            <button id="add-gallery-button">添加新作品</button>
+        </div>
+        <div id="gallery-list">
+            <p>正在加载作品列表...</p>
+        </div>
+        <form id="gallery-form" style="display: none;">
+            <h3>添加/编辑 AI 绘图</h3>
+            <input type="hidden" id="gallery-edit-id" name="id">
+            <div>
+                <label for="gallery-src">图片路径:</label>
+                <input type="text" id="gallery-src" name="src" placeholder="assets/ai-drawings/image.jpg" required>
+            </div>
+            <div class="form-grid-2">
+                <div>
+                    <label for="gallery-title">标题:</label>
+                    <input type="text" id="gallery-title" name="title" required>
+                </div>
+                <div>
+                    <label for="gallery-style">风格:</label>
+                    <input type="text" id="gallery-style" name="style" placeholder="如 奇幻风景、人物插画">
+                </div>
+            </div>
+            <div>
+                <label for="gallery-description">描述:</label>
+                <textarea id="gallery-description" name="description" rows="2"></textarea>
+            </div>
+            <div>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="gallery-featured" name="featured" value="true">
+                    设为精选作品
+                </label>
+            </div>
+            <button type="submit">保存作品</button>
+            <button type="button" id="cancel-gallery-edit">取消</button>
+        </form>
+    </section>
+
+    <!-- Morning Journal Management Section - Refactored -->
+    <section id="morning-journal-management" class="admin-section">
+        <div class="section-controls">
+            <h2>晨间日记管理</h2>
+            <!-- Buttons moved to editor column -->
+            <input type="file" id="journal-file-input" accept=".json,.txt" style="display: none;"> <!-- Keep hidden file input here or move? Let's keep it simple and leave it -->
+            <!-- Date display removed -->
+             <!-- Hidden input to store the ID (date) of the entry being edited -->
+             <input type="hidden" id="journal-edit-id" name="id">
+        </div>
+
+        <!-- New Layout Container -->
+        <div id="journal-layout-container">
+
+            <!-- Left Column: Editor Area -->
+            <div id="journal-editor-column" class="journal-column">
+                <!-- Date Selector and Buttons Moved Here -->
+                <div class="journal-toolbar">
+                    <label for="journal-date-selector">日期:</label>
+                    <input type="date" id="journal-date-selector" name="journal-date-selector">
+                    <button id="journal-settings-button">设置</button>
+                    <button id="import-journal-button">导入</button>
+                    <button id="journal-paste-button" type="button">粘贴</button>
+                    <button id="journal-save-button" type="submit" class="btn-primary">保存日记</button>
+                </div>
+                <hr>
+
+                <div id="journal-editor" class="journal-editor-grid">
+                    <div class="journal-editor-item">
+                        <label for="journal-field-harvest"><span>⚙️</span>今日收获:</label>
+                <div id="journal-field-harvest" class="journal-editable" contenteditable="true" placeholder="记录今天的成果和收获..."></div>
+                <div class="editor-toolbar">
+                     <button type="button" class="format-btn"><b>B</b> 加粗</button>
+                     <button type="button" class="format-btn">🎨 颜色</button>
+                 </div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-plan"><span>📝</span>后续计划:</label>
+                <div id="journal-field-plan" class="journal-editable" contenteditable="true" placeholder="规划今天的重要任务..."></div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-gratitude"><span>❤️</span>感恩:</label>
+                <div id="journal-field-gratitude" class="journal-editable" contenteditable="true" placeholder="记录值得感恩的事情..."></div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-investment"><span>📈</span>定投:</label>
+                <div id="journal-field-investment" class="journal-editable" contenteditable="true" placeholder="记录昨天的学习和成长..."></div>
+            </div>
+            <div class="journal-editor-item">
+                <label for="journal-field-connect"><span>🔗</span>与我链接:</label>
+                <div id="journal-field-connect" class="journal-editable" contenteditable="true" placeholder="记录与他人的互动和连接..."></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: List Area -->
+            <div id="journal-list-column" class="journal-column">
+                <div id="morning-journal-list">
+                     <h4>历史日记列表</h4>
+                    <!-- Journal entries will be loaded here by JS -->
+                    <!-- Removed loading placeholder -->
+                </div>
+            </div>
+            <!-- Removed extraneous/incorrect closing tags and loading text -->
+
+        </div> <!-- End #journal-layout-container -->
+
+
+        <!-- Modals -->
+        <!-- History Modal Removed -->
+        <!--
+        <div id="journal-history-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-button" data-modal="journal-history-modal">&times;</span>
+                <h2>历史记录</h2>
+                <div id="journal-history-content">
+                    <p>正在加载历史记录...</p>
+                     <input type="text" id="journal-history-datepicker" placeholder="选择日期查看">
+                     <div id="journal-history-entries"></div>
+                </div>
+            </div>
+        </div>
+        -->
+
+        <div id="journal-settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" data-modal="journal-settings-modal">&times;</span>
+                <h2>设置与输出</h2>
+                <div id="journal-settings-content">
+
+                    <label for="setting-reference-date">参考日期:</label>
+                    <input type="date" id="setting-reference-date" name="referenceDate">
+
+                    <label for="setting-reference-streak">参考日更天数:</label>
+                    <input type="number" id="setting-reference-streak" name="referenceStreak" min="0">
+
+                    <button id="save-reference-settings" class="settings-full">保存参考设置</button>
+
+                    <hr class="settings-divider">
+
+                    <label for="setting-goal-days">目标天数:</label>
+                    <input type="number" id="setting-goal-days" name="goalDays" min="1">
+
+                    <label for="setting-goal-reward">目标奖励:</label>
+                    <input type="text" id="setting-goal-reward" name="goalReward" placeholder="达到目标天数后的奖励">
+
+                    <button id="save-goal-settings" class="settings-full">保存目标与奖励</button>
+
+                    <hr class="settings-divider">
+
+                    <label for="setting-reminder-time">每日提醒时间:</label>
+                    <div class="settings-inline">
+                       <input type="time" id="setting-reminder-time" name="reminderTime">
+                       <button id="save-reminder-settings">设置</button>
+                    </div>
+
+                    <hr class="settings-divider">
+
+                    <label>导入/导出:</label>
+                    <div class="settings-actions">
+                        <button id="import-journal-settings-button">导入 JSON</button>
+                        <button id="export-journal-json">导出为 JSON</button>
+                        <button id="export-journal-txt">导出为 TXT</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <div id="confirm-modal-message" class="confirm-modal-body"></div>
+            <div class="confirm-modal-actions">
+                <button type="button" id="confirm-cancel-btn">取消</button>
+                <button type="button" id="confirm-ok-btn" class="btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Optional: Flatpickr Chinese locale -->
+    <!-- <script src="https://npmcdn.com/flatpickr/dist/l10n/zh.js"></script> -->
+    <script src="script.js"></script>
+</body>
+</html>

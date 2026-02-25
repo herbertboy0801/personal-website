@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的雷电游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>我的雷电游戏</h1>
+        <canvas id="gameCanvas"></canvas>
+        <div class="controls-info">
+            <p>控制：方向键移动，空格键射击</p>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <!-- <script src="js/assets.js"></script> --> <!-- Removed, using assetLoader -->
+    <script src="js/bullet.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/boss.js"></script>
+    <script src="js/powerup.js"></script>
+    <!-- <script src="js/collision.js"></script> --> <!-- Removed, collision handled in Game -->
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/assetLoader.js"></script> <!-- Added assetLoader before main -->
+    <script src="js/main.js"></script>
+</body>
+</html>

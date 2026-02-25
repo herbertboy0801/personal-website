@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情侣照片墙 - 分页与编辑</title>
+    <style>
+        html, body {
+            height: 100%; margin: 0; padding: 0; overflow: hidden; 
+            font-family: 'Arial', sans-serif; color: #333;
+        }
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .container {
+            width: 100vw; height: 100vh; max-width: none; 
+            background-color: rgba(255, 255, 255, 0.85); 
+            padding: 10px; border-radius: 0; box-shadow: none; 
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; 
+        }
+        h1 {
+            color: #c70039; text-align: center; margin: 10px 0 15px 0; 
+            font-size: 1.8em; position: relative; z-index: 10; flex-shrink: 0; 
+        }
+        #controlsHeader {
+            transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out, margin-bottom 0.3s ease-in-out;
+            overflow: hidden; max-height: 500px; opacity: 1; margin-bottom: 15px; 
+            position: relative; z-index: 10; background-color: rgba(255, 255, 255, 0.8); 
+            padding-top: 5px; padding-bottom: 5px; border-radius: 5px; flex-shrink: 0; 
+        }
+        #controlsHeader.hidden {
+            max-height: 0; opacity: 0; padding-top: 0 !important; padding-bottom: 0 !important; 
+            margin-bottom: 0 !important; border-top: none; border-bottom: none; 
+        }
+        .controls, .music-controls {
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; 
+        }
+        .music-controls { padding: 8px 0; align-items: center; }
+        .music-controls label, .music-controls input[type="file"] { margin-right: 5px; }
+        #customMusicUpload { 
+            padding: 6px; border-radius: 4px; border: 1px solid #ccc;
+            background-color: #fff; font-size: 0.9em; max-width: 180px; 
+        }
+        .controls input[type="file"]#photoUpload, 
+        .controls button, .controls select,
+        .music-controls select, .music-controls button, .music-controls input[type="range"] {
+            padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd;
+            background-color: #fff; cursor: pointer; font-size: 0.95em; 
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .music-controls input[type="range"] { padding: 0; height: 18px; flex-grow: 0.5; min-width: 100px; }
+        .controls input[type="file"]#photoUpload { flex-grow: 1; min-width: 150px; }
+        .controls button:hover, .controls select:hover,
+        .music-controls select:hover, .music-controls button:hover, #customMusicUpload:hover {
+            background-color: #f0f0f0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .photo-wall-area { 
+            display: flex; align-items: center; justify-content: center; 
+            width: 100%; flex-grow: 1; min-height: 0; 
+            position: relative; z-index: 1; padding-top: 20px; box-sizing: border-box; 
+        }
+        .photo-wall-nav-btn {
+            background-color: rgba(50, 50, 50, 0.5); color: white; border: none;
+            border-radius: 50%; width: 40px; height: 40px; font-size: 20px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            margin: 0 10px; z-index: 5; transition: background-color 0.2s;
+        }
+        .photo-wall-nav-btn:hover { background-color: rgba(80, 80, 80, 0.8); }
+        .photo-wall-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .photo-wall-container {
+            display: grid; gap: 8px; width: 100%; max-width: 900px; 
+            height: 100%; overflow-y: auto; padding-bottom: 10px; 
+            transition: grid-template-columns 0.5s ease-in-out;
+        }
+        .photo-item {
+            position: relative; overflow: hidden; border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, border-radius 0.3s ease-in-out; 
+            cursor: pointer; background-color: #eee; aspect-ratio: 1 / 1; 
+        }
+        .photo-item img {
+            display: block; width: 100%; height: 100%;
+            object-fit: cover; transition: transform 0.3s ease-in-out;
+        }
+        .photo-item:hover img { transform: scale(1.1); }
+        .photo-item .info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background-color: rgba(0, 0, 0, 0.6); color: white;
+            padding: 5px; font-size: 0.8em; text-align: center;
+            opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none;
+        }
+        .photo-item:hover .info { opacity: 1; }
+
+        .photo-wall-container.layout-1 { grid-template-columns: 1fr; }
+        .photo-wall-container.layout-2 { grid-template-columns: repeat(2, 1fr); }
+        .photo-wall-container.layout-4 { grid-template-columns: repeat(2, 1fr); } 
+        .photo-wall-container.layout-6 { grid-template-columns: repeat(3, 1fr); } 
+        .photo-wall-container.layout-8 { grid-template-columns: repeat(4, 1fr); } 
+        .photo-wall-container.layout-1 .photo-item { aspect-ratio: 16 / 9; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5em; margin-bottom: 10px; }
+            #controlsHeader { margin-bottom: 10px; }
+            .controls, .music-controls { gap: 5px; }
+            .controls input[type="file"]#photoUpload, .controls button, .controls select,
+            .music-controls select, .music-controls button, .music-controls input[type="range"],
+            #customMusicUpload { 
+                font-size: 0.9em; padding: 6px 10px; width: calc(50% - 10px); 
+                margin-bottom: 5px; box-sizing: border-box;
+            }
+            .controls input[type="file"]#photoUpload { width: calc(100% - 20px); } 
+            .photo-wall-container.layout-6 { grid-template-columns: repeat(2, 1fr); } 
+            .photo-wall-container.layout-8 { grid-template-columns: repeat(2, 1fr); } 
+        }
+         @media (max-width: 480px) {
+            .photo-wall-container.layout-4,
+            .photo-wall-container.layout-6,
+            .photo-wall-container.layout-8 { grid-template-columns: repeat(2, 1fr) !important; }
+            .controls input[type="file"]#photoUpload, .controls button, .controls select,
+            .music-controls select, .music-controls button, .music-controls input[type="range"],
+            #customMusicUpload { width: calc(100% - 10px); }
+            .photo-wall-nav-btn { width:30px; height:30px; font-size:16px; margin: 0 5px;}
+        }
+        
+        .photo-item.loading { opacity: 0; transform: scale(0.8); }
+        
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); display: flex;
+            justify-content: center; align-items: center; z-index: 10000; 
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .modal-dialog-content { 
+            position: relative; background-color: #333; 
+            padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            max-width: 90vw; max-height: 90vh; display: flex;
+            flex-direction: column; align-items: center; color: white;
+            animation: modal-fade-in 0.3s ease-out;
+        }
+        @keyframes modal-fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .modal-image {
+            max-width: 100%; max-height: calc(90vh - 160px); 
+            object-fit: contain; border-radius: 8px;
+            margin-bottom: 10px; transition: opacity 0.5s ease-in-out; 
+        }
+        .modal-close-btn { 
+            position: absolute; top: 10px; right: 15px;
+            background: none; border: none; color: white;
+            font-size: 28px; line-height: 1; cursor: pointer; opacity: 0.7;
+        }
+        .modal-close-btn:hover { opacity: 1; }
+
+        .fullscreen-modal-nav { 
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background-color: rgba(50, 50, 50, 0.7); color: white; border: none;
+            border-radius: 50%; cursor: pointer; font-size: 24px; 
+            width: 40px; height: 40px; display: flex;
+            justify-content: center; align-items: center;
+            transition: background-color 0.2s, opacity 0.2s; user-select: none;
+        }
+        .fullscreen-modal-nav:hover { background-color: rgba(80, 80, 80, 0.9); }
+        .fullscreen-modal-nav.disabled, .fullscreen-modal-nav.slideshow-disabled { opacity: 0.3; cursor: not-allowed; }
+        #modalPrevBtnFs { left: 15px; } #modalNextBtnFs { right: 15px; }
+        
+        .modal-info-area { display: flex; flex-direction: column; align-items: center; width: 100%;}
+        .modal-info {
+            text-align: left; padding: 5px 10px; background-color: rgba(0,0,0,0.6); 
+            border-radius: 5px; font-size: 0.9em; max-width: 80%; 
+            max-height: 80px; overflow-y: auto; line-height: 1.5; margin-bottom: 10px;
+        }
+        .modal-info strong { color: #ffc107; }
+        #editPhotoBtnModal {
+            background-color: #5bc0de; color: white; border: none; padding: 8px 15px;
+            border-radius: 5px; cursor: pointer; font-size: 0.9em; margin-top: 5px;
+        }
+        #editPhotoBtnModal:hover { background-color: #31b0d5; }
+
+        #editPhotoInfoModal .modal-dialog-content { width: 400px; max-width: 90vw; } /* Adjusted from edit-modal-content */
+        #editPhotoInfoModal h2 { margin-top: 0; color: #f0ad4e; }
+        #editPhotoInfoModal div:not(.edit-actions) { margin-bottom: 15px; width:100%; } /* Target form groups */
+        #editPhotoInfoModal label { display: block; margin-bottom: 5px; font-weight: bold; }
+        #editPhotoInfoModal input[type="text"], #editPhotoInfoModal textarea {
+            width: calc(100% - 22px); 
+            padding: 10px; border-radius: 4px; border: 1px solid #666;
+            background-color: #444; color: white; font-size: 1em; box-sizing: border-box;
+        }
+        #editPhotoInfoModal textarea { resize: vertical; min-height: 60px; }
+        #editPhotoInfoModal .edit-actions { margin-top: 20px; text-align: right; width:100%;}
+        #editPhotoInfoModal .edit-actions button {
+            padding: 10px 20px; margin-left: 10px; border: none; border-radius: 5px;
+            cursor: pointer; font-weight: bold;
+        }
+        #savePhotoInfoBtn { background-color: #5cb85c; color: white; }
+        #savePhotoInfoBtn:hover { background-color: #4cae4c; }
+        #cancelEditPhotoInfoBtn { background-color: #f0f0f0; color: #333; }
+        #cancelEditPhotoInfoBtn:hover { background-color: #e0e0e0; }
+
+
+        .border-default { border-radius: 8px; } 
+        .border-square { border-radius: 0; }
+        .border-circle { border-radius: 50%; } 
+        .border-heart {
+            clip-path: polygon(50% 100%, 0 45%, 0 15%, 20% 0, 50% 20%, 80% 0, 100% 15%, 100% 45%);
+            border-radius: 0; 
+        }
+        .border-none { border: none; box-shadow: none; border-radius: 0; }
+        #toggleControlsBtn {
+            position: fixed; top: 10px; right: 10px; z-index: 9999; 
+            padding: 8px 12px; background-color: #c70039; color: white;
+            border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toggleControlsBtn:hover { background-color: #a5002d; }
+    </style>
+</head>
+<body>
+    <button id="toggleControlsBtn">隐藏控件</button>
+    <div class="container">
+        <h1>💖 情侣照片墙 💖</h1>
+        <div id="controlsHeader">
+            <div class="controls">
+                <input type="file" id="photoUpload" accept="image/*" multiple title="选择照片">
+                <button id="layoutBtn1">1宫格</button>
+                <button id="layoutBtn2">2宫格</button>
+                <button id="layoutBtn4">4宫格</button>
+                <button id="layoutBtn6">6宫格</button>
+                <button id="layoutBtn8">8宫格</button>
+                <select id="backgroundSelector">
+                    <option value="gradient1">默认渐变</option>
+                    <option value="gradient2">温馨粉</option>
+                    <option value="hearts">爱心图案</option>
+                    <option value="custom">自定义背景图</option>
+                </select>
+                <input type="file" id="customBgUpload" accept="image/*" style="display:none;" title="上传自定义背景">
+                 <select id="borderStyleSelector" title="选择照片边框样式">
+                    <option value="border-default">默认圆角</option>
+                    <option value="border-square">方角</option>
+                    <option value="border-circle">圆形</option>
+                    <option value="border-heart">心形</option>
+                    <option value="border-none">无边框</option>
+                </select>
+                <button id="startSlideshowBtn">播放幻灯片</button>
+            </div>
+            <div class="music-controls">
+                <label for="musicSelector" style="color: #c70039; font-weight: bold;">预设音乐:</label>
+                <select id="musicSelector">
+                    <option value="">选择音乐</option>
+                </select>
+                <button id="playPauseMusicBtn">播放音乐</button>
+                <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5" title="音量">
+                <label for="customMusicUpload" style="color: #c70039; font-weight: bold; margin-left:10px;">自定义:</label>
+                <input type="file" id="customMusicUpload" accept="audio/*" title="上传自定义音乐">
+            </div>
+        </div>
+
+        <div class="photo-wall-area">
+            <button id="prevPageBtn" class="photo-wall-nav-btn" title="上一页">&#10094;</button>
+            <div id="photoWall" class="photo-wall-container layout-4"></div>
+            <button id="nextPageBtn" class="photo-wall-nav-btn" title="下一页">&#10095;</button>
+        </div>
+    </div>
+
+    <div id="fullscreenPhotoModal" class="modal-overlay">
+        <div class="modal-dialog-content">
+            <button id="modalCloseBtnFs" class="modal-close-btn" title="关闭 (Esc)">&times;</button>
+            <img id="modalImageFs" class="modal-image" src="" alt="全屏照片">
+            <div class="modal-info-area">
+                <div id="modalInfoFs" class="modal-info"></div>
+                <button id="editPhotoBtnModal">编辑信息</button>
+            </div>
+            <button id="modalPrevBtnFs" class="fullscreen-modal-nav" title="上一张 (←)">&#10094;</button>
+            <button id="modalNextBtnFs" class="fullscreen-modal-nav" title="下一张 (→)">&#10095;</button>
+        </div>
+    </div>
+
+    <div id="editPhotoInfoModal" class="modal-overlay">
+        <div class="modal-dialog-content"> {/* Reused class for consistent modal appearance */}
+            <button id="closeEditModalBtn" class="modal-close-btn" title="关闭">&times;</button>
+            <h2>编辑照片信息</h2>
+            <input type="hidden" id="editingPhotoIndex">
+            <div>
+                <label for="editLocation">地点:</label>
+                <input type="text" id="editLocation">
+            </div>
+            <div>
+                <label for="editLoveMemory">爱的记忆:</label>
+                <textarea id="editLoveMemory" rows="3"></textarea>
+            </div>
+            <div>
+                <label for="editDescription">描述:</label>
+                <textarea id="editDescription" rows="2"></textarea>
+            </div>
+            <div class="edit-actions">
+                <button id="savePhotoInfoBtn">保存更改</button>
+                <button id="cancelEditPhotoInfoBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="backgroundAudio" loop></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const photoUpload = document.getElementById('photoUpload');
+            const photoWall = document.getElementById('photoWall');
+            
+            const layoutButtonConfigs = [
+                { id: 'layoutBtn1', photosPerPage: 1, className: 'layout-1' },
+                { id: 'layoutBtn2', photosPerPage: 2, className: 'layout-2' },
+                { id: 'layoutBtn4', photosPerPage: 4, className: 'layout-4' },
+                { id: 'layoutBtn6', photosPerPage: 6, className: 'layout-6' },
+                { id: 'layoutBtn8', photosPerPage: 8, className: 'layout-8' },
+            ];
+
+            const backgroundSelector = document.getElementById('backgroundSelector');
+            const customBgUpload = document.getElementById('customBgUpload');
+            const borderStyleSelector = document.getElementById('borderStyleSelector');
+            const startSlideshowBtn = document.getElementById('startSlideshowBtn');
+            const controlsHeader = document.getElementById('controlsHeader');
+            const toggleControlsBtn = document.getElementById('toggleControlsBtn');
+            const backgroundAudio = document.getElementById('backgroundAudio');
+            const musicSelector = document.getElementById('musicSelector');
+            const playPauseMusicBtn = document.getElementById('playPauseMusicBtn');
+            const volumeControl = document.getElementById('volumeControl');
+            const customMusicUpload = document.getElementById('customMusicUpload');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+
+            const fullscreenPhotoModal = document.getElementById('fullscreenPhotoModal');
+            const modalCloseBtnFs = document.getElementById('modalCloseBtnFs');
+            const modalImageFs = document.getElementById('modalImageFs');
+            const modalInfoFs = document.getElementById('modalInfoFs');
+            const modalPrevBtnFs = document.getElementById('modalPrevBtnFs');
+            const modalNextBtnFs = document.getElementById('modalNextBtnFs');
+            const editPhotoBtnModal = document.getElementById('editPhotoBtnModal');
+
+            const editPhotoInfoModal = document.getElementById('editPhotoInfoModal');
+            const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+            const editingPhotoIndexInput = document.getElementById('editingPhotoIndex');
+            const editLocationInput = document.getElementById('editLocation');
+            const editLoveMemoryInput = document.getElementById('editLoveMemory');
+            const editDescriptionInput = document.getElementById('editDescription');
+            const savePhotoInfoBtn = document.getElementById('savePhotoInfoBtn');
+            const cancelEditPhotoInfoBtn = document.getElementById('cancelEditPhotoInfoBtn');
+
+            let uploadedFiles = [];
+            let currentFullScreenIndex = -1; 
+            
+            let slideshowIntervalId = null;
+            let isSlideshowPlaying = false;
+            const slideshowDelay = 3000; 
+
+            let currentPage = 0;
+            let currentPhotosPerPage = 4; 
+            let currentLayoutClass = 'layout-4'; 
+
+            const presetMusic = [
+                { name: "浪漫钢琴曲", path: "music/romantic_piano.mp3" }, 
+                { name: "温馨吉他", path: "music/gentle_guitar.mp3" },   
+                { name: "轻快小调", path: "music/upbeat_melody.mp3" }
+            ];
+            const defaultLocations = ["爱的小窝", "旅途中的惊喜", "某个阳光灿烂的日子", "秘密据点", "回忆的角落", "温馨小屋", "浪漫海滩", "山顶的约定"];
+            const defaultMemories = ["每一刻都值得珍藏", "心动的感觉", "甜蜜时光", "幸福瞬间", "我们的故事", "永恒的爱", "一见钟情", "携手到老"];
+
+            function populateMusicSelector() { 
+                presetMusic.forEach(music => {
+                    const option = document.createElement('option');
+                    option.value = music.path; option.textContent = music.name;
+                    musicSelector.appendChild(option);
+                });
+            }
+
+            toggleControlsBtn.addEventListener('click', () => { 
+                controlsHeader.classList.toggle('hidden');
+                toggleControlsBtn.textContent = controlsHeader.classList.contains('hidden') ? '显示控件' : '隐藏控件';
+                if (!controlsHeader.classList.contains('hidden')) {
+                    requestAnimationFrame(() => {
+                        photoWall.style.display = 'none'; photoWall.offsetHeight; photoWall.style.display = 'grid'; 
+                    });
+                }
+            });
+            
+            photoUpload.addEventListener('change', (event) => {
+                const files = Array.from(event.target.files);
+                if (files.length === 0) return;
+                const newFilesPromises = files.filter(f => f.type.startsWith('image/')).map(file => {
+                    return new Promise(resolve => {
+                        const randomLocation = defaultLocations[Math.floor(Math.random() * defaultLocations.length)];
+                        const randomMemory = defaultMemories[Math.floor(Math.random() * defaultMemories.length)];
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve({
+                            src: e.target.result, name: file.name, date: new Date().toLocaleDateString(),
+                            description: `关于 ${file.name.split('.')[0]} 的美好回忆~`,
+                            location: randomLocation, loveMemory: randomMemory
+                        });
+                        reader.readAsDataURL(file);
+                    });
+                });
+                Promise.all(newFilesPromises).then(newPhotoData => {
+                    uploadedFiles.push(...newPhotoData);
+                    currentPage = 0; 
+                    renderCurrentPagePhotos();
+                });
+            });
+
+            function createPhotoItem(fileData, pageSpecificIndex) { 
+                const photoItem = document.createElement('div');
+                photoItem.classList.add('photo-item', 'loading');
+                const currentBorderStyle = borderStyleSelector.value || 'border-default';
+                if (currentBorderStyle) photoItem.classList.add(currentBorderStyle);
+                const globalIndex = uploadedFiles.indexOf(fileData);
+                photoItem.dataset.index = globalIndex; 
+                const img = document.createElement('img');
+                img.src = fileData.src; img.alt = fileData.name;
+                const info = document.createElement('div');
+                info.classList.add('info');
+                info.textContent = `${fileData.location.substring(0,10)}...`;
+                photoItem.appendChild(img); photoItem.appendChild(info);
+                setTimeout(() => photoItem.classList.remove('loading'), 100 * (pageSpecificIndex % currentPhotosPerPage)); 
+                photoItem.addEventListener('click', () => { if (!isSlideshowPlaying) openFullScreenModal(globalIndex); });
+                return photoItem;
+            }
+
+            function renderCurrentPagePhotos() {
+                photoWall.innerHTML = ''; 
+                if (uploadedFiles.length === 0) {
+                    updatePageNavButtons(); return;
+                }
+                const startIndex = currentPage * currentPhotosPerPage;
+                const endIndex = Math.min(startIndex + currentPhotosPerPage, uploadedFiles.length);
+                const photosToRender = uploadedFiles.slice(startIndex, endIndex);
+                photosToRender.forEach((fileData, pageIndex) => { 
+                    photoWall.appendChild(createPhotoItem(fileData, pageIndex));
+                });
+                updatePageNavButtons();
+            }
+
+            function updatePageNavButtons() {
+                prevPageBtn.disabled = currentPage === 0 || uploadedFiles.length === 0;
+                const totalPages = Math.ceil(uploadedFiles.length / currentPhotosPerPage);
+                nextPageBtn.disabled = currentPage >= totalPages - 1 || uploadedFiles.length === 0 || totalPages <=1 ;
+            }
+
+            prevPageBtn.addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderCurrentPagePhotos(); } });
+            nextPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(uploadedFiles.length / currentPhotosPerPage);
+                if (currentPage < totalPages - 1) { currentPage++; renderCurrentPagePhotos(); }
+            });
+            
+            layoutButtonConfigs.forEach(config => {
+                const button = document.getElementById(config.id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        currentPhotosPerPage = config.photosPerPage;
+                        currentLayoutClass = config.className;
+                        photoWall.className = 'photo-wall-container'; 
+                        photoWall.classList.add(currentLayoutClass);
+                        photoWall.style.position = 'relative'; photoWall.style.zIndex = '1'; photoWall.style.minHeight = '0';
+                        currentPage = 0; renderCurrentPagePhotos();
+                    });
+                }
+            });
+            
+            backgroundSelector.addEventListener('change', (event) => applyBackground(event.target.value));
+            customBgUpload.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.body.style.backgroundImage = `url(${e.target.result})`;
+                        document.body.style.backgroundSize = 'cover'; document.body.style.backgroundPosition = 'center';
+                        document.body.style.backgroundAttachment = 'fixed'; document.body.style.backgroundBlendMode = ''; 
+                        document.body.style.backgroundColor = ''; 
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            function applyBackground(backgroundType) {
+                customBgUpload.style.display = 'none';
+                document.body.style.backgroundImage = ''; document.body.style.backgroundBlendMode = '';
+                document.body.style.backgroundAttachment = '';
+                switch (backgroundType) {
+                    case 'gradient1': document.body.style.background = 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%)'; break;
+                    case 'gradient2': document.body.style.background = 'linear-gradient(to right, #ffecd2 0%, #fcb69f 100%)'; break;
+                    case 'hearts':
+                        document.body.style.backgroundColor = '#ffe0e0';
+                        document.body.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 20c-5.523 0-10 4.477-10 10 0 8.837 10 15 10 15s10-6.163 10-15c0-5.523-4.477-10-10-10z' fill='%23ff7979' fill-opacity='0.3'/%3E%3C/svg%3E")`;
+                        document.body.style.backgroundRepeat = 'repeat'; break;
+                    case 'custom': customBgUpload.style.display = 'inline-block'; break;
+                }
+            }
+            borderStyleSelector.addEventListener('change', (event) => { 
+                 const newBorderStyleClass = event.target.value;
+                const photoItems = photoWall.querySelectorAll('.photo-item'); 
+                photoItems.forEach(item => {
+                    item.className = item.className.replace(/\bborder-\w+\b/g, '').trim(); 
+                    if (newBorderStyleClass && newBorderStyleClass !== "") item.classList.add(newBorderStyleClass);
+                });
+            });
+            
+            modalCloseBtnFs.addEventListener('click', closeFullScreenModal);
+            modalPrevBtnFs.addEventListener('click', () => showPrevImageFs());
+            modalNextBtnFs.addEventListener('click', () => showNextImageFs());
+            editPhotoBtnModal.addEventListener('click', () => {
+                if (currentFullScreenIndex !== -1) {
+                    openEditInfoModal(currentFullScreenIndex);
+                }
+            });
+
+            function openFullScreenModal(index) {
+                if (uploadedFiles.length === 0 || index < 0 || index >= uploadedFiles.length) return;
+                currentFullScreenIndex = index; 
+                displayFullScreenImage(); 
+                fullscreenPhotoModal.classList.add('active'); 
+                document.addEventListener('keydown', handleFullScreenKeyPress);
+                if (isSlideshowPlaying) {
+                    modalPrevBtnFs.classList.add('slideshow-disabled'); modalNextBtnFs.classList.add('slideshow-disabled');
+                } else {
+                    modalPrevBtnFs.classList.remove('slideshow-disabled'); modalNextBtnFs.classList.remove('slideshow-disabled');
+                }
+            }
+            function closeFullScreenModal() {
+                 if (fullscreenPhotoModal) fullscreenPhotoModal.classList.remove('active');
+                document.removeEventListener('keydown', handleFullScreenKeyPress);
+                if (isSlideshowPlaying) stopSlideshow();
+                currentFullScreenIndex = -1; 
+            }
+            function displayFullScreenImage() {
+                if (currentFullScreenIndex === -1 || uploadedFiles.length === 0 || !fullscreenPhotoModal) return;
+                const photoData = uploadedFiles[currentFullScreenIndex]; 
+                const newInfoHTML = `<strong>日期:</strong> ${photoData.date}<br><strong>地点:</strong> ${photoData.location}<br><strong>爱的记忆:</strong> ${photoData.loveMemory}<br><strong>描述:</strong> ${photoData.description}`;
+                if (isSlideshowPlaying) {
+                    modalImageFs.style.opacity = 0; 
+                    setTimeout(() => {
+                        modalImageFs.src = photoData.src; modalImageFs.alt = photoData.name;
+                        modalInfoFs.innerHTML = newInfoHTML; modalImageFs.style.opacity = 1; 
+                    }, 250); 
+                } else {
+                    modalImageFs.src = photoData.src; modalImageFs.alt = photoData.name;
+                    modalInfoFs.innerHTML = newInfoHTML;
+                }
+                if (!isSlideshowPlaying) {
+                    modalPrevBtnFs.disabled = uploadedFiles.length <= 1 || currentFullScreenIndex === 0; 
+                    modalNextBtnFs.disabled = uploadedFiles.length <= 1 || currentFullScreenIndex === uploadedFiles.length - 1;
+                }
+            }
+            function showNextImageFs() { 
+                if (uploadedFiles.length === 0 || isSlideshowPlaying) return;
+                if (currentFullScreenIndex < uploadedFiles.length - 1) {
+                    currentFullScreenIndex++; displayFullScreenImage();
+                }
+            }
+            function showPrevImageFs() {
+                if (uploadedFiles.length === 0 || isSlideshowPlaying) return;
+                if (currentFullScreenIndex > 0) {
+                    currentFullScreenIndex--; displayFullScreenImage();
+                }
+            }
+            function handleFullScreenKeyPress(event) {
+                if (!fullscreenPhotoModal.classList.contains('active')) return;
+                switch (event.key) {
+                    case 'Escape': closeFullScreenModal(); break;
+                    case 'ArrowRight': if (!isSlideshowPlaying && !modalNextBtnFs.disabled) showNextImageFs(); break;
+                    case 'ArrowLeft': if (!isSlideshowPlaying && !modalPrevBtnFs.disabled) showPrevImageFs(); break;
+                }
+            }
+            
+            function toggleSlideshow() {
+                if (uploadedFiles.length === 0) { alert("请先上传照片再播放幻灯片。"); return; }
+                if (isSlideshowPlaying) stopSlideshow(); else startSlideshow();
+            }
+            function startSlideshow() {
+                isSlideshowPlaying = true; startSlideshowBtn.textContent = '暂停幻灯片';
+                let initialSlideshowIndex = uploadedFiles.indexOf(uploadedFiles[currentPage * currentPhotosPerPage]) ;
+                if(initialSlideshowIndex < 0 || initialSlideshowIndex >= uploadedFiles.length) initialSlideshowIndex = 0;
+
+                if (!fullscreenPhotoModal.classList.contains('active')) {
+                     if(uploadedFiles.length > 0) openFullScreenModal(initialSlideshowIndex); else return;
+                } else { currentFullScreenIndex = initialSlideshowIndex; }
+
+                modalPrevBtnFs.classList.add('slideshow-disabled'); modalNextBtnFs.classList.add('slideshow-disabled');
+                displayFullScreenImage(); 
+                slideshowIntervalId = setInterval(() => { 
+                     currentFullScreenIndex = (currentFullScreenIndex + 1) % uploadedFiles.length; displayFullScreenImage(); 
+                }, slideshowDelay);
+            }
+            function stopSlideshow() {
+                clearInterval(slideshowIntervalId); isSlideshowPlaying = false;
+                startSlideshowBtn.textContent = '播放幻灯片';
+                if (fullscreenPhotoModal) { 
+                    modalPrevBtnFs.classList.remove('slideshow-disabled'); modalNextBtnFs.classList.remove('slideshow-disabled');
+                    if (fullscreenPhotoModal.classList.contains('active') && currentFullScreenIndex !== -1) { 
+                         modalPrevBtnFs.disabled = uploadedFiles.length <= 1 || currentFullScreenIndex === 0;
+                         modalNextBtnFs.disabled = uploadedFiles.length <= 1 || currentFullScreenIndex === uploadedFiles.length -1;
+                    }
+                }
+            }
+            startSlideshowBtn.addEventListener('click', toggleSlideshow);
+
+            closeEditModalBtn.addEventListener('click', () => editPhotoInfoModal.classList.remove('active'));
+            cancelEditPhotoInfoBtn.addEventListener('click', () => editPhotoInfoModal.classList.remove('active'));
+
+            function openEditInfoModal(index) {
+                if (index < 0 || index >= uploadedFiles.length) return;
+                const photoData = uploadedFiles[index];
+                editingPhotoIndexInput.value = index;
+                editLocationInput.value = photoData.location;
+                editLoveMemoryInput.value = photoData.loveMemory;
+                editDescriptionInput.value = photoData.description;
+                editPhotoInfoModal.classList.add('active');
+            }
+
+            savePhotoInfoBtn.addEventListener('click', () => {
+                const indexToEdit = parseInt(editingPhotoIndexInput.value);
+                if (isNaN(indexToEdit) || indexToEdit < 0 || indexToEdit >= uploadedFiles.length) return;
+
+                uploadedFiles[indexToEdit].location = editLocationInput.value;
+                uploadedFiles[indexToEdit].loveMemory = editLoveMemoryInput.value;
+                uploadedFiles[indexToEdit].description = editDescriptionInput.value;
+
+                editPhotoInfoModal.classList.remove('active');
+                renderCurrentPagePhotos(); 
+                if (fullscreenPhotoModal.classList.contains('active') && currentFullScreenIndex === indexToEdit) {
+                    displayFullScreenImage(); 
+                }
+            });
+            
+            musicSelector.addEventListener('change', function() { 
+                const selectedPath = this.value; console.log("预设音乐选择:", selectedPath);
+                if (selectedPath) {
+                    backgroundAudio.src = selectedPath; console.log("Audio src 设置为 (预设):", backgroundAudio.src);
+                    backgroundAudio.load(); backgroundAudio.play().catch(e => console.warn("选择预设音乐后自动播放失败:", e.message));
+                } else { backgroundAudio.pause(); backgroundAudio.src = ""; playPauseMusicBtn.textContent = '播放音乐'; }
+            });
+            playPauseMusicBtn.addEventListener('click', function() {
+                console.log("播放/暂停按钮点击。当前 src:", backgroundAudio.src, "Paused:", backgroundAudio.paused, "Selector value:", musicSelector.value);
+                if (!backgroundAudio.src && musicSelector.value) { 
+                    backgroundAudio.src = musicSelector.value; console.log("从选择器设置 Audio src:", backgroundAudio.src); backgroundAudio.load();
+                } else if (!backgroundAudio.src && !(customMusicUpload.files && customMusicUpload.files.length > 0 && backgroundAudio.src.startsWith('blob:'))) {
+                     alert("请先选择一首预设音乐或上传自定义音乐。"); return;
+                }
+                if (backgroundAudio.paused) {
+                    if (!backgroundAudio.src) { alert("没有可播放的音乐源。"); return; }
+                    console.log("尝试播放:", backgroundAudio.src);
+                    backgroundAudio.play().catch(e => { console.error("音乐播放时发生错误:", e); alert(`无法播放音乐。\n错误: ${e.message}`); });
+                } else { console.log("尝试暂停:", backgroundAudio.src); backgroundAudio.pause(); }
+            });
+            volumeControl.addEventListener('input', function() { backgroundAudio.volume = this.value; });
+            customMusicUpload.addEventListener('change', function(event) {
+                const file = event.target.files[0]; console.log("自定义音乐文件选择:", file);
+                if (file && file.type.startsWith('audio/')) {
+                    const objectURL = URL.createObjectURL(file); console.log("自定义音乐 Object URL:", objectURL);
+                    backgroundAudio.src = objectURL; backgroundAudio.load();
+                    backgroundAudio.play().catch(e => { console.error("播放自定义音乐失败:", e); alert("无法播放自定义音乐。错误: " + e.message); });
+                    musicSelector.value = ""; playPauseMusicBtn.textContent = '暂停音乐'; 
+                } else if (file) { alert("请选择一个有效的音频文件 (例如 MP3, WAV, OGG)。"); }
+            });
+            backgroundAudio.addEventListener('play', () => { playPauseMusicBtn.textContent = '暂停音乐'; });
+            backgroundAudio.addEventListener('pause', () => { playPauseMusicBtn.textContent = '播放音乐'; });
+            backgroundAudio.addEventListener('error', (e) => {
+                console.error("音频错误事件:", backgroundAudio.error, e);
+                alert(`加载或播放音乐时发生错误: ${backgroundAudio.error?.message || '未知错误'}`);
+            });
+            
+            // Initialize
+            populateMusicSelector(); 
+            const initialLayoutConfig = layoutButtonConfigs.find(c => c.className === currentLayoutClass) || layoutButtonConfigs[2]; 
+            currentPhotosPerPage = initialLayoutConfig.photosPerPage;
+            photoWall.classList.add(initialLayoutConfig.className);
+            photoWall.style.position = 'relative'; photoWall.style.zIndex = '1'; photoWall.style.minHeight = '0';
+            applyBackground('gradient1');
+            backgroundAudio.volume = volumeControl.value; 
+            renderCurrentPagePhotos(); 
+            
+            console.log('情侣照片墙应用已添加照片信息编辑功能。');
+        });
+    </script>
+</body>
+</html>

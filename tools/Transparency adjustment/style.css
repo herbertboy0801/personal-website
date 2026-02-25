@@ -1,0 +1,568 @@
+/* --- 全局与基础样式 --- */
+:root {
+    --primary-color: #4a69bd; /* 主题蓝 */
+    --secondary-color: #6a89cc;
+    --success-color: #4caf50; /* 绿色 */
+    --danger-color: #f44336;  /* 红色 */
+    --warning-color: #ff9800; /* 橙色 */
+    --light-gray: #f8f9fa;    /* 更亮的背景灰 */
+    --medium-gray: #e9ecef;
+    --border-color: #dee2e6; /* 统一边框颜色 */
+    --dark-gray: #6c757d;
+    --text-color: #343a40;
+    --card-bg: #ffffff;
+    --card-shadow: 0 2px 5px rgba(0, 0, 0, 0.04); /* 更柔和的阴影 */
+    --border-radius: 6px; /* 稍小的圆角 */
+    --font-family: 'Microsoft YaHei', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    background-color: var(--light-gray);
+    color: var(--text-color);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+h1, h2, h3, h4 {
+    margin-top: 0;
+    margin-bottom: 0.7em; /* 统一减小标题下边距 */
+    font-weight: 600;
+}
+h1 { font-size: 1.7em; color: #fff; }
+h2 { font-size: 1.15em; color: #495057; display: flex; align-items: center; } /* Section titles */
+h3 { font-size: 1.05em; color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px;}
+h4 { font-size: 1em; color: var(--dark-gray); margin-bottom: 10px; }
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+a:hover {
+    color: var(--secondary-color);
+}
+
+i {
+    margin-right: 8px; /* 稍微增大图标间距 */
+    color: var(--dark-gray); /* 默认图标颜色 */
+}
+h2 i {
+    color: var(--primary-color); /* Section title icons color */
+    font-size: 1.1em;
+}
+
+/* --- 卡片样式 --- */
+.card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    border: 1px solid var(--border-color); /* 添加细边框 */
+}
+
+/* --- 按钮样式 --- */
+.btn {
+    display: inline-block;
+    padding: 8px 16px; /* 调整按钮内边距 */
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid transparent; /* Add border for consistency */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    color: #fff;
+    line-height: 1.5;
+}
+.btn i {
+    margin-right: 5px;
+    color: inherit; /* Icon color inherits from button */
+}
+
+.btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+.btn-primary:hover { background-color: var(--secondary-color); border-color: var(--secondary-color); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+.btn-secondary { background-color: #fff; color: #555; border-color: #ccc; }
+.btn-secondary:hover { background-color: #f8f8f8; border-color: #bbb; }
+.btn-secondary.active { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+
+.btn-success { background-color: var(--success-color); border-color: var(--success-color); }
+.btn-success:hover { background-color: #45a049; border-color: #45a049; }
+
+.btn-danger { background-color: var(--danger-color); border-color: var(--danger-color); }
+.btn-danger:hover { background-color: #e53935; border-color: #e53935; }
+
+.btn-warning { background-color: var(--warning-color); border-color: var(--warning-color); }
+.btn-warning:hover { background-color: #fb8c00; border-color: #fb8c00; }
+
+
+/* --- 头部 --- */
+.header {
+    background: var(--primary-color); /* Solid color header */
+    color: #fff;
+    padding: 20px 0; /* Reduced padding */
+    margin-bottom: 25px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.header-content {
+    max-width: 1280px; /* Adjusted max-width for tighter layout */
+    margin: 0 auto;
+    padding: 0 20px; /* Reduced padding */
+    display: flex;
+    align-items: center;
+}
+/* Simple icon simulation */
+.simple-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.header-text h1 {
+    margin-bottom: 3px; /* Reduced margin */
+    font-weight: 600; /* Slightly lighter */
+    font-size: 1.6em;
+}
+.header-text p {
+    margin: 0;
+    font-size: 0.95em; /* Slightly smaller subtext */
+    opacity: 0.85;
+}
+
+/* --- 主体布局 (新两栏) --- */
+.new-layout-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid; /* 使用 Grid 布局 */
+    grid-template-columns: 320px 1fr; /* 左侧固定宽度，右侧自适应 */
+    gap: 20px; /* 增加栏间距 */
+    align-items: flex-start;
+}
+
+.left-panel, .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 面板内卡片间距 */
+}
+
+/* 移除旧的 sidebar 和 main-content 样式 */
+/* .sidebar { ... } */
+/* .right-sidebar { ... } */
+/* .main-content { ... } */
+
+/* --- 左侧面板样式 --- */
+.left-panel .card {
+    padding: 18px; /* 统一内边距 */
+}
+
+/* --- 右侧面板样式 --- */
+.right-panel .card {
+    padding: 18px;
+}
+
+/* 初始上传提示区样式调整 */
+.upload-info-section {
+    text-align: center;
+    padding: 30px 15px !important; /* 增加内边距 */
+    border-style: dashed; /* 虚线边框 */
+    background-color: var(--light-gray);
+}
+.upload-info-section h2 {
+    margin-bottom: 15px;
+}
+
+/* --- 左侧边栏：上传与全局 (旧样式移除) --- */
+/* .left-sidebar .card { ... } */
+.upload-info-section h2, .global-settings h2 {
+    margin-bottom: 10px;
+}
+.supported-formats {
+    font-size: 0.9em;
+    color: var(--dark-gray);
+    margin-bottom: 15px; /* Increased margin */
+}
+/* Style for the new upload button */
+.upload-button {
+    width: 100%;
+    margin-bottom: 10px;
+}
+.upload-hint {
+    font-size: 0.9em;
+    color: var(--dark-gray);
+    text-align: center;
+    margin-top: 5px;
+    padding: 8px;
+    /* background-color: #f0f5ff; */ /* Remove background */
+    border-radius: 4px;
+}
+.setting-hint { /* General hint styling */
+    font-size: 0.9em;
+    color: var(--dark-gray);
+    margin-top: 8px;
+    margin-bottom: 0;
+    line-height: 1.4;
+}
+.setting-hint i {
+    font-style: normal; /* Remove italics if not needed */
+}
+
+.global-opacity-group label {
+    flex-basis: 100px !important;
+    font-size: 0.95em; /* Match other labels */
+}
+.global-opacity-group span {
+    min-width: 45px !important;
+    text-align: right;
+    font-size: 0.95em; /* Match other labels */
+}
+
+/* --- 中间内容：参数控制 (旧样式移除) --- */
+/* .main-content.card { ... } */
+/* .main-content h2 { ... } */
+
+/* 新的 controls-card 样式 */
+.controls-card {
+    /* 可根据需要添加特定样式 */
+}
+.control-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+.control-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+.control-section h3 {
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    display: flex; /* Align icon with text */
+    align-items: center;
+}
+.control-section h3 i {
+     color: var(--primary-color); /* Icon color for section titles */
+     font-size: 1.1em;
+}
+
+
+/* 透明模式 Tabs */
+.tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+.tab-button {
+    padding: 8px 12px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: var(--dark-gray);
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    margin-bottom: -1px;
+}
+.tab-button:hover {
+    color: var(--primary-color);
+}
+.tab-button.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* 通用控件组 */
+.control-group {
+    margin-bottom: 10px; /* Slightly reduced margin */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.control-group label {
+    flex-basis: 110px; /* Keep label width consistent */
+    flex-shrink: 0;
+    font-weight: 500;
+    color: #555;
+    text-align: right;
+    padding-right: 8px;
+    font-size: 0.95em;
+}
+/* Adjust label width for opacity control specifically */
+.opacity-control label {
+    flex-basis: 150px; /* Wider label for opacity */
+}
+
+.control-group input[type="number"],
+.control-group input[type="range"],
+.control-group select {
+    padding: 5px 8px;
+    border: 1px solid #ced4da; /* Slightly darker border */
+    border-radius: 4px;
+    font-size: 0.95em;
+    flex-grow: 1;
+    min-width: 50px;
+    box-sizing: border-box; /* Ensure padding is included in width */
+}
+.control-group input[type="range"] {
+    padding: 0;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.control-group span { /* For opacity value display */
+    font-weight: 500;
+    min-width: 40px;
+    text-align: right;
+    font-size: 0.95em;
+}
+.control-group input[type="radio"] {
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.control-group input[type="radio"] + label {
+    flex-basis: auto;
+    text-align: left;
+    font-weight: normal;
+    margin-right: 15px;
+    padding-right: 0;
+    font-size: 0.95em;
+    vertical-align: middle;
+}
+.scope-control > div { /* Wrapper for radio buttons */
+    display: flex;
+    align-items: center;
+}
+
+/* Specific control adjustments */
+.opacity-control {
+    align-items: center;
+}
+.opacity-control input[type="number"] {
+    flex-basis: 55px; /* Slightly smaller number input */
+    flex-grow: 0;
+    text-align: center;
+}
+.opacity-slider-control {
+    flex-grow: 1;
+}
+
+.mode-options {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background-color: #fdfdff;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-left: 0;
+}
+.mode-options label {
+    flex-basis: 80px;
+}
+.mode-options input[type="number"] {
+    flex-basis: 70px;
+    flex-grow: 0;
+}
+.mode-options br { display: none; }
+.mode-options .setting-hint { margin-top: 8px; margin-bottom: 0; }
+
+
+.selection-control .setting-hint {
+    margin-top: 8px;
+    text-align: center;
+    width: 100%;
+}
+/* Style for the restored selection inputs container */
+#selectionInputs {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color); /* Add separator */
+}
+/* Ensure labels and inputs align well within selectionInputs */
+#selectionInputs .control-group label {
+     flex-basis: 80px; /* Shorter labels for coordinates */
+}
+#selectionInputs .control-group input[type="number"] {
+    flex-basis: 80px; /* Fixed width for coordinate inputs */
+    flex-grow: 0;
+}
+
+
+/* --- 右侧边栏：实时预览 (旧样式移除) --- */
+/* .right-sidebar .card { ... } */
+
+/* 预览区域样式调整 */
+.preview-section {
+    /* 可根据需要添加特定样式 */
+}
+.preview-section h2 {
+    margin-bottom: 10px;
+}
+.preview-controls {
+    margin-bottom: 12px;
+    text-align: center;
+}
+.preview-controls .btn {
+    margin: 0 4px;
+    padding: 5px 10px;
+    font-size: 0.9em;
+}
+
+.canvas-container-wrapper {
+    width: 100%;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--medium-gray);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    min-height: 250px;
+    position: relative;
+    overflow: hidden;
+    /* Remove cursor pointer from wrapper */
+    /* cursor: pointer; */
+}
+
+/* Background patterns */
+.canvas-container-wrapper.checkerboard {
+    background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+.canvas-container-wrapper.white { background-color: #fff; }
+.canvas-container-wrapper.black { background-color: #333; }
+
+
+.canvas-container {
+    position: relative;
+    max-width: 100%;
+    max-height: 450px;
+    overflow: auto;
+    display: inline-block;
+    line-height: 0;
+}
+
+#canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    /* Default cursor, changed by JS based on mode */
+    cursor: default;
+    background-color: transparent;
+}
+
+/* Placeholder removed from HTML */
+/* .placeholder-text { ... } */
+
+
+.selection-box {
+    position: absolute;
+    border: 1px dashed var(--primary-color);
+    pointer-events: none;
+    display: none;
+    box-sizing: border-box;
+    background-color: rgba(74, 105, 189, 0.08);
+}
+
+/* 操作按钮区域样式调整 */
+.action-buttons-section {
+    padding: 15px !important; /* 调整内边距 */
+}
+.action-buttons {
+    display: grid; /* 使用 Grid 布局按钮 */
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* 自动适应列数 */
+    gap: 10px; /* 按钮间距 */
+    margin-bottom: 10px; /* 与下方提示文字间距 */
+    align-items: stretch; /* 使按钮在交叉轴上拉伸以填充高度 */
+}
+.action-buttons .btn {
+    /* flex: 1; */ /* 移除 flex: 1 */
+    padding: 0 12px; /* 移除垂直内边距，由 height 和 flex 控制 */
+    height: 38px; /* 设置明确的高度 */
+    box-sizing: border-box; /* 确保 padding 不影响高度 */
+    display: inline-flex; /* 使用 flex 布局 */
+    align-items: center; /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
+    line-height: 1; /* 防止 line-height 影响对齐 */
+}
+.action-buttons-section .upload-hint {
+    text-align: center;
+    margin-top: 0; /* 移除上方间距 */
+    padding: 0;
+}
+
+/* --- 页脚移除 --- */
+.footer { display: none; }
+
+/* --- 响应式设计 --- */
+/* --- 响应式设计调整 --- */
+@media (max-width: 1200px) {
+    .new-layout-container {
+        grid-template-columns: 1fr; /* 堆叠布局 */
+        gap: 15px;
+        padding: 0 15px;
+    }
+    /* 移除旧的响应式 sidebar/main-content 调整 */
+    /* .sidebar, .main-content { ... } */
+    /* .right-sidebar { ... } */
+}
+
+@media (max-width: 768px) {
+    body { font-size: 13px; }
+    .header { padding: 15px 0; }
+    .header-content { padding: 0 15px; }
+    .simple-icon { width: 35px; height: 35px; }
+    .header-text h1 { font-size: 1.4em; }
+    .header-text p { font-size: 0.9em; }
+
+    .card { padding: 15px; }
+
+    .control-group { flex-direction: column; align-items: stretch; gap: 5px; }
+    .control-group label { text-align: left; margin-bottom: 3px; flex-basis: auto; }
+    .control-group input[type="number"],
+    .control-group input[type="range"],
+    .control-group select { width: 100%; box-sizing: border-box; }
+    .opacity-control { flex-direction: row; align-items: center; gap: 10px; }
+    .opacity-control label { flex-basis: auto; } /* Reset basis for stacking */
+    .opacity-control input[type="number"] { width: 60px; }
+    .mode-options { padding: 10px; }
+    .mode-options .control-group { flex-direction: row; align-items: center; }
+    .mode-options label { flex-basis: 60px; }
+    .mode-options input[type="number"] { width: auto; flex-grow: 1; }
+    .scope-control { flex-direction: row; align-items: center; }
+    .scope-control label { flex-basis: auto; margin-bottom: 0; }
+    #selectionInputs .control-group { flex-direction: row; align-items: center; }
+    #selectionInputs .control-group label { flex-basis: 80px; }
+    #selectionInputs .control-group input[type="number"] { width: auto; flex-grow: 1; }
+
+
+    .action-buttons { flex-wrap: wrap; }
+    .action-buttons .btn { flex-basis: calc(50% - 4px); }
+
+    .tabs { flex-wrap: wrap; }
+    .tab-button { flex-grow: 1; text-align: center; }
+}
+
+@media (max-width: 480px) {
+    .header { padding: 12px 0; }
+    .simple-icon { width: 30px; height: 30px; margin-right: 10px; }
+    .header-text h1 { font-size: 1.3em; }
+    .header-text p { display: none; }
+
+    .card { padding: 12px; }
+    .btn { padding: 7px 10px; font-size: 13px; }
+    .preview-controls .btn { padding: 4px 8px; }
+    .action-buttons .btn { flex-basis: 100%; }
+    .canvas-container-wrapper { min-height: 200px; }
+    #selectionInputs .control-group { flex-direction: column; align-items: stretch; }
+    #selectionInputs .control-group label { text-align: left; margin-bottom: 3px; }
+    #selectionInputs .control-group input[type="number"] { width: 100%; }
+    .opacity-control label { flex-basis: auto; } /* Ensure label stacks */
+}

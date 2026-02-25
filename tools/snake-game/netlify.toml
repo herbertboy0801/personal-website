@@ -1,0 +1,20 @@
+# Netlify configuration file
+
+[build]
+  # This command assumes your main site content (index.html, etc.) is in the root
+  # If your build process generates files into a specific directory (e.g., 'dist'),
+  # change 'publish' accordingly.
+  publish = "." # Directory containing index.html, assets, etc.
+  functions = "netlify/functions" # Directory containing your Netlify Functions
+
+# Optional: Redirects/Rewrites if needed, but functions are usually accessed directly
+# [[redirects]]
+#   from = "/api/*"
+#   to = "/.netlify/functions/:splat"
+#   status = 200
+
+[functions]
+  # Specifies the Node.js runtime version for your functions.
+  # It's good practice to specify a version. Check Netlify docs for current supported versions.
+  # node_bundler = "esbuild" # Optional: Use esbuild for faster bundling
+  # node_version = "18" # Example: Specify Node.js 18

@@ -1,0 +1,412 @@
+body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+    margin: 0;
+    color: #333;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 600px; /* 增加最大宽度 */
+    box-sizing: border-box;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 10px; /* 调整间距 */
+}
+
+.first-letter-hint {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 20px;
+    height: 1.5em; /* 确保高度，避免布局跳动 */
+}
+
+.game-grid {
+    display: flex;
+    flex-direction: column; /* 保持垂直排列行 */
+    gap: 5px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    width: 100%; /* 确保行占据可用宽度 */
+    max-width: calc(var(--word-length, 5) * 60px + (var(--word-length, 5) - 1) * 5px); /* 根据单词长度计算最大宽度 */
+}
+
+.tile {
+    flex-basis: calc((100% - (var(--word-length, 5) - 1) * 5px) / var(--word-length, 5)); /* 动态计算宽度 */
+    max-width: 60px; /* 最大宽度 */
+    height: 60px;
+    border: 2px solid #d3d6da;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #333;
+    transition: all 0.3s ease-in-out;
+    box-sizing: border-box;
+}
+
+/* 字母状态颜色 */
+.tile.correct {
+    background-color: #6aaa64; /* 绿色 */
+    color: white;
+    border-color: #6aaa64;
+}
+
+.tile.present {
+    background-color: #c9b458; /* 黄色 */
+    color: white;
+    border-color: #c9b458;
+}
+
+.tile.absent {
+    background-color: #787c7e; /* 灰色 */
+    color: white;
+    border-color: #787c7e;
+}
+
+.keyboard {
+    display: flex; /* 改为flex布局 */
+    flex-direction: column; /* 垂直排列行 */
+    gap: 6px; /* 行间距 */
+    margin-top: 20px;
+    width: 100%;
+    max-width: 500px; /* 限制最大宽度 */
+    align-items: center; /* 居中对齐 */
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    width: 100%; /* 确保行占据可用宽度 */
+}
+
+.key {
+    background-color: #d3d6da;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px; /* 恢复padding */
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    flex-grow: 1; /* 让按键在行内自适应宽度 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 40px; /* 确保按键有最小宽度 */
+    height: 50px;
+}
+
+.key.large {
+    flex-grow: 1.5; /* 调整特殊按键的宽度 */
+    font-size: 0.9em; /* 调整字体大小 */
+    padding: 10px 5px; /* 调整padding */
+}
+
+.key:hover {
+    background-color: #c0c3c7;
+}
+
+/* 键盘字母状态颜色 */
+.key.correct {
+    background-color: #6aaa64;
+    color: white;
+}
+
+.key.present {
+    background-color: #c9b458;
+    color: white;
+}
+
+.key.absent {
+    background-color: #787c7e;
+    color: white;
+}
+
+button#new-game-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+button#new-game-btn:hover {
+    background-color: #0056b3;
+}
+
+.control-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 0 5px;
+    transition: background-color 0.2s;
+    white-space: nowrap; /* 防止按钮文本换行 */
+}
+
+.control-btn:hover {
+    background-color: #5a6268;
+}
+
+/* 模态框样式 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden; /* 默认隐藏 */
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease;
+}
+
+.modal-overlay.visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px; /* 增加模态框最大宽度 */
+    text-align: left;
+    position: relative;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.visible .modal {
+    transform: translateY(0);
+}
+
+.modal h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.modal .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal .close-btn:hover {
+    color: #333;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.setting-item label {
+    font-weight: bold;
+    color: #555;
+}
+
+.setting-item select,
+.setting-item input[type="checkbox"] {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+}
+
+#guess-distribution {
+    margin-top: 20px;
+}
+
+.guess-bar-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.guess-label {
+    width: 30px;
+    text-align: right;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.guess-bar {
+    flex-grow: 1;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.guess-fill {
+    height: 100%;
+    background-color: #6aaa64; /* 绿色 */
+    width: 0%;
+    transition: width 0.5s ease-out;
+}
+
+.tile-example {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: white;
+    border-radius: 3px;
+    margin-right: 5px;
+}
+
+/* 高对比度模式 */
+body.high-contrast .tile.correct {
+    background-color: #f5793a; /* 橙色 */
+    border-color: #f5793a;
+}
+
+body.high-contrast .tile.present {
+    background-color: #85c0f9; /* 蓝色 */
+    border-color: #85c0f9;
+}
+
+body.high-contrast .key.correct {
+    background-color: #f5793a;
+}
+
+body.high-contrast .key.present {
+    background-color: #85c0f9;
+}
+
+/* 字母翻转动画 */
+.tile.flip-in {
+    animation: flip-in 0.3s forwards;
+}
+
+.tile.flip-out {
+    animation: flip-out 0.3s forwards;
+}
+
+@keyframes flip-in {
+    0% {
+        transform: rotateX(90deg);
+    }
+    100% {
+        transform: rotateX(0deg);
+    }
+}
+
+@keyframes flip-out {
+    0% {
+        transform: rotateX(0deg);
+    }
+    100% {
+        transform: rotateX(-90deg);
+    }
+}
+
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    .tile {
+        flex-basis: calc((100% - (var(--word-length, 5) - 1) * 5px) / var(--word-length, 5));
+        max-width: 50px;
+        height: 50px;
+        font-size: 1.8em;
+    }
+
+    .key {
+        padding: 8px 10px;
+        font-size: 1em;
+        min-width: 30px;
+        height: 45px;
+    }
+
+    .key.large {
+        font-size: 0.8em; /* 调整字体大小 */
+        padding: 8px 3px; /* 调整padding */
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .keyboard {
+        max-width: 400px; /* 调整键盘最大宽度 */
+    }
+}
+
+@media (max-width: 400px) {
+    .tile {
+        flex-basis: calc((100% - (var(--word-length, 5) - 1) * 5px) / var(--word-length, 5));
+        max-width: 45px;
+        height: 45px;
+        font-size: 1.6em;
+    }
+
+    .key {
+        padding: 6px 8px;
+        font-size: 0.9em;
+        min-width: 25px;
+        height: 40px;
+    }
+
+    .key.large {
+        font-size: 0.7em; /* 调整字体大小 */
+        padding: 6px 2px; /* 调整padding */
+    }
+
+    .keyboard {
+        max-width: 300px; /* 调整键盘最大宽度 */
+    }
+}

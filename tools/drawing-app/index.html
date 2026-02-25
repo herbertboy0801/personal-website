@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>晨间日记</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 重新引入 flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+             <!-- 页眉：图标+标题 -->
+            <div class="title-bar">
+                 <img src="logo.png" alt="Logo" class="app-logo"> <!-- 添加 Logo 图片 -->
+                 <!-- <span class="app-icon">📖</span> --> <!-- 移除旧图标 -->
+                 <h1>贺伯晨间日记</h1>
+            </div>
+             <!-- 提醒信息区 -->
+             <div class="reminder-info">
+                  <div class="info-pill reminder-time-display">
+                      <span class="icon">🔔</span> <!-- bell emoji -->
+                      每日提醒: <span id="set-reminder-time-display">早上 7:00</span> <!-- JS 更新 -->
+                  </div>
+                  <div class="info-pill reminder-countdown-display">
+                      <span class="icon">⏱️</span> <!-- clock emoji -->
+                      距离提醒还有: <span id="reminder-countdown">--:--:--</span>
+                  </div>
+                  <!-- 历史回顾按钮容器 (移动到 reminder-info 内部) -->
+                  <div class="header-action-button history-review-container"> <!-- 添加通用类 -->
+                      <button id="history-review-btn" title="历史回顾">📖</button>
+                      <span class="button-label">历史回顾</span> <!-- 添加文字标签 -->
+                  </div>
+                  <!-- 新增：设定与输出按钮容器 -->
+                  <div class="header-action-button settings-output-container"> <!-- 添加通用类 -->
+                       <button id="settings-output-btn" title="设定与输出">⚙️</button>
+                       <span class="button-label">设定与输出</span> <!-- 添加文字标签 -->
+                  </div>
+                  <!-- 新增：解锁按钮容器 -->
+                  <div class="header-action-button unlock-container">
+                      <button id="unlock-btn" title="解锁编辑">🔒</button> <!-- 初始为锁定图标 -->
+                      <span class="button-label">解锁</span>
+                  </div>
+             </div>
+              <!-- 提醒时间设置已移至页脚 -->
+              <!-- 隐藏的目标设置已移除 -->
+          </header>
+          <!-- 目标进度条已移动到日记卡片内 -->
+
+          <main class="diary-section">
+              <!-- 移除日历侧边栏 -->
+            <!-- <aside class="history-nav"> ... </aside> -->
+
+            <article class="diary-card">
+                <div class="diary-header">
+                     <!-- 日期和日更天数 -->
+                     <div class="header-main">
+                         <!-- 移除卡片内的 H2 标题 -->
+                         <!-- <h2>晨间日记</h2> -->
+                         <!-- 日期/天数显示已移至下方横幅 -->
+                     </div>
+                     <!-- 历史导航按钮 -->
+                     <div class="history-pagination">
+                         <button id="prev-day" title="上一天">‹</button>
+                         <button id="next-day" title="下一天">›</button>
+                     </div>
+                </div>
+                <!-- 目标进度条 & 日期/天数 - 移动到此处 -->
+                <div id="goal-progress-banner" class="goal-banner">
+                    <span id="date-day-count-display">[今天是] 月日 日更复盘第X天</span>
+                    <span class="separator">|</span> <!-- 添加分隔符 -->
+                    <span>写到第 <span id="goal-target-days-display">XX</span> 天犒赏自己 <span id="goal-reward-display">XXX</span></span> <!-- 移除多余的 "去" -->
+                </div>
+
+                <div id="diary-editor" class="editable-area">
+                     <!-- 将编辑区域直接放在卡片内 -->
+                     <section class="diary-block">
+                         <h3 class="section-title"><span class="icon">⚙️</span> 今日收获：</h3>
+                         <div class="section-content" contenteditable="true" id="section-harvest">
+                             <p>今天完成了项目的重要模块,解决了困扰团队一周的技术难题...</p>
+                         </div>
+                         <!-- 工具栏移到收获区域下方 -->
+                         <div class="editor-toolbar">
+                             <button id="bold-btn"><span class="icon">B</span> 加粗</button>
+                             <button id="color-btn"><span class="icon">🎨</span> 颜色</button>
+                             <input type="color" id="color-picker" value="#000000" style="display: none;"> <!-- 隐藏原生选择器 -->
+                         </div>
+                     </section>
+
+                     <section class="diary-block">
+                         <h3 class="section-title"><span class="icon">📝</span> 后续计划：</h3>
+                         <div class="section-content" contenteditable="true" id="section-plan">
+                             <p>- 完成项目文档<br>- 准备明天会议材料<br>- 学习新框架的第3章</p>
+                         </div>
+                     </section>
+
+                     <section class="diary-block">
+                         <h3 class="section-title"><span class="icon">💖</span> 感恩：</h3>
+                         <div class="section-content" contenteditable="true" id="section-gratitude">
+                             <p>记录值得感恩的人或事...</p>
+                         </div>
+                     </section>
+
+                     <section class="diary-block">
+                         <h3 class="section-title"><span class="icon">📈</span> 定投：</h3>
+                         <div class="section-content" contenteditable="true" id="section-investment">
+                             <p>记录健康、学习、理财等方面的持续投入情况...</p>
+                         </div>
+                     </section>
+
+                     <section class="diary-block">
+                         <h3 class="section-title"><span class="icon">🔗</span> 与我链接：</h3>
+                         <div class="section-content" contenteditable="true" id="section-connect">
+                             <p>记录重要的社交互动、联系方式或自我反思...</p>
+                         </div>
+                     </section>
+                </div>
+                 <!-- 保存、复制、粘贴按钮放在卡片底部 -->
+                 <div class="card-footer">
+                     <button id="paste-diary-content-btn">粘贴内容</button> <!-- Add Paste button -->
+                     <button id="copy-diary-content-btn">复制内容</button>
+                     <button id="save-diary">保存日记</button>
+                     <span id="save-status"></span>
+                 </div>
+            </article>
+        </main>
+
+        <footer>
+            <!-- 页脚内容已移至设置模态框 -->
+            <p>贺伯晨间日记 &copy; 2025</p>
+        </footer>
+    </div>
+
+    <!-- 历史回顾模态框 -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close-btn" id="modal-close-btn" title="关闭">&times;</button>
+            <div class="modal-body-grid"> <!-- 新增 Grid 容器 -->
+                <!-- 左侧栏 -->
+                <div class="modal-left-column">
+                    <div id="history-calendar-container" class="history-calendar"></div>
+                    <!-- 新增目标进度显示 -->
+                    <div id="modal-goal-progress" class="modal-goal-info">
+                        已连续更新 <span id="modal-current-days">XX</span> 天<br>
+                        快要可以得到奖励 <span id="modal-reward">XX</span>
+                    </div>
+                </div>
+                <!-- 右侧栏 -->
+                <div class="modal-right-column">
+                    <div class="book">
+                        <div class="page current-page"> <!-- 保持 book/page 结构用于翻页动画 -->
+                            <h4 id="history-modal-date">日期</h4>
+                            <div id="history-modal-content-container">
+                                <div id="history-modal-content">请加载历史记录...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-navigation">
+                        <button id="history-prev-page">‹ 上一页</button>
+                        <span id="history-page-indicator"></span>
+                        <button id="history-next-page">下一页 ›</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增：设定与输出模态框 -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content settings-modal-content"> <!-- 添加特定类名以便样式调整 -->
+            <button class="modal-close-btn" id="settings-modal-close-btn" title="关闭">&times;</button>
+            <h4 class="settings-title">设定与输出</h4>
+            <div class="settings-modal-grid">
+                <!-- 参考日期和天数设置 -->
+                <label for="reference-date-input">参考日期:</label>
+                <div class="setting-control">
+                    <input type="date" id="reference-date-input">
+                </div>
+                <label for="reference-day-number-input">参考日更天数:</label>
+                <div class="setting-control">
+                    <input type="number" id="reference-day-number-input" min="0" value="80"> <!-- 默认值可以调整 -->
+                </div>
+                <label></label> <!-- Empty label for grid alignment -->
+                <div class="setting-control">
+                     <button id="save-reference-date-btn">保存参考设置</button>
+                </div>
+
+                <!-- 目标天数设置 -->
+                <label for="target-days-footer">目标天数:</label>
+                <div class="setting-control">
+                    <input type="number" id="target-days-footer" min="1" value="30">
+                </div>
+
+                <!-- 奖励设置 -->
+                <label for="reward-footer">目标奖励:</label>
+                <div class="setting-control">
+                    <input type="text" id="reward-footer" placeholder="例如：一次旅行">
+                </div>
+
+                <!-- 保存目标按钮 -->
+                <label></label> <!-- Empty label for grid alignment -->
+                <div class="setting-control">
+                     <button id="save-goal-footer">保存目标与奖励</button>
+                </div>
+
+                <!-- 提醒时间设置 -->
+                <label for="reminder-time-input">每日提醒时间:</label>
+                <div class="setting-control">
+                    <input type="time" id="reminder-time-input">
+                    <button id="save-reminder-time">设置</button>
+                </div>
+
+                <!-- 导入/导出按钮 -->
+                <label>导入/导出:</label>
+                <div class="setting-control import-export-buttons"> <!-- Combine buttons -->
+                    <button id="import-diary-json-btn">导入 JSON</button> <!-- 新增导入按钮 -->
+                    <input type="file" id="import-file-input" accept=".json" style="display: none;"> <!-- 隐藏的文件输入框 -->
+                    <button id="export-diary-json-btn">导出 JSON</button>
+                    <button id="export-diary-txt-btn">导出 TXT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重新引入 flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- 引入 flatpickr 中文语言包 -->
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/zh.js"></script>
+    <!-- 引入本地 JS -->
+    <script src="script.js"></script>
+</body>
+</html>

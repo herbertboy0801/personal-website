@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>贺伯AI实战笔记 - AI赋能编程，实战创造价值</title>
+  <meta name="description" content="贺伯AI实战笔记。10年产业经验，专注AI编程实战，分享AI绘图、工具开发、智能体开发的学习历程与实践经验。">
+  <meta name="keywords" content="AI编程,贺伯AI实战笔记,AI绘图,大语言模型,智能体开发,Cursor,Claude">
+  <meta property="og:title" content="贺伯AI实战笔记 - AI赋能编程，实战创造价值">
+  <meta property="og:description" content="10年产业经验，专注AI编程实战，分享学习历程与实践经验。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/avatar.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">贺伯AI实战笔记</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html" class="nav-active">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="#about">关于贺伯</a></li>
+        <li><a href="admin/public/login.html" class="nav-admin">管理后台</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="菜单" onclick="document.getElementById('navMenu').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="hero-badge">WELCOME TO MY SPACE</span>
+      <h1 class="hero-heading">
+        <span class="hero-line1">AI 赋能编程</span>
+        <span class="hero-line2">实战创造价值</span>
+      </h1>
+      <p class="hero-tagline">10年产业经验 · 公众号博主 · AI编程实践者</p>
+    </div>
+  </header>
+
+  <main class="main-cards">
+    <div class="cards-row">
+      <a href="blog.html" class="card">
+        <div class="card-banner"><span class="card-emoji">📚</span></div>
+        <div class="card-body">
+          <h3 class="card-title">AI 编程实战</h3>
+          <p class="card-sub">公众号 & 小红书内容</p>
+          <p class="card-desc">从入门到进阶，AI编程最佳实践与实战技巧</p>
+          <span class="card-link">开始阅读 →</span>
+        </div>
+      </a>
+      <a href="tools.html" class="card">
+        <div class="card-banner"><span class="card-emoji">🤖</span></div>
+        <div class="card-body">
+          <h3 class="card-title">AI 编程工具</h3>
+          <p class="card-sub">实战精选工具</p>
+          <p class="card-desc">AI辅助开发、效率工具、休闲游戏等 100+ 实用工具</p>
+          <span class="card-link">立即探索 →</span>
+        </div>
+      </a>
+      <a href="ai-drawings.html" class="card">
+        <div class="card-banner"><span class="card-emoji">🎨</span></div>
+        <div class="card-body">
+          <h3 class="card-title">AI 绘图作品</h3>
+          <p class="card-sub">AI创意作品集</p>
+          <p class="card-desc">多层地貌悬浮、手绘少女、雪岭红阳等AI绘图创作</p>
+          <span class="card-link">查看作品 →</span>
+        </div>
+      </a>
+      <a href="morning-journal-view.html" class="card">
+        <div class="card-banner"><span class="card-emoji">📝</span></div>
+        <div class="card-body">
+          <h3 class="card-title">晨间日记</h3>
+          <p class="card-sub">每日成长记录</p>
+          <p class="card-desc">AI编程打造的个人日记系统，记录目标与复盘</p>
+          <span class="card-link">查看日记 →</span>
+        </div>
+      </a>
+      <a href="#about" class="card">
+        <div class="card-banner"><span class="card-emoji">👨‍💻</span></div>
+        <div class="card-body">
+          <h3 class="card-title">关于贺伯</h3>
+          <p class="card-sub">10年产业经验 → AI转型</p>
+          <p class="card-desc">从工厂数位化到AI编程，持续探索者的成长故事</p>
+          <span class="card-link">了解更多 →</span>
+        </div>
+      </a>
+      <a href="mailto:herberttsai@qq.com" class="card">
+        <div class="card-banner"><span class="card-emoji">💬</span></div>
+        <div class="card-body">
+          <h3 class="card-title">联系我</h3>
+          <p class="card-sub">一起探索AI的可能</p>
+          <p class="card-desc">微信、公众号、小红书、视频号，多种方式交流</p>
+          <span class="card-link">立即联系 →</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <section id="about" class="about-section">
+    <img src="assets/avatar.jpg" alt="贺伯头像" class="about-avatar" loading="lazy" width="100" height="100">
+    <h2 class="about-title">关于贺伯</h2>
+    <div class="about-tags">
+      <span class="about-tag">工厂IE主管</span>
+      <span class="about-tag">AI编程实践者</span>
+      <span class="about-tag">公众号日更博主</span>
+      <span class="about-tag">连续创业者</span>
+    </div>
+    <p class="about-bio">我叫贺伯，白天是工厂里盯流水线的IE主管，晚上是盯着屏幕死磕代码的AI小学生。35岁那年，我感到了前所未有的恐慌 — 折腾过餐饮、共享充电宝，几十万扔进去连个响都没听见。</p>
+    <p class="about-bio">直到遇见AI编程，我发现这次不一样。既然我能优化工厂的流水线，为什么不能用AI优化我的人生？于是我开始每天记录，从0基础到用AI做出22个实用工具、写了96篇实战文章。</p>
+    <blockquote class="about-quote">不会用工具的人就是工具。能用机器干的活，永远别用人干。</blockquote>
+    <div class="about-stats">
+      <div class="stat-item"><span class="stat-num">96+</span><span class="stat-label">篇实战文章</span></div>
+      <div class="stat-item"><span class="stat-num">22</span><span class="stat-label">个工具作品</span></div>
+      <div class="stat-item"><span class="stat-num">23</span><span class="stat-label">幅AI画作</span></div>
+      <div class="stat-item"><span class="stat-num">Day 345+</span><span class="stat-label">连续日更</span></div>
+    </div>
+    <p class="about-tagline">我不教你发财，我只演示我是怎么做的。如果我这个中年大叔都能学会，你一定也可以。</p>
+    <div class="about-social">
+      <a href="assets/qr-gongzhonghao.png" class="social-card" target="_blank">
+        <img src="assets/qr-gongzhonghao.png" alt="贺伯AI实战笔记公众号" loading="lazy" width="120" height="120">
+        <span>公众号</span>
+      </a>
+      <a href="assets/qr-xiaohongshu.png" class="social-card" target="_blank">
+        <img src="assets/qr-xiaohongshu.png" alt="贺伯AI效率笔记小红书" loading="lazy" width="120" height="120">
+        <span>小红书</span>
+      </a>
+      <a href="assets/qr-shipinhao.png" class="social-card" target="_blank">
+        <img src="assets/qr-shipinhao.png" alt="贺伯视频号" loading="lazy" width="120" height="120">
+        <span>视频号</span>
+      </a>
+      <a href="assets/qr-wechat.png" class="social-card" target="_blank">
+        <img src="assets/qr-wechat.png" alt="贺伯微信" loading="lazy" width="120" height="120">
+        <span>微信</span>
+      </a>
+    </div>
+    <p class="about-contact">邮箱：<a href="mailto:herberttsai@qq.com">herberttsai@qq.com</a></p>
+  </section>
+
+  <aside class="social-float" aria-label="社交媒体">
+    <a href="assets/qr-gongzhonghao.png" class="float-icon" title="公众号" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05a6.577 6.577 0 01-.253-1.82c0-3.557 3.238-6.451 7.235-6.451.143 0 .284.006.422.016C15.848 4.96 12.559 2.188 8.691 2.188zm-2.6 4.408c.58 0 1.049.47 1.049 1.049 0 .58-.47 1.049-1.049 1.049a1.049 1.049 0 010-2.098zm5.2 0c.58 0 1.049.47 1.049 1.049 0 .58-.47 1.049-1.049 1.049a1.049 1.049 0 010-2.098zM15.985 9.5c-3.576 0-6.515 2.578-6.515 5.73 0 3.153 2.94 5.73 6.515 5.73.652 0 1.28-.084 1.878-.242a.68.68 0 01.565.078l1.5.877a.256.256 0 00.132.042c.127 0 .23-.103.23-.232 0-.057-.023-.113-.038-.167l-.306-1.166a.469.469 0 01.168-.524C21.595 18.705 22.5 17.02 22.5 15.23c0-3.152-2.94-5.73-6.515-5.73zm-2.658 3.632c.458 0 .83.37.83.83a.831.831 0 01-.83.83.831.831 0 010-1.66zm5.316 0c.458 0 .83.37.83.83a.831.831 0 01-.83.83.831.831 0 010-1.66z"/></svg>
+    </a>
+    <a href="assets/qr-xiaohongshu.png" class="float-icon" title="小红书" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.5 14.5h-9a.5.5 0 01-.5-.5V8a.5.5 0 01.5-.5h9a.5.5 0 01.5.5v8a.5.5 0 01-.5.5zM11 9v2H9v1h2v3h1v-3h2v-1h-2V9h-1z"/></svg>
+    </a>
+    <a href="mailto:herberttsai@qq.com" class="float-icon" title="邮箱">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </a>
+  </aside>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">&copy; 2025 贺伯AI实战笔记. All rights reserved.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="#about">关于贺伯</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var nav = document.querySelector('.site-nav');
+      window.addEventListener('scroll', function() {
+        nav.classList.toggle('scrolled', window.scrollY > 30);
+      }, { passive: true });
+
+      var cards = document.querySelectorAll('.card');
+      if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function(entries) {
+          entries.forEach(function(e, i) {
+            if (e.isIntersecting) {
+              setTimeout(function() { e.target.classList.add('show'); }, i * 80);
+              obs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.1 });
+        cards.forEach(function(c) { obs.observe(c); });
+      } else {
+        cards.forEach(function(c) { c.classList.add('show'); });
+      }
+
+      document.querySelectorAll('.nav-menu a').forEach(function(a) {
+        a.addEventListener('click', function() {
+          document.getElementById('navMenu').classList.remove('open');
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

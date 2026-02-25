@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN"> <!-- lang 会被 JS 修改 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title data-lang-key="title">CyberSnake - 赛博朋克贪食蛇</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="language-switcher">
+        <button id="langButton">切换语言 (Switch Language)</button>
+    </div>
+    <div id="startScreen"> <!-- 新增开始屏幕 -->
+        <h1 data-lang-key="gameTitle">CyberSnake</h1>
+        <input type="text" id="preGamePlayerNameInput" data-lang-key="playerNamePlaceholder" placeholder="输入你的名字 (默认: default)" maxlength="15">
+        <button id="startGameWithNameButton" data-lang-key="startGame">开始游戏</button>
+        <div id="globalLeaderboardPreview"> <!-- 在开始屏幕也显示排行榜预览 -->
+             <h2 data-lang-key="leaderboardTitlePreview">排行榜 (Top 5)</h2>
+             <ol id="globalLeaderboardListPreview"></ol>
+             <p id="noScoresYet" class="hidden" data-lang-key="noScoresYet">还没有记录...</p> <!-- 用于显示无记录提示 -->
+        </div>
+    </div>
+
+    <div class="game-container hidden"> <!-- 游戏容器初始隐藏 -->
+        <div class="player-info"> <!-- 显示当前玩家 -->
+            <span data-lang-key="playerLabel">玩家</span>: <span id="currentPlayerName"></span>
+        </div>
+        <div class="score-board">
+            <div><span data-lang-key="scoreLabel">得分</span>: <span id="score">0</span></div>
+            <div><span data-lang-key="timeLabel">时间</span>: <span id="timer">00:00</span></div>
+            <div><span data-lang-key="difficultyLabel">难度</span>: <span id="difficultyLevel">1</span></div> <!-- 新增难度等级显示 -->
+            <div><span data-lang-key="highScoreLabel">最高分</span>: <span id="highScore">0</span></div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="leaderboard" class="hidden"> <!-- 这个排行榜似乎没用到，但还是加上 key -->
+            <h2 data-lang-key="leaderboardTitle">排行榜</h2>
+            <ol id="leaderboardList"></ol>
+        </div>
+        <div class="controls-info">
+            <p data-lang-key="controlsDesktop">桌面端: 使用方向键控制</p>
+            <p data-lang-key="controlsMobile">移动端: 滑动屏幕控制</p>
+        </div>
+        <div class="button-group">
+            <!-- startButton 似乎没用，但保留并添加 key -->
+            <button id="startButton" data-lang-key="startGame">开始游戏</button>
+            <button id="pauseButton" class="hidden" data-lang-key="pause">暂停</button> <!-- 文本会动态变为 "恢复" -->
+            <button id="endButton" class="hidden" data-lang-key="endGame">结束游戏</button> <!-- 新增结束按钮 -->
+        </div>
+        <!-- 虚拟 D-pad 控制器 -->
+        <div id="dpad" class="hidden">
+             <button id="dpad-up">↑</button>
+             <div class="dpad-middle-row">
+                 <button id="dpad-left">←</button>
+                 <button id="dpad-right">→</button>
+             </div>
+             <button id="dpad-down">↓</button>
+        </div>
+        <div id="gameOverScreen" class="hidden">
+            <h2 data-lang-key="gameOverTitle">游戏结束!</h2>
+            <p><span data-lang-key="finalScoreLabel">最终得分</span>: <span id="finalScore">0</span></p>
+            <p id="newHighScoreMsg" class="hidden" data-lang-key="newHighScoreMsg">新纪录!</p> <!-- 这个仍然可以保留，提示全局新纪录 -->
+            <button id="restartButton" data-lang-key="returnToMenu">返回主菜单</button> <!-- 按钮改为返回主菜单 -->
+        </div>
+        <div class="play-count-info"> <!-- 新增游玩人次显示区域 -->
+            <span data-lang-key="playCountLabel">游玩人次</span>: <span id="playCount">0</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

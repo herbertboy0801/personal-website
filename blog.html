@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>贺伯的文章 - 贺伯AI实战笔记</title>
+  <meta name="description" content="贺伯的AI编程实战文章合集，来自公众号「贺伯谈AI」和小红书，分享AI编程技巧与实践经验。">
+  <meta property="og:title" content="贺伯的文章 - 贺伯AI实战笔记">
+  <meta property="og:description" content="96+篇AI编程实战文章，涵盖Claude Code、n8n自动化、AI工具开发等领域。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/avatar.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .blog-main { flex: 1; padding-bottom: 60px; }
+    .blog-header { margin-bottom: 24px; }
+    .blog-header h1 { font-size: 1.4rem; color: var(--text-primary); margin: 0 0 4px; font-weight: 800; }
+    .blog-header p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+    .sidebar h4 {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin: 20px 0 8px; padding-left: 4px;
+    }
+    .sidebar h4:first-of-type { margin-top: 0; }
+    .blog-list { display: flex; flex-direction: column; gap: 16px; }
+    .blog-card {
+      display: flex; gap: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden; text-decoration: none; color: inherit;
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+      position: relative;
+    }
+    .blog-card:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: var(--shadow-card);
+      border-color: var(--border-hover);
+    }
+    .blog-card-accent {
+      width: 6px; flex-shrink: 0;
+      background: var(--gradient-card-banner);
+      transition: width 0.3s;
+    }
+    .blog-card:hover .blog-card-accent { width: 8px; }
+    .blog-card-body {
+      flex: 1; padding: 20px 24px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .blog-card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .blog-source {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.72rem; font-weight: 600;
+      padding: 3px 10px; border-radius: 4px;
+    }
+    .blog-source.xiaohongshu { background: rgba(255,45,85,0.12); color: #ff6b8a; }
+    .blog-source.gongzhonghao { background: rgba(7,193,96,0.12); color: #4ade80; }
+    .blog-category { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: rgba(43,108,176,0.12); color: var(--blue-light); }
+    .blog-featured { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .blog-day { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: rgba(56,189,248,0.10); color: #38bdf8; }
+    .blog-card-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.5; }
+    .blog-card:hover .blog-card-title { color: #fff; }
+    .blog-card-summary { font-size: 0.85rem; color: #7a8194; line-height: 1.6; margin: 0; }
+    .blog-card-footer { display: flex; align-items: center; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+    .blog-card-date { font-size: 0.75rem; color: var(--text-dim); }
+    .blog-card-readtime { font-size: 0.75rem; color: var(--text-dim); }
+    .blog-difficulty { font-size: 0.65rem; font-weight: 600; padding: 1px 7px; border-radius: 3px; }
+    .blog-difficulty.beginner { background: rgba(74,222,128,0.10); color: #4ade80; }
+    .blog-difficulty.intermediate { background: rgba(251,191,36,0.10); color: #fbbf24; }
+    .blog-difficulty.advanced { background: rgba(248,113,113,0.10); color: #f87171; }
+    .blog-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+    .blog-tag { font-size: 0.65rem; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 1px 8px; border-radius: 3px; }
+    .blog-card-cta { font-size: 0.82rem; font-weight: 600; color: var(--amber); margin-top: 4px; }
+    .blog-card:hover .blog-card-cta { color: var(--amber-light); }
+    .blog-card::after {
+      content: ''; position: absolute; bottom: 0; left: 20px; right: 20px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,83,0.2), rgba(43,108,176,0.2), transparent);
+    }
+    .blog-card:hover::after {
+      background: linear-gradient(90deg, transparent, rgba(212,168,83,0.5), rgba(43,108,176,0.5), transparent);
+      height: 2px;
+    }
+    .blog-empty { text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 0.9rem; }
+    @media (max-width: 768px) {
+      .blog-card-body { padding: 16px; }
+      .blog-card-title { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">贺伯AI实战笔记</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html" class="nav-active">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+        <li><a href="admin/public/login.html" class="nav-admin">管理后台</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="菜单" onclick="document.getElementById('navMenu').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <h3>文章筛选</h3>
+      <ul class="cat-list" id="catList"></ul>
+    </aside>
+    <section class="blog-main">
+      <div class="blog-header">
+        <h1>贺伯的文章</h1>
+        <p id="blogCount"></p>
+      </div>
+      <div class="blog-list" id="blogList">
+        <div class="loading-skeleton">加载中...</div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">&copy; 2025 贺伯AI实战笔记. All rights reserved.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      var list = document.getElementById('blogList');
+      var catList = document.getElementById('catList');
+      var countEl = document.getElementById('blogCount');
+      var posts = [];
+
+      try {
+        var res = await fetch('/api/blog');
+        if (!res.ok) throw new Error('API error');
+        posts = await res.json();
+      } catch (e) {
+        list.innerHTML = '<div class="blog-empty">数据加载失败，请稍后再试</div>';
+        return;
+      }
+
+      posts.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+
+      var sourceClass = { '小红书': 'xiaohongshu', '公众号': 'gongzhonghao' };
+      var categoryNames = { 'claude-code': 'Claude Code', 'n8n-automation': 'n8n 自动化', 'automation': 'AI 自动化' };
+      var categoryIcons = { 'claude-code': '🤖', 'n8n-automation': '⚡', 'automation': '🔧' };
+      var difficultyNames = { 'beginner': '入门', 'intermediate': '进阶', 'advanced': '高级' };
+
+      var categories = {};
+      var sources = {};
+      posts.forEach(function(p) {
+        categories[p.category || 'other'] = (categories[p.category || 'other'] || 0) + 1;
+        sources[p.source || '其他'] = (sources[p.source || '其他'] || 0) + 1;
+      });
+
+      var html = '<li><a href="#" class="active" data-filter="all"><span class="cat-icon">📄</span>全部文章<span class="cat-count">' + posts.length + '</span></a></li>';
+      var featuredCount = posts.filter(function(p) { return p.featured; }).length;
+      if (featuredCount > 0) {
+        html += '<li><a href="#" data-filter="featured"><span class="cat-icon">⭐</span>精选推荐<span class="cat-count">' + featuredCount + '</span></a></li>';
+      }
+      html += '</ul><h4>文章分类</h4><ul class="cat-list">';
+      Object.keys(categories).forEach(function(c) {
+        html += '<li><a href="#" data-filter="category:' + c + '"><span class="cat-icon">' + (categoryIcons[c] || '📂') + '</span>' + (categoryNames[c] || c) + '<span class="cat-count">' + categories[c] + '</span></a></li>';
+      });
+      html += '</ul><h4>文章来源</h4><ul class="cat-list">';
+      var sourceIcons = { '公众号': '💬', '小红书': '📕' };
+      Object.keys(sources).forEach(function(s) {
+        html += '<li><a href="#" data-filter="source:' + s + '"><span class="cat-icon">' + (sourceIcons[s] || '📂') + '</span>' + s + '<span class="cat-count">' + sources[s] + '</span></a></li>';
+      });
+      catList.innerHTML = html;
+
+      function renderPosts(filter) {
+        var filtered;
+        if (filter === 'all') filtered = posts;
+        else if (filter === 'featured') filtered = posts.filter(function(p) { return p.featured; });
+        else if (filter.indexOf('category:') === 0) { var cat = filter.replace('category:', ''); filtered = posts.filter(function(p) { return p.category === cat; }); }
+        else if (filter.indexOf('source:') === 0) { var src = filter.replace('source:', ''); filtered = posts.filter(function(p) { return p.source === src; }); }
+        else filtered = posts;
+
+        countEl.textContent = '共 ' + filtered.length + ' 篇文章';
+        if (filtered.length === 0) { list.innerHTML = '<div class="blog-empty">暂无文章</div>'; return; }
+
+        list.innerHTML = filtered.map(function(p) {
+          var sc = sourceClass[p.source] || 'gongzhonghao';
+          var featuredHtml = p.featured ? '<span class="blog-featured">精选</span>' : '';
+          var dayHtml = p.dayNumber ? '<span class="blog-day">Day ' + p.dayNumber + '</span>' : '';
+          var catLabel = categoryNames[p.category] || p.category || '';
+          var catHtml = catLabel ? '<span class="blog-category">' + catLabel + '</span>' : '';
+          var diffHtml = p.difficulty ? '<span class="blog-difficulty ' + p.difficulty + '">' + (difficultyNames[p.difficulty] || p.difficulty) + '</span>' : '';
+          var dateHtml = p.date ? '<span class="blog-card-date">' + p.date + '</span>' : '';
+          var readHtml = p.readTime ? '<span class="blog-card-readtime">' + p.readTime + '</span>' : '';
+          var tagsHtml = '';
+          if (p.tags && p.tags.length > 0) {
+            tagsHtml = '<div class="blog-card-tags">' + p.tags.map(function(t) { return '<span class="blog-tag">' + t + '</span>'; }).join('') + '</div>';
+          }
+          var hasLink = p.link && p.link !== '#';
+          var ctaText = hasLink ? '阅读原文 →' : '即将上线';
+          var ctaStyle = hasLink ? '' : ' style="color:var(--text-dim);"';
+          return '<a href="' + (hasLink ? p.link : 'javascript:void(0)') + '" class="blog-card"' + (hasLink ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' +
+            '<div class="blog-card-accent"></div><div class="blog-card-body">' +
+            '<div class="blog-card-meta"><span class="blog-source ' + sc + '">' + (p.source || '文章') + '</span>' + catHtml + dayHtml + featuredHtml + '</div>' +
+            '<h3 class="blog-card-title">' + p.title + '</h3><p class="blog-card-summary">' + p.summary + '</p>' + tagsHtml +
+            '<div class="blog-card-footer">' + dateHtml + readHtml + diffHtml + '</div>' +
+            '<span class="blog-card-cta"' + ctaStyle + '>' + ctaText + '</span></div></a>';
+        }).join('');
+      }
+
+      renderPosts('all');
+
+      var sidebar = catList.closest('.sidebar');
+      sidebar.addEventListener('click', function(e) {
+        var a = e.target.closest('a[data-filter]');
+        if (!a) return;
+        e.preventDefault();
+        sidebar.querySelectorAll('a').forEach(function(el) { el.classList.remove('active'); });
+        a.classList.add('active');
+        renderPosts(a.dataset.filter);
+      });
+
+      document.querySelectorAll('.nav-menu a').forEach(function(a) {
+        a.addEventListener('click', function() { document.getElementById('navMenu').classList.remove('open'); });
+      });
+    });
+  </script>
+
+</body>
+</html>

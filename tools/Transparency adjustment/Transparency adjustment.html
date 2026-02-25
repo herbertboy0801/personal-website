@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>像素级图像透明度调节工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="simple-icon"></div>
+            <div class="header-text">
+                <h1>像素级图像透明度调节工具</h1>
+                <p>支持多种透明模式、选区控制和实时预览的专业图像处理工具</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container new-layout-container">
+        <!-- 左侧面板 -->
+        <div class="left-panel">
+            <section class="card global-settings" id="globalSettings" style="display: none;">
+                <h2><i class="fas fa-sliders-h"></i> 全局设置</h2>
+                <div class="control-group global-opacity-group">
+                    <label for="globalOpacitySlider">全局不透明度:</label>
+                    <input type="range" id="globalOpacitySlider" min="0" max="100" value="100">
+                    <span id="globalOpacityValue">100%</span>
+                </div>
+                <p class="setting-hint"><i>提示：全局设置将覆盖后续参数控制中的不透明度。</i></p>
+            </section>
+
+            <section class="card controls-card">
+                <div class="control-section">
+                    <h3><i class="fas fa-fill-drip"></i> 透明模式</h3>
+                    <div class="tabs">
+                        <button class="tab-button active" data-mode="solid">实心模式</button>
+                        <button class="tab-button" data-mode="linear">线性渐变</button>
+                        <button class="tab-button" data-mode="radial">径向渐变</button>
+                    </div>
+                    <input type="hidden" id="transparencyMode" value="solid">
+
+                    <div class="control-group opacity-control">
+                        <label for="opacitySlider">选区/效果 不透明度 (%):</label>
+                        <input type="number" id="opacityInput" min="0" max="100" value="100">
+                        <input type="range" id="opacitySlider" min="0" max="100" value="100" class="opacity-slider-control">
+                    </div>
+
+                    <div id="linearOptions" class="mode-options" style="display: none;">
+                        <label for="linearAngle">角度:</label>
+                        <input type="number" id="linearAngle" min="0" max="360" value="0"> 度
+                        <p class="setting-hint"><i>线性渐变将从 0% 到设定不透明度进行过渡。</i></p>
+                    </div>
+                    <div id="radialOptions" class="mode-options" style="display: none;">
+                        <label>圆心 (X, Y):</label>
+                        <input type="number" id="radialCenterX" placeholder="X" min="0">
+                        <input type="number" id="radialCenterY" placeholder="Y" min="0">
+                        <br>
+                        <label for="radialRadius">半径:</label>
+                        <input type="number" id="radialRadius" placeholder="半径" min="1"> px
+                        <p class="setting-hint"><i>径向渐变将从圆心（设定不透明度）向外过渡到 0%。请在预览区点击设置圆心，或手动输入。半径决定渐变范围。</i></p>
+                    </div>
+                </div>
+
+                <div class="control-section selection-control">
+                    <h3><i class="far fa-square"></i> 选区控制</h3>
+                    <div class="control-group scope-control">
+                        <label>作用范围:</label>
+                        <div>
+                            <input type="radio" name="applyScope" value="image" id="applyImage" checked> <label for="applyImage">整图</label>
+                            <input type="radio" name="applyScope" value="selection" id="applySelection"> <label for="applySelection">选区</label>
+                        </div>
+                    </div>
+                    <div id="selectionInputs" style="display: none;">
+                        <div class="control-group">
+                            <label for="selectX">左坐标 (px):</label>
+                            <input type="number" id="selectX" min="0">
+                        </div>
+                        <div class="control-group">
+                            <label for="selectY">顶坐标 (px):</label>
+                            <input type="number" id="selectY" min="0">
+                        </div>
+                        <div class="control-group">
+                            <label for="selectW">宽度 (px):</label>
+                            <input type="number" id="selectW" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label for="selectH">高度 (px):</label>
+                            <input type="number" id="selectH" min="1">
+                        </div>
+                    </div>
+                    <p class="setting-hint" id="selectionHint" style="display: none;"><i>提示：请在右侧预览区拖拽创建选区，或手动输入。</i></p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <section class="card preview-section">
+                <h2><i class="far fa-eye"></i> 实时预览</h2>
+                <div class="preview-controls">
+                    <button class="btn btn-secondary active" data-bg="checkerboard">透明网格</button>
+                    <button class="btn btn-secondary" data-bg="white">白色背景</button>
+                    <button class="btn btn-secondary" data-bg="black">黑色背景</button>
+                </div>
+                <div class="canvas-container-wrapper" id="canvasWrapper">
+                    <div class="canvas-container" id="canvasContainer">
+                        <canvas id="canvas"></canvas>
+                        <div id="selectionBox" class="selection-box"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card action-buttons-section">
+                 <div class="action-buttons">
+                    <button class="btn btn-primary upload-button" id="uploadButton"><i class="far fa-folder-open"></i> 上传图片</button>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    <button id="downloadButton" class="btn btn-success"><i class="fas fa-download"></i> 下载 PNG</button>
+                    <button id="resetButton" class="btn btn-warning"><i class="fas fa-sync-alt"></i> 重置</button>
+                </div>
+                <p class="upload-hint">或 拖拽图片到预览区 / 粘贴图片</p>
+            </section>
+
+            <!-- 初始上传提示区 (JS控制显隐) -->
+            <section class="card upload-info-section" id="uploadInfoSection">
+                <h2><i class="fas fa-upload"></i> 图像上传</h2>
+                <p class="supported-formats">支持 JPG, PNG, GIF, BMP, WebP 等常用格式</p>
+                <!-- 初始状态的提示，按钮已移到上方 -->
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

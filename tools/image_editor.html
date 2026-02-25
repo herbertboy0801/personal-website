@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量图片尺寸调整工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            border: 3px dashed #4facfe;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #f8f9ff, #e8f4ff);
+        }
+
+        .upload-section:hover {
+            border-color: #00f2fe;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.2);
+        }
+
+        .upload-section.dragover {
+            border-color: #00f2fe;
+            background: linear-gradient(45deg, #e8f4ff, #d0ebff);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #4facfe;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .controls {
+            background: linear-gradient(135deg, #ffeef8, #f0f8ff);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid #e0e8f0;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            min-width: 100px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-item input[type="radio"] {
+            accent-color: #4facfe;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="number"], select {
+            padding: 10px;
+            border: 2px solid #e0e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(168, 237, 234, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 237, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .image-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .image-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e8f0;
+        }
+
+        .image-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .image-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .control-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 批量图片尺寸调整工具</h1>
+            <p>支持多图片上传，灵活调整尺寸，批量下载处理结果</p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📤</div>
+                <h3>点击或拖拽上传图片</h3>
+                <p>支持 JPG、PNG、GIF、WebP 等格式，可同时上传多张图片</p>
+                <input type="file" id="fileInput" class="file-input" multiple accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    选择图片
+                </button>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>调整方式：</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="percentMode" name="resizeMode" value="percent" checked>
+                            <label for="percentMode">百分比调整</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="pixelMode" name="resizeMode" value="pixel">
+                            <label for="pixelMode">像素调整</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group" id="percentControls">
+                    <label>缩放比例：</label>
+                    <div class="input-group">
+                        <input type="number" id="scalePercent" min="1" max="500" value="100" step="1">
+                        <span>%</span>
+                    </div>
+                </div>
+
+                <div class="control-group" id="pixelControls" style="display: none;">
+                    <label>目标尺寸：</label>
+                    <div class="input-group">
+                        <span>宽度:</span>
+                        <input type="number" id="targetWidth" min="1" value="800" step="1">
+                        <span>px</span>
+                        <span style="margin-left: 15px;">高度:</span>
+                        <input type="number" id="targetHeight" min="1" value="600" step="1">
+                        <span>px</span>
+                        <div class="radio-item" style="margin-left: 15px;">
+                            <input type="checkbox" id="keepAspectRatio" checked>
+                            <label for="keepAspectRatio">保持宽高比</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>输出格式：</label>
+                    <select id="outputFormat">
+                        <option value="original">保持原格式</option>
+                        <option value="jpeg">JPEG</option>
+                        <option value="png">PNG</option>
+                        <option value="webp">WebP</option>
+                    </select>
+                    <div class="input-group" style="margin-left: 15px;">
+                        <label>质量:</label>
+                        <input type="number" id="quality" min="1" max="100" value="90" step="1">
+                        <span>%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="processBtn" disabled onclick="processImages()">
+                    🔄 批量处理图片
+                </button>
+                <button class="btn btn-secondary" id="downloadBtn" disabled onclick="downloadAll()">
+                    📥 下载所有图片
+                </button>
+                <button class="btn btn-secondary" onclick="clearAll()">
+                    🗑️ 清空所有
+                </button>
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">处理中...</div>
+            </div>
+
+            <div class="image-grid" id="imageGrid"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        let uploadedImages = [];
+        let processedImages = [];
+
+        // 初始化事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 页面加载完成，初始化事件监听器');
+            
+            const fileInput = document.getElementById('fileInput');
+            const uploadSection = document.getElementById('uploadSection');
+            const resizeModeRadios = document.querySelectorAll('input[name="resizeMode"]');
+
+            if (!fileInput) {
+                console.error('找不到文件输入元素');
+                return;
+            }
+
+            fileInput.addEventListener('change', handleFileSelect);
+            console.log('✅ 文件选择器事件监听器已添加');
+            
+            // 拖拽功能
+            uploadSection.addEventListener('dragover', handleDragOver);
+            uploadSection.addEventListener('dragleave', handleDragLeave);
+            uploadSection.addEventListener('drop', handleDrop);
+            console.log('✅ 拖拽事件监听器已添加');
+
+            // 调整模式切换
+            resizeModeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleResizeMode);
+            });
+            console.log('✅ 调整模式事件监听器已添加');
+
+            // 保持宽高比选项变化时更新高度
+            const keepAspectRatio = document.getElementById('keepAspectRatio');
+            const targetWidth = document.getElementById('targetWidth');
+            
+            if (keepAspectRatio) {
+                keepAspectRatio.addEventListener('change', updateAspectRatio);
+            }
+            if (targetWidth) {
+                targetWidth.addEventListener('input', updateAspectRatio);
+            }
+            console.log('✅ 宽高比事件监听器已添加');
+            
+            console.log('🎉 所有事件监听器初始化完成');
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files).filter(file => {
+                console.log('检测到文件:', file.name, '类型:', file.type);
+                return file.type.startsWith('image/');
+            });
+            
+            console.log('过滤后的图片文件:', files.length);
+            if (files.length > 0) {
+                processFiles(files);
+            } else {
+                alert('请拖拽图片文件！支持 JPG、PNG、GIF、WebP 等格式。');
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            console.log('文件选择器选中文件数量:', files.length);
+            files.forEach(file => {
+                console.log('选中文件:', file.name, '类型:', file.type, '大小:', formatFileSize(file.size));
+            });
+            processFiles(files);
+        }
+
+        function processFiles(files) {
+            if (files.length === 0) {
+                console.log('没有选择文件');
+                return;
+            }
+            
+            console.log('开始处理', files.length, '个文件');
+            
+            files.forEach((file, index) => {
+                console.log(`文件 ${index + 1}:`, {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    lastModified: new Date(file.lastModified)
+                });
+                
+                // 检查文件类型
+                if (!file.type || !file.type.startsWith('image/')) {
+                    console.warn('跳过非图片文件:', file.name, '类型:', file.type || '未知');
+                    return;
+                }
+                
+                // 检查文件大小（限制为10MB）
+                if (file.size > 10 * 1024 * 1024) {
+                    console.warn('文件过大，跳过:', file.name, '大小:', formatFileSize(file.size));
+                    alert(`文件 ${file.name} 过大（超过10MB），已跳过处理`);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onloadstart = function() {
+                    console.log('开始读取文件:', file.name);
+                };
+                
+                reader.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const progress = Math.round((e.loaded / e.total) * 100);
+                        console.log('读取进度:', file.name, progress + '%');
+                    }
+                };
+                
+                reader.onload = function(event) {
+                    console.log('文件读取完成:', file.name);
+                    console.log('读取结果类型:', typeof event.target.result);
+                    console.log('读取结果长度:', event.target.result ? event.target.result.length : 0);
+                    
+                    const result = event.target.result;
+                    
+                    if (!result) {
+                        console.error('读取结果为空:', file.name);
+                        return;
+                    }
+                    
+                    if (typeof result !== 'string') {
+                        console.error('读取结果不是字符串:', file.name, typeof result);
+                        return;
+                    }
+                    
+                    if (!result.startsWith('data:image/')) {
+                        console.error('读取结果不是有效的图片数据URL:', file.name, result.substring(0, 50));
+                        return;
+                    }
+                    
+                    console.log('数据URL有效，开始创建图片:', file.name);
+                    
+                    const img = new Image();
+                    
+                    img.onload = function() {
+                        console.log('✅ 图片加载成功:', file.name, `${img.width}x${img.height}`);
+                        
+                        const imageData = {
+                            file: file,
+                            name: file.name,
+                            src: result,
+                            width: img.width,
+                            height: img.height,
+                            size: file.size,
+                            type: file.type
+                        };
+                        
+                        uploadedImages.push(imageData);
+                        displayImage(imageData);
+                        updateButtons();
+                    };
+                    
+                    img.onerror = function(error) {
+                        console.error('❌ 图片加载失败:', file.name);
+                        console.error('错误详情:', error);
+                        console.error('数据URL前50字符:', result.substring(0, 50));
+                    };
+                    
+                    // 设置图片源
+                    img.src = result;
+                };
+                
+                reader.onerror = function(error) {
+                    console.error('❌ 文件读取失败:', file.name);
+                    console.error('FileReader错误:', error);
+                    console.error('错误代码:', reader.error?.code);
+                    console.error('错误信息:', reader.error?.message);
+                };
+                
+                reader.onabort = function() {
+                    console.warn('文件读取被中止:', file.name);
+                };
+                
+                // 开始读取文件
+                try {
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    console.error('❌ FileReader异常:', file.name, error);
+                }
+            });
+        }
+
+        function displayImage(imageData) {
+            const imageGrid = document.getElementById('imageGrid');
+            const imageItem = document.createElement('div');
+            imageItem.className = 'image-item';
+            
+            // 创建图片元素
+            const imgElement = document.createElement('img');
+            imgElement.className = 'image-preview';
+            imgElement.alt = imageData.name;
+            imgElement.loading = 'lazy';
+            
+            // 图片加载完成后显示
+            imgElement.onload = function() {
+                console.log('预览图片显示成功:', imageData.name);
+            };
+            
+            imgElement.onerror = function() {
+                console.error('预览图片显示失败:', imageData.name);
+                // 如果图片加载失败，显示占位符
+                imgElement.style.display = 'none';
+                const placeholder = document.createElement('div');
+                placeholder.style.cssText = `
+                    width: 100%;
+                    height: 200px;
+                    background: #f0f0f0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 10px;
+                    color: #666;
+                    font-size: 14px;
+                `;
+                placeholder.textContent = '图片预览失败';
+                imageItem.insertBefore(placeholder, imageItem.firstChild);
+            };
+            
+            // 设置图片源
+            imgElement.src = imageData.src;
+            
+            // 创建信息区域
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'image-info';
+            infoDiv.innerHTML = `
+                <div class="image-name" title="${imageData.name}">${imageData.name}</div>
+                <div>原始尺寸: ${imageData.width} × ${imageData.height}</div>
+                <div>文件大小: ${formatFileSize(imageData.size)}</div>
+                <div>文件类型: ${imageData.type}</div>
+            `;
+            
+            // 组装元素
+            imageItem.appendChild(imgElement);
+            imageItem.appendChild(infoDiv);
+            
+            // 添加删除按钮
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '❌';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(255, 0, 0, 0.8);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                font-size: 12px;
+                z-index: 1;
+                transition: all 0.3s ease;
+            `;
+            deleteBtn.onmouseover = function() {
+                this.style.background = 'rgba(255, 0, 0, 1)';
+                this.style.transform = 'scale(1.1)';
+            };
+            deleteBtn.onmouseout = function() {
+                this.style.background = 'rgba(255, 0, 0, 0.8)';
+                this.style.transform = 'scale(1)';
+            };
+            deleteBtn.onclick = () => removeImage(imageData, imageItem);
+            
+            imageItem.style.position = 'relative';
+            imageItem.appendChild(deleteBtn);
+            
+            imageGrid.appendChild(imageItem);
+            console.log('图片项目添加完成:', imageData.name);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function toggleResizeMode() {
+            const mode = document.querySelector('input[name="resizeMode"]:checked').value;
+            const percentControls = document.getElementById('percentControls');
+            const pixelControls = document.getElementById('pixelControls');
+            
+            if (mode === 'percent') {
+                percentControls.style.display = 'flex';
+                pixelControls.style.display = 'none';
+            } else {
+                percentControls.style.display = 'none';
+                pixelControls.style.display = 'flex';
+            }
+        }
+
+        function updateAspectRatio() {
+            if (!document.getElementById('keepAspectRatio').checked || uploadedImages.length === 0) return;
+            
+            const width = parseInt(document.getElementById('targetWidth').value);
+            const firstImage = uploadedImages[0];
+            const aspectRatio = firstImage.width / firstImage.height;
+            const height = Math.round(width / aspectRatio);
+            
+            document.getElementById('targetHeight').value = height;
+        }
+
+        function updateButtons() {
+            const processBtn = document.getElementById('processBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            processBtn.disabled = uploadedImages.length === 0;
+            downloadBtn.disabled = processedImages.length === 0;
+        }
+
+        async function processImages() {
+            if (uploadedImages.length === 0) return;
+
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressContainer.style.display = 'block';
+            processedImages = [];
+
+            const mode = document.querySelector('input[name="resizeMode"]:checked').value;
+            const outputFormat = document.getElementById('outputFormat').value;
+            const quality = parseInt(document.getElementById('quality').value) / 100;
+
+            for (let i = 0; i < uploadedImages.length; i++) {
+                const imageData = uploadedImages[i];
+                const progress = ((i + 1) / uploadedImages.length) * 100;
+                
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `处理中... ${i + 1}/${uploadedImages.length}`;
+
+                try {
+                    const processedImage = await processImage(imageData, mode, outputFormat, quality);
+                    processedImages.push(processedImage);
+                } catch (error) {
+                    console.error('处理图片失败:', error);
+                }
+            }
+
+            progressContainer.style.display = 'none';
+            updateButtons();
+            alert(`处理完成！成功处理 ${processedImages.length} 张图片`);
+        }
+
+        function processImage(imageData, mode, outputFormat, quality) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+
+                img.onload = function() {
+                    let newWidth, newHeight;
+
+                    if (mode === 'percent') {
+                        const scale = parseInt(document.getElementById('scalePercent').value) / 100;
+                        newWidth = Math.round(img.width * scale);
+                        newHeight = Math.round(img.height * scale);
+                    } else {
+                        newWidth = parseInt(document.getElementById('targetWidth').value);
+                        newHeight = parseInt(document.getElementById('targetHeight').value);
+                        
+                        if (document.getElementById('keepAspectRatio').checked) {
+                            const aspectRatio = img.width / img.height;
+                            newHeight = Math.round(newWidth / aspectRatio);
+                        }
+                    }
+
+                    canvas.width = newWidth;
+                    canvas.height = newHeight;
+                    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+                    const format = outputFormat === 'original' ? imageData.file.type : `image/${outputFormat}`;
+                    const dataURL = canvas.toDataURL(format, quality);
+
+                    // 转换 dataURL 为 Blob
+                    const byteString = atob(dataURL.split(',')[1]);
+                    const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+                    const ab = new ArrayBuffer(byteString.length);
+                    const ia = new Uint8Array(ab);
+                    
+                    for (let i = 0; i < byteString.length; i++) {
+                        ia[i] = byteString.charCodeAt(i);
+                    }
+                    
+                    const blob = new Blob([ab], { type: mimeString });
+                    
+                    // 生成新文件名
+                    const extension = format.split('/')[1];
+                    const baseName = imageData.name.split('.')[0];
+                    const newName = `${baseName}_resized.${extension}`;
+
+                    resolve({
+                        name: newName,
+                        blob: blob,
+                        width: newWidth,
+                        height: newHeight,
+                        originalName: imageData.name
+                    });
+                };
+
+                img.src = imageData.src;
+            });
+        }
+
+        async function downloadAll() {
+            if (processedImages.length === 0) return;
+
+            if (processedImages.length === 1) {
+                // 单张图片直接下载
+                const image = processedImages[0];
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(image.blob);
+                link.download = image.name;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } else {
+                // 多张图片打包下载
+                const zip = new JSZip();
+                
+                processedImages.forEach(image => {
+                    zip.file(image.name, image.blob);
+                });
+
+                const content = await zip.generateAsync({ type: 'blob' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'resized_images.zip';
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }
+        }
+
+        function clearAll() {
+            uploadedImages = [];
+            processedImages = [];
+            document.getElementById('imageGrid').innerHTML = '';
+            document.getElementById('fileInput').value = '';
+            updateButtons();
+            console.log('已清空所有图片');
+        }
+
+        function removeImage(imageData, imageElement) {
+            const index = uploadedImages.findIndex(img => img.name === imageData.name && img.size === imageData.size);
+            if (index > -1) {
+                uploadedImages.splice(index, 1);
+                imageElement.remove();
+                updateButtons();
+                console.log('已删除图片:', imageData.name);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节日倒计时</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        select, input[type="text"], input[type="date"], textarea {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #countdown-display {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #007bff;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e9f5ff;
+            border-radius: 5px;
+        }
+
+        #holiday-image {
+            max-width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none; /* Initially hidden */
+        }
+
+        #notes-section textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .countdown-ended {
+            font-size: 1.5em;
+            color: green;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            #countdown-display {
+                font-size: 1.5em;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+         @media (max-width: 400px) {
+            #countdown-display {
+                font-size: 1.2em;
+            }
+             h1 {
+                font-size: 1.5em;
+            }
+             button {
+                 font-size: 0.9em;
+                 padding: 8px 12px;
+             }
+             select, input[type="text"], input[type="date"], textarea {
+                 padding: 8px;
+             }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>节日倒计时</h1>
+
+        <div class="section">
+            <label for="holiday-select">选择或添加节日:</label>
+            <select id="holiday-select"></select>
+        </div>
+
+        <div class="section" id="custom-holiday-section">
+            <h2>添加自定义节日</h2>
+            <label for="custom-holiday-name">节日名称:</label>
+            <input type="text" id="custom-holiday-name" placeholder="例如：生日">
+
+            <label for="custom-holiday-date">日期:</label>
+            <input type="date" id="custom-holiday-date">
+
+            <button id="add-holiday-btn">添加节日</button>
+        </div>
+
+        <div class="section">
+            <h2 id="selected-holiday-name">选择一个节日</h2>
+            <img id="holiday-image" src="" alt="节日图片">
+            <div id="countdown-display">-- 天 -- 小时 -- 分钟 -- 秒</div>
+            <div id="countdown-ended-message" style="display: none;">
+                <p class="countdown-ended">节日快乐！🎉</p>
+            </div>
+        </div>
+
+        <div class="section" id="notes-section" style="display: none;">
+            <label for="holiday-notes">备注:</label>
+            <textarea id="holiday-notes" placeholder="添加关于这个节日的备注..."></textarea>
+            <button id="save-notes-btn">保存备注</button>
+        </div>
+    </div>
+
+    <script>
+        const holidaySelect = document.getElementById('holiday-select');
+        const customHolidayNameInput = document.getElementById('custom-holiday-name');
+        const customHolidayDateInput = document.getElementById('custom-holiday-date');
+        const addHolidayBtn = document.getElementById('add-holiday-btn');
+        const selectedHolidayNameDisplay = document.getElementById('selected-holiday-name');
+        const countdownDisplay = document.getElementById('countdown-display');
+        const holidayImage = document.getElementById('holiday-image');
+        const countdownEndedMessage = document.getElementById('countdown-ended-message');
+        const notesSection = document.getElementById('notes-section');
+        const holidayNotesTextarea = document.getElementById('holiday-notes');
+        const saveNotesBtn = document.getElementById('save-notes-btn');
+
+        let holidays = [];
+        let countdownInterval; // 用于存储 setInterval 的 ID
+
+        // 预设节日图片 (可以使用更具体的图片 URL)
+        const holidayImages = {
+            '春节': 'https://via.placeholder.com/400x200/ff0000/ffffff?text=春节',
+            '元旦': 'https://via.placeholder.com/400x200/0000ff/ffffff?text=元旦',
+            '中秋节': 'https://via.placeholder.com/400x200/ffff00/000000?text=中秋节',
+            '圣诞节': 'https://via.placeholder.com/400x200/008000/ffffff?text=圣诞节',
+            'default': 'https://via.placeholder.com/400x200/cccccc/000000?text=节日'
+        };
+
+        // 初始化函数
+        function init() {
+            loadHolidays();
+            populateHolidaySelect();
+            addEventListeners();
+            // 默认选中第一个节日（如果存在）
+            if (holidays.length > 0) {
+                holidaySelect.value = holidays[0].name;
+                updateCountdown();
+            } else {
+                 selectedHolidayNameDisplay.textContent = '请先添加一个节日';
+                 notesSection.style.display = 'none';
+                 holidayImage.style.display = 'none';
+            }
+        }
+
+        // 加载节日数据（从 localStorage 或预设）
+        function loadHolidays() {
+            const storedHolidays = localStorage.getItem('holidays');
+            if (storedHolidays) {
+                holidays = JSON.parse(storedHolidays);
+            } else {
+                // 预设常见节日 (格式: YYYY-MM-DD) - 需要每年更新或动态计算
+                const currentYear = new Date().getFullYear();
+                holidays = [
+                    // 注意：春节和中秋节是农历，需要更复杂的计算或固定日期近似
+                    { name: '元旦', date: `${currentYear}-01-01`, notes: '' },
+                    { name: '春节', date: `${currentYear}-02-10`, notes: '农历正月初一（示例日期，需调整）' }, // 示例日期
+                    { name: '中秋节', date: `${currentYear}-09-17`, notes: '农历八月十五（示例日期，需调整）' }, // 示例日期
+                    { name: '国庆节', date: `${currentYear}-10-01`, notes: '' },
+                    { name: '圣诞节', date: `${currentYear}-12-25`, notes: '' },
+                ];
+                saveHolidays(); // 保存预设节日到 localStorage
+            }
+             // 确保日期是 YYYY-MM-DD 格式
+            holidays.forEach(holiday => {
+                if (holiday.date && !/^\d{4}-\d{2}-\d{2}$/.test(holiday.date)) {
+                     console.warn(`节日 "${holiday.name}" 的日期格式无效: ${holiday.date}，将尝试修复或忽略。`);
+                     // 尝试修复或设置默认值，这里简单忽略或可以设置为特定值
+                     // holiday.date = 'YYYY-MM-DD'; // 或者从 Date 对象格式化
+                     try {
+                         const d = new Date(holiday.date);
+                         if (!isNaN(d)) {
+                             holiday.date = d.toISOString().split('T')[0];
+                         } else {
+                             holiday.date = null; // 标记为无效
+                         }
+                     } catch (e) {
+                         holiday.date = null;
+                     }
+                }
+                 if (!holiday.notes) holiday.notes = ''; // 确保 notes 存在
+            });
+             // 过滤掉日期无效的节日
+            holidays = holidays.filter(h => h.date);
+        }
+
+        // 保存节日数据到 localStorage
+        function saveHolidays() {
+            localStorage.setItem('holidays', JSON.stringify(holidays));
+        }
+
+        // 填充节日下拉列表
+        function populateHolidaySelect() {
+            holidaySelect.innerHTML = ''; // 清空现有选项
+            if (holidays.length === 0) {
+                 const option = document.createElement('option');
+                 option.value = '';
+                 option.textContent = '暂无节日，请添加';
+                 option.disabled = true;
+                 holidaySelect.appendChild(option);
+                 return;
+            }
+            holidays.forEach(holiday => {
+                const option = document.createElement('option');
+                option.value = holiday.name;
+                option.textContent = holiday.name;
+                holidaySelect.appendChild(option);
+            });
+        }
+
+        // 添加事件监听器
+        function addEventListeners() {
+            addHolidayBtn.addEventListener('click', addCustomHoliday);
+            holidaySelect.addEventListener('change', updateCountdown);
+            saveNotesBtn.addEventListener('click', saveNote);
+        }
+
+        // 添加自定义节日
+        function addCustomHoliday() {
+            const name = customHolidayNameInput.value.trim();
+            const date = customHolidayDateInput.value;
+
+            if (!name || !date) {
+                alert('请输入节日名称和日期！');
+                return;
+            }
+
+            // 检查节日是否已存在
+            if (holidays.some(holiday => holiday.name === name)) {
+                alert('该节日名称已存在！');
+                return;
+            }
+
+            const newHoliday = { name, date, notes: '' };
+            holidays.push(newHoliday);
+            saveHolidays();
+            populateHolidaySelect();
+
+            // 选中新添加的节日
+            holidaySelect.value = name;
+            updateCountdown();
+
+            // 清空输入框
+            customHolidayNameInput.value = '';
+            customHolidayDateInput.value = '';
+        }
+
+        // 更新倒计时显示
+        function updateCountdown() {
+            clearInterval(countdownInterval); // 清除之前的计时器
+            countdownEndedMessage.style.display = 'none'; // 隐藏结束消息
+            countdownDisplay.style.display = 'block'; // 显示倒计时
+
+            const selectedHolidayName = holidaySelect.value;
+            const selectedHoliday = holidays.find(holiday => holiday.name === selectedHolidayName);
+
+            if (!selectedHoliday) {
+                selectedHolidayNameDisplay.textContent = '请选择一个节日';
+                countdownDisplay.textContent = '-- 天 -- 小时 -- 分钟 -- 秒';
+                holidayImage.style.display = 'none';
+                notesSection.style.display = 'none';
+                return;
+            }
+
+            selectedHolidayNameDisplay.textContent = `距离 ${selectedHoliday.name} 还有：`;
+            notesSection.style.display = 'block';
+            holidayNotesTextarea.value = selectedHoliday.notes || ''; // 加载备注
+
+            // 显示节日图片
+            holidayImage.src = holidayImages[selectedHoliday.name] || holidayImages['default'];
+            holidayImage.alt = `${selectedHoliday.name} 图片`;
+            holidayImage.style.display = 'block';
+
+
+            const targetDate = new Date(selectedHoliday.date + 'T00:00:00'); // 设置为当天 0 点
+
+             if (isNaN(targetDate)) {
+                 console.error("无效的节日日期:", selectedHoliday.date);
+                 countdownDisplay.textContent = '无效日期';
+                 holidayImage.style.display = 'none';
+                 notesSection.style.display = 'none';
+                 return;
+             }
+
+
+            function calculateAndUpdate() {
+                const now = new Date();
+                const diff = targetDate - now;
+
+                if (diff <= 0) {
+                    // 倒计时结束
+                    clearInterval(countdownInterval);
+                    countdownDisplay.style.display = 'none'; // 隐藏倒计时数字
+                    countdownEndedMessage.style.display = 'block'; // 显示结束消息和动画
+                    selectedHolidayNameDisplay.textContent = `${selectedHoliday.name} 到了!`;
+                    // 检查是否需要更新下一年的日期 (可选)
+                    // handlePastHoliday(selectedHoliday);
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                countdownDisplay.textContent = `${days} 天 ${hours} 小时 ${minutes} 分钟 ${seconds} 秒`;
+            }
+
+            calculateAndUpdate(); // 立即计算一次
+            countdownInterval = setInterval(calculateAndUpdate, 1000); // 每秒更新
+        }
+
+        // 处理已过期的节日 (可选逻辑)
+        // function handlePastHoliday(holiday) {
+        //     const currentYear = new Date().getFullYear();
+        //     const holidayDate = new Date(holiday.date);
+        //     if (holidayDate.getFullYear() < currentYear) {
+        //         // 尝试更新到下一年，但这对于农历节日不准确
+        //         // holiday.date = `${currentYear + 1}-${holiday.date.substring(5)}`;
+        //         // saveHolidays();
+        //         // populateHolidaySelect();
+        //         // alert(`${holiday.name} 的日期已过，请考虑更新或删除。`);
+        //     }
+        // }
+
+
+        // 保存备注
+        function saveNote() {
+            const selectedHolidayName = holidaySelect.value;
+            const selectedHoliday = holidays.find(holiday => holiday.name === selectedHolidayName);
+
+            if (selectedHoliday) {
+                selectedHoliday.notes = holidayNotesTextarea.value;
+                saveHolidays();
+                alert('备注已保存！');
+            } else {
+                alert('请先选择一个节日！');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>

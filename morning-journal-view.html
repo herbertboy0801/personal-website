@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>晨间日记 - 贺伯AI实战笔记</title>
+  <meta name="description" content="贺伯的晨间日记系统，AI编程打造的个人成长记录工具。">
+  <meta property="og:title" content="晨间日记 - 贺伯AI实战笔记">
+  <meta property="og:description" content="AI编程打造的个人成长记录工具，每日复盘与目标追踪。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/avatar.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="morning-journal-view.css">
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">贺伯AI实战笔记</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+        <li><a href="admin/public/login.html" class="nav-admin">管理后台</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="菜单" onclick="document.getElementById('navMenu').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="journal-page">
+    <div class="journal-header">
+      <h1>📝 贺伯晨间日记</h1>
+      <p>每日成长记录，目标与复盘</p>
+    </div>
+    <div id="goal-progress-banner" class="goal-banner">
+      <span id="date-day-count-display">[今天是] 月日 日更复盘第X天</span>
+      <span class="separator">|</span>
+      <span>写到第 <span id="goal-target-days-display">XX</span> 天犒赏自己 <span id="goal-reward-display">XXX</span></span>
+    </div>
+    <div class="date-navigation">
+      <button id="prev-day-btn">&#8249; 前一天</button>
+      <input type="text" id="datepicker" placeholder="选择日期">
+      <button id="next-day-btn">后一天 &#8250;</button>
+    </div>
+    <main class="diary-section">
+      <article class="diary-card">
+        <div id="journal-content" class="journal-content view-mode">
+          <div class="loading-skeleton">加载中...</div>
+        </div>
+      </article>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">&copy; 2025 贺伯AI实战笔记. All rights reserved.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="tools.html">贺伯工具库</a></li>
+        <li><a href="blog.html">贺伯的文章</a></li>
+        <li><a href="index.html#about">关于贺伯</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+  <script src="morning-journal-view.js"></script>
+  <script>
+    document.querySelectorAll('.nav-menu a').forEach(function(a) {
+      a.addEventListener('click', function() { document.getElementById('navMenu').classList.remove('open'); });
+    });
+  </script>
+</body>
+</html>

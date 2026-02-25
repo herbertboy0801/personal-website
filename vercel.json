@@ -1,0 +1,40 @@
+{
+  "framework": null,
+  "buildCommand": "npm install",
+  "outputDirectory": ".",
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node@3",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin/public/index.html" },
+    { "source": "/admin/", "destination": "/admin/public/index.html" },
+    { "source": "/admin/login", "destination": "/admin/public/login.html" },
+    { "source": "/admin/login.html", "destination": "/admin/public/login.html" },
+    { "source": "/admin/index.html", "destination": "/admin/public/index.html" },
+    { "source": "/admin/style.css", "destination": "/admin/public/style.css" },
+    { "source": "/admin/script.js", "destination": "/admin/public/script.js" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/tools/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    }
+  ]
+}

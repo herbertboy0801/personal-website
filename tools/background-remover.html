@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片背景去除工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section.drag-over {
+            background-color: #f0f8ff;
+            border-color: #007bff;
+        }
+        
+        .upload-btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .upload-info {
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .canvas-container {
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            max-width: 100%;
+        }
+        
+        .editor-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .threshold-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider {
+            width: 200px;
+        }
+        
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-process {
+            background-color: #28a745;
+        }
+        
+        .btn-process:hover {
+            background-color: #218838;
+        }
+        
+        .btn-download {
+            background-color: #17a2b8;
+        }
+        
+        .btn-download:hover {
+            background-color: #138496;
+        }
+        
+        .btn-reset {
+            background-color: #dc3545;
+        }
+        
+        .btn-reset:hover {
+            background-color: #c82333;
+        }
+        
+        .results-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-container {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .result-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #777;
+            font-size: 0.9em;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .results-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>图片背景去除工具</h1>
+        
+        <div class="upload-section" id="upload-section">
+            <label for="file-input" class="upload-btn">选择图片</label>
+            <input type="file" id="file-input" accept="image/*">
+            <p class="upload-info">或拖放图片到此处</p>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>处理中，请稍候...</p>
+        </div>
+        
+        <div class="editor-section" id="editor-section">
+            <div class="canvas-container">
+                <canvas id="preview-canvas"></canvas>
+            </div>
+            
+            <div class="editor-controls">
+                <div class="control-group">
+                    <label class="control-label">颜色容差</label>
+                    <div class="threshold-control">
+                        <input type="range" id="tolerance-slider" class="slider" min="0" max="100" value="30">
+                        <span id="tolerance-value">30</span>
+                    </div>
+                    <small>较高的值可以去除更多背景，但可能会影响前景</small>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">透明度</label>
+                    <div class="threshold-control">
+                        <input type="range" id="alpha-slider" class="slider" min="0" max="100" value="100">
+                        <span id="alpha-value">100%</span>
+                    </div>
+                    <small>调整前景对象的透明度</small>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">边缘平滑</label>
+                    <div class="threshold-control">
+                        <input type="range" id="smoothing-slider" class="slider" min="0" max="10" value="2">
+                        <span id="smoothing-value">2</span>
+                    </div>
+                    <small>提高值可以使边缘更平滑</small>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="process-btn" class="btn btn-process">去除背景</button>
+                <button id="magic-btn" class="btn">智能去除</button>
+                <button id="color-pick-btn" class="btn">点击选择背景</button>
+                <button id="download-btn" class="btn btn-download">下载图片</button>
+                <button id="reset-btn" class="btn btn-reset">重置</button>
+            </div>
+        </div>
+        
+        <div class="results-section" id="results-section">
+            <div class="result-container">
+                <div class="result-label">原图</div>
+                <img id="original-image" class="result-image">
+            </div>
+            <div class="result-container">
+                <div class="result-label">去背景后</div>
+                <img id="result-image" class="result-image">
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 图片背景去除工具 | 使用HTML5 Canvas技术</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let originalImage = null;
+        let processedImage = null;
+        let isProcessing = false;
+        
+        // DOM元素
+        const fileInput = document.getElementById('file-input');
+        const uploadSection = document.getElementById('upload-section');
+        const editorSection = document.getElementById('editor-section');
+        const resultsSection = document.getElementById('results-section');
+        const loadingElement = document.getElementById('loading');
+        const previewCanvas = document.getElementById('preview-canvas');
+        const ctx = previewCanvas.getContext('2d');
+        
+        const toleranceSlider = document.getElementById('tolerance-slider');
+        const toleranceValue = document.getElementById('tolerance-value');
+        const alphaSlider = document.getElementById('alpha-slider');
+        const alphaValue = document.getElementById('alpha-value');
+        const smoothingSlider = document.getElementById('smoothing-slider');
+        const smoothingValue = document.getElementById('smoothing-value');
+        
+        const processBtnElement = document.getElementById('process-btn');
+        const magicBtnElement = document.getElementById('magic-btn');
+        const colorPickBtnElement = document.getElementById('color-pick-btn');
+        const downloadBtnElement = document.getElementById('download-btn');
+        const resetBtnElement = document.getElementById('reset-btn');
+        
+        const originalImageElement = document.getElementById('original-image');
+        const resultImageElement = document.getElementById('result-image');
+        
+        // 事件监听器
+        fileInput.addEventListener('change', handleFileSelect);
+        uploadSection.addEventListener('dragover', handleDragOver);
+        uploadSection.addEventListener('dragleave', handleDragLeave);
+        uploadSection.addEventListener('drop', handleDrop);
+        
+        toleranceSlider.addEventListener('input', updateToleranceValue);
+        alphaSlider.addEventListener('input', updateAlphaValue);
+        smoothingSlider.addEventListener('input', updateSmoothingValue);
+        
+        processBtnElement.addEventListener('click', processImage);
+        magicBtnElement.addEventListener('click', magicRemoveBackground);
+        colorPickBtnElement.addEventListener('click', enableColorPicker);
+        downloadBtnElement.addEventListener('click', downloadImage);
+        resetBtnElement.addEventListener('click', resetEditor);
+        
+        // 颜色选择器变量
+        let isColorPickerActive = false;
+        let selectedBgColor = null;
+        
+        // 函数定义
+        function enableColorPicker() {
+                    if (!originalImage) return;
+                    
+                    isColorPickerActive = true;
+                    previewCanvas.style.cursor = 'crosshair';
+                    
+                    // 添加一次性点击事件
+                    previewCanvas.addEventListener('click', handleColorPick);
+                    
+                    alert('请点击图片中的背景区域来选择要移除的颜色');
+                }
+                
+                function handleColorPick(event) {
+                    if (!isColorPickerActive) return;
+                    
+                    // 获取点击坐标相对于画布的位置
+                    const rect = previewCanvas.getBoundingClientRect();
+                    const x = Math.floor((event.clientX - rect.left) * (previewCanvas.width / rect.width));
+                    const y = Math.floor((event.clientY - rect.top) * (previewCanvas.height / rect.height));
+                    
+                    // 获取点击位置的颜色
+                    const imageData = ctx.getImageData(x, y, 1, 1);
+                    const data = imageData.data;
+                    selectedBgColor = [data[0], data[1], data[2]];
+                    
+                    // 立即处理图像
+                    processImageWithSelectedColor();
+                    
+                    // 清理
+                    isColorPickerActive = false;
+                    previewCanvas.style.cursor = 'default';
+                    previewCanvas.removeEventListener('click', handleColorPick);
+                }
+                
+                function processImageWithSelectedColor() {
+                    if (!selectedBgColor) return;
+                    
+                    isProcessing = true;
+                    loadingElement.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        // 重绘原始图像
+                        drawOriginalImage();
+                        
+                        const tolerance = parseInt(toleranceSlider.value);
+                        const alpha = parseInt(alphaSlider.value) / 100;
+                        const smoothing = parseInt(smoothingSlider.value);
+                        
+                        // 获取图像数据
+                        const imageData = ctx.getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+                        const data = imageData.data;
+                        
+                        // 使用选定的背景颜色处理图像
+                        for (let i = 0; i < data.length; i += 4) {
+                            const r = data[i];
+                            const g = data[i + 1];
+                            const b = data[i + 2];
+                            
+                            // 计算当前像素与选定背景颜色的差异
+                            const diff = colorDifference([r, g, b], selectedBgColor);
+                            
+                            // 基于差异和容差设置透明度
+                            if (diff < tolerance) {
+                                // 背景像素，设置为透明
+                                data[i + 3] = 0;
+                            } else if (diff < tolerance + smoothing * 10) {
+                                // 边缘像素，设置半透明
+                                const alphaFactor = (diff - tolerance) / (smoothing * 10);
+                                data[i + 3] = Math.min(255, Math.max(0, Math.round(255 * alphaFactor * alpha)));
+                            } else {
+                                // 前景像素，应用透明度设置
+                                data[i + 3] = Math.round(255 * alpha);
+                            }
+                        }
+                        
+                        // 将处理后的图像数据放回画布
+                        ctx.putImageData(imageData, 0, 0);
+                        
+                        // 更新结果图像
+                        updateResultImage();
+                        
+                        isProcessing = false;
+                        loadingElement.style.display = 'none';
+                    }, 100);
+                }
+        
+                function handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file && file.type.match('image.*')) {
+                        loadImage(file);
+                    }
+                }
+        
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            uploadSection.classList.add('drag-over');
+        }
+        
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            uploadSection.classList.remove('drag-over');
+        }
+        
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            uploadSection.classList.remove('drag-over');
+            
+            const file = event.dataTransfer.files[0];
+            if (file && file.type.match('image.*')) {
+                loadImage(file);
+            }
+        }
+        
+        function loadImage(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    setupEditor();
+                    drawOriginalImage();
+                };
+                img.src = event.target.result;
+                originalImageElement.src = event.target.result;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        function setupEditor() {
+            // 显示编辑器和结果区域
+            uploadSection.style.display = 'none';
+            editorSection.style.display = 'flex';
+            resultsSection.style.display = 'flex';
+            
+            // 调整画布大小
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let width = originalImage.width;
+            let height = originalImage.height;
+            
+            if (width > maxWidth) {
+                const ratio = maxWidth / width;
+                width = maxWidth;
+                height = height * ratio;
+            }
+            
+            if (height > maxHeight) {
+                const ratio = maxHeight / height;
+                height = height * ratio;
+                width = width * ratio;
+            }
+            
+            previewCanvas.width = width;
+            previewCanvas.height = height;
+        }
+        
+        function drawOriginalImage() {
+            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            ctx.drawImage(originalImage, 0, 0, previewCanvas.width, previewCanvas.height);
+        }
+        
+        function updateToleranceValue() {
+            toleranceValue.textContent = toleranceSlider.value;
+        }
+        
+        function updateAlphaValue() {
+            alphaValue.textContent = alphaSlider.value + '%';
+        }
+        
+        function updateSmoothingValue() {
+            smoothingValue.textContent = smoothingSlider.value;
+        }
+        
+        function processImage() {
+                    if (isProcessing || !originalImage) return;
+                    
+                    isProcessing = true;
+                    loadingElement.style.display = 'block';
+                    
+                    // 在下一帧中执行，以便UI可以更新
+                    setTimeout(() => {
+                        // 重绘原始图像（确保我们处理的是未修改的图像）
+                        drawOriginalImage();
+                        
+                        const tolerance = parseInt(toleranceSlider.value);
+                        const alpha = parseInt(alphaSlider.value) / 100;
+                        const smoothing = parseInt(smoothingSlider.value);
+                        
+                        // 获取图像数据
+                        const imageData = ctx.getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+                        const data = imageData.data;
+                        
+                        // 增强背景检测
+                        // 1. 边缘采样更多点来确定可能的背景颜色
+                        const possibleBgColors = getSampleBackgroundColors(imageData);
+                        
+                        // 2. 从多个可能的背景颜色中选择出现频率最高的颜色
+                        const bgColor = getMostFrequentColor(possibleBgColors);
+                        
+                        // 处理每个像素
+                        for (let i = 0; i < data.length; i += 4) {
+                            const r = data[i];
+                            const g = data[i + 1];
+                            const b = data[i + 2];
+                            
+                            // 计算当前像素与背景颜色的差异
+                            let minDiff = 255;
+                            
+                            // 对每个可能的背景颜色计算差异并取最小值
+                            for (const color of possibleBgColors) {
+                                const diff = colorDifference([r, g, b], color);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                }
+                            }
+                            
+                            // 基于差异和容差设置透明度
+                            if (minDiff < tolerance) {
+                                // 背景像素，设置为透明
+                                data[i + 3] = 0;
+                            } else if (minDiff < tolerance + smoothing * 10) {
+                                // 边缘像素，设置半透明
+                                const alphaFactor = (minDiff - tolerance) / (smoothing * 10);
+                                data[i + 3] = Math.min(255, Math.max(0, Math.round(255 * alphaFactor * alpha)));
+                            } else {
+                                // 前景像素，应用透明度设置
+                                data[i + 3] = Math.round(255 * alpha);
+                            }
+                        }
+                        
+                        // 将处理后的图像数据放回画布
+                        ctx.putImageData(imageData, 0, 0);
+                        
+                        // 更新结果图像
+                        updateResultImage();
+                        
+                        isProcessing = false;
+                        loadingElement.style.display = 'none';
+                    }, 100);
+                }
+        
+        function magicRemoveBackground() {
+                    if (isProcessing || !originalImage) return;
+                    
+                    isProcessing = true;
+                    loadingElement.style.display = 'block';
+                    
+                    // 在下一帧中执行，以便UI可以更新
+                    setTimeout(() => {
+                        // 绘制原始图像
+                        drawOriginalImage();
+                        
+                        // 获取图像数据
+                        const imageData = ctx.getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+                        
+                        try {
+                            // 使用更高级的背景移除算法
+                            const result = enhancedBackgroundRemoval(imageData);
+                            
+                            // 更新画布
+                            ctx.putImageData(result, 0, 0);
+                            
+                            // 更新结果图像
+                            updateResultImage();
+                        } catch (error) {
+                            console.error('背景去除失败:', error);
+                            alert('背景去除失败，请尝试调整参数或使用不同的图片。');
+                            // 恢复原始图像
+                            drawOriginalImage();
+                        }
+                        
+                        isProcessing = false;
+                        loadingElement.style.display = 'none';
+                    }, 100);
+                }
+        
+        function getSampleBackgroundColors(imageData) {
+                    const width = imageData.width;
+                    const height = imageData.height;
+                    const data = imageData.data;
+                    const sampleColors = [];
+                    
+                    // 采样边缘的多个点
+                    const samplePoints = 20; // 每条边缘采样的点数
+                    
+                    // 采样上边缘
+                    for (let i = 0; i < samplePoints; i++) {
+                        const x = Math.floor(i * width / samplePoints);
+                        const idx = (0 * width + x) * 4;
+                        sampleColors.push([data[idx], data[idx + 1], data[idx + 2]]);
+                    }
+                    
+                    // 采样下边缘
+                    for (let i = 0; i < samplePoints; i++) {
+                        const x = Math.floor(i * width / samplePoints);
+                        const idx = ((height - 1) * width + x) * 4;
+                        sampleColors.push([data[idx], data[idx + 1], data[idx + 2]]);
+                    }
+                    
+                    // 采样左边缘
+                    for (let i = 0; i < samplePoints; i++) {
+                        const y = Math.floor(i * height / samplePoints);
+                        const idx = (y * width + 0) * 4;
+                        sampleColors.push([data[idx], data[idx + 1], data[idx + 2]]);
+                    }
+                    
+                    // 采样右边缘
+                    for (let i = 0; i < samplePoints; i++) {
+                        const y = Math.floor(i * height / samplePoints);
+                        const idx = (y * width + (width - 1)) * 4;
+                        sampleColors.push([data[idx], data[idx + 1], data[idx + 2]]);
+                    }
+                    
+                    return sampleColors;
+                }
+                
+                function getMostFrequentColor(colors) {
+                    // 对颜色进行分组和计数
+                    const colorGroups = {};
+                    const tolerance = 15; // 颜色分组的容差
+                    
+                    for (const color of colors) {
+                        let foundGroup = false;
+                        
+                        // 检查是否可以归入现有颜色组
+                        for (const groupKey in colorGroups) {
+                            const groupColor = groupKey.split(',').map(Number);
+                            if (colorDifference(color, groupColor) < tolerance) {
+                                colorGroups[groupKey].count++;
+                                foundGroup = true;
+                                break;
+                            }
+                        }
+                        
+                        // 如果没有匹配的组，创建新组
+                        if (!foundGroup) {
+                            const key = color.join(',');
+                            colorGroups[key] = { color, count: 1 };
+                        }
+                    }
+                    
+                    // 找出出现频率最高的颜色组
+                    let maxCount = 0;
+                    let mostFrequentColor = [0, 0, 0];
+                    
+                    for (const groupKey in colorGroups) {
+                        const group = colorGroups[groupKey];
+                        if (group.count > maxCount) {
+                            maxCount = group.count;
+                            mostFrequentColor = group.color;
+                        }
+                    }
+                    
+                    return mostFrequentColor;
+                }
+                
+                function getBackgroundColor(imageData) {
+                    const colors = getSampleBackgroundColors(imageData);
+                    return getMostFrequentColor(colors);
+                }
+        
+        function colorDifference(color1, color2) {
+            // 计算两个颜色之间的欧几里得距离
+            const rDiff = color1[0] - color2[0];
+            const gDiff = color1[1] - color2[1];
+            const bDiff = color1[2] - color2[2];
+            
+            return Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+        }
+        
+        function enhancedBackgroundRemoval(imageData) {
+                    const width = imageData.width;
+                    const height = imageData.height;
+                    const data = imageData.data;
+                    const result = new ImageData(width, height);
+                    const resultData = result.data;
+                    
+                    // 复制原始图像数据
+                    for (let i = 0; i < data.length; i++) {
+                        resultData[i] = data[i];
+                    }
+                    
+                    // 采样多个可能的背景颜色
+                    const possibleBgColors = getSampleBackgroundColors(imageData);
+                    const primaryBgColor = getMostFrequentColor(possibleBgColors);
+                    
+                    // 颜色量化：将图像分为背景和前景两大类
+                    const colorMap = new Uint8Array(width * height);
+                    const colorClusters = {
+                        background: [],
+                        foreground: []
+                    };
+                    
+                    // 初始聚类中心
+                    colorClusters.background.push(primaryBgColor);
+                    
+                    // 寻找可能的前景色（与背景色差异最大的像素）
+                    let maxDiff = 0;
+                    let foregroundSeed = [0, 0, 0];
+                    
+                    // 在图像中心区域寻找前景色
+                    const centerRegionSize = 0.6; // 中心区域占总图像的比例
+                    const startX = Math.floor(width * (1 - centerRegionSize) / 2);
+                    const endX = Math.floor(width * (1 + centerRegionSize) / 2);
+                    const startY = Math.floor(height * (1 - centerRegionSize) / 2);
+                    const endY = Math.floor(height * (1 + centerRegionSize) / 2);
+                    
+                    for (let y = startY; y < endY; y++) {
+                        for (let x = startX; x < endX; x++) {
+                            const idx = (y * width + x) * 4;
+                            const pixelColor = [data[idx], data[idx + 1], data[idx + 2]];
+                            const diff = colorDifference(pixelColor, primaryBgColor);
+                            
+                            if (diff > maxDiff) {
+                                maxDiff = diff;
+                                foregroundSeed = pixelColor;
+                            }
+                        }
+                    }
+                    
+                    colorClusters.foreground.push(foregroundSeed);
+                    
+                    // 容差设置
+                    const baseTolerance = parseInt(toleranceSlider.value);
+                    const tolerance = baseTolerance * 1.2; // 略微提高容差值
+                    
+                    // 第一阶段：基于颜色距离进行聚类
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const pos = y * width + x;
+                            const idx = pos * 4;
+                            const pixelColor = [data[idx], data[idx + 1], data[idx + 2]];
+                            
+                            // 计算像素与背景和前景聚类的距离
+                            let minBgDiff = Infinity;
+                            for (const bgColor of colorClusters.background) {
+                                const diff = colorDifference(pixelColor, bgColor);
+                                if (diff < minBgDiff) {
+                                    minBgDiff = diff;
+                                }
+                            }
+                            
+                            let minFgDiff = Infinity;
+                            for (const fgColor of colorClusters.foreground) {
+                                const diff = colorDifference(pixelColor, fgColor);
+                                if (diff < minFgDiff) {
+                                    minFgDiff = diff;
+                                }
+                            }
+                            
+                            // 将像素分配到最近的聚类
+                            if (minBgDiff < tolerance || minBgDiff < minFgDiff) {
+                                colorMap[pos] = 0; // 背景
+                            } else {
+                                colorMap[pos] = 1; // 前景
+                            }
+                        }
+                    }
+                    
+                    // 第二阶段：使用洪水填充法增强背景检测
+                    // 创建一个像素访问过的标记数组
+                    const visited = new Array(width * height).fill(false);
+                    const queue = [];
+                    
+                    // 添加边缘像素到队列
+                    for (let x = 0; x < width; x++) {
+                        queue.push(x); // 顶部边缘
+                        queue.push((height - 1) * width + x); // 底部边缘
+                        visited[x] = true;
+                        visited[(height - 1) * width + x] = true;
+                    }
+                    
+                    for (let y = 0; y < height; y++) {
+                        queue.push(y * width); // 左边缘
+                        queue.push(y * width + width - 1); // 右边缘
+                        visited[y * width] = true;
+                        visited[y * width + width - 1] = true;
+                    }
+                    
+                    // 洪水填充
+                    while (queue.length > 0) {
+                        const pos = queue.shift();
+                        const x = pos % width;
+                        const y = Math.floor(pos / width);
+                        
+                        const idx = (y * width + x) * 4;
+                        const pixelColor = [data[idx], data[idx + 1], data[idx + 2]];
+                        
+                        // 如果是边缘像素或者当前像素与任何背景色相似，则标记为背景
+                        let isBackground = false;
+                        
+                        for (const bgColor of possibleBgColors) {
+                            if (colorDifference(pixelColor, bgColor) < tolerance) {
+                                isBackground = true;
+                                break;
+                            }
+                        }
+                        
+                        if (isBackground) {
+                            // 设置为背景
+                            colorMap[pos] = 0;
+                            
+                            // 检查相邻像素
+                            const neighbors = [
+                                {x: x + 1, y: y}, // 右
+                                {x: x - 1, y: y}, // 左
+                                {x: x, y: y + 1}, // 下
+                                {x: x, y: y - 1}  // 上
+                            ];
+                            
+                            for (const neighbor of neighbors) {
+                                const nx = neighbor.x;
+                                const ny = neighbor.y;
+                                
+                                // 检查边界
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                    const npos = ny * width + nx;
+                                    
+                                    // 如果未访问过
+                                    if (!visited[npos]) {
+                                        visited[npos] = true;
+                                        queue.push(npos);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 第三阶段：应用形态学操作清理噪点
+                    const cleanedMap = morphologicalCleanup(colorMap, width, height);
+                    
+                    // 第四阶段：应用结果
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const pos = y * width + x;
+                            const idx = pos * 4;
+                            
+                            if (cleanedMap[pos] === 0) { // 背景
+                                resultData[idx + 3] = 0; // 透明
+                            }
+                        }
+                    }
+                    
+                    // 应用平滑处理
+                    const smoothing = parseInt(smoothingSlider.value);
+                    if (smoothing > 0) {
+                        applyEnhancedEdgeSmoothing(result, cleanedMap, width, height, smoothing);
+                    }
+                    
+                    // 应用透明度设置
+                    const alpha = parseInt(alphaSlider.value) / 100;
+                    for (let i = 0; i < resultData.length; i += 4) {
+                        if (resultData[i + 3] > 0) {
+                            resultData[i + 3] = Math.round(255 * alpha);
+                        }
+                    }
+                    
+                    return result;
+                }
+                
+                function morphologicalCleanup(colorMap, width, height) {
+                    const result = new Uint8Array(colorMap.length);
+                    
+                    // 复制原始数据
+                    for (let i = 0; i < colorMap.length; i++) {
+                        result[i] = colorMap[i];
+                    }
+                    
+                    // 腐蚀操作 - 移除小的前景区域
+                    const tempErode = new Uint8Array(colorMap.length);
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const pos = y * width + x;
+                            
+                            if (colorMap[pos] === 1) { // 如果是前景
+                                // 检查3x3邻域
+                                let allForeground = true;
+                                
+                                for (let dy = -1; dy <= 1 && allForeground; dy++) {
+                                    for (let dx = -1; dx <= 1 && allForeground; dx++) {
+                                        const nx = x + dx;
+                                        const ny = y + dy;
+                                        
+                                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                            const npos = ny * width + nx;
+                                            if (colorMap[npos] === 0) { // 如果邻居是背景
+                                                allForeground = false;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                tempErode[pos] = allForeground ? 1 : 0;
+                            } else {
+                                tempErode[pos] = 0;
+                            }
+                        }
+                    }
+                    
+                    // 膨胀操作 - 恢复前景区域形状
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const pos = y * width + x;
+                            
+                            if (tempErode[pos] === 0) { // 如果是背景
+                                // 检查3x3邻域
+                                let hasForeground = false;
+                                
+                                for (let dy = -1; dy <= 1 && !hasForeground; dy++) {
+                                    for (let dx = -1; dx <= 1 && !hasForeground; dx++) {
+                                        const nx = x + dx;
+                                        const ny = y + dy;
+                                        
+                                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                            const npos = ny * width + nx;
+                                            if (tempErode[npos] === 1) { // 如果邻居是前景
+                                                hasForeground = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                result[pos] = hasForeground ? 1 : 0;
+                            } else {
+                                result[pos] = 1;
+                            }
+                        }
+                    }
+                    
+                    return result;
+                }
+        
+        function applyEdgeSmoothing(imageData, visited, width, height, smoothingFactor) {
+            const data = imageData.data;
+            const radius = smoothingFactor;
+            
+            // 为边缘像素创建临时数组
+            const edgePixels = [];
+            
+            // 查找边缘像素（透明像素旁边的不透明像素）
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pos = y * width + x;
+                    const idx = pos * 4;
+                    
+                    // 如果是不透明的前景像素
+                    if (data[idx + 3] > 0) {
+                        // 检查是否为边缘像素
+                        let isEdge = false;
+                        
+                        // 检查相邻像素
+                        const neighbors = [
+                            {x: x + 1, y: y}, // 右
+                            {x: x - 1, y: y}, // 左
+                            {x: x, y: y + 1}, // 下
+                            {x: x, y: y - 1}  // 上
+                        ];
+                        
+                        for (const neighbor of neighbors) {
+                            const nx = neighbor.x;
+                            const ny = neighbor.y;
+                            
+                            // 检查边界
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                const npos = ny * width + nx;
+                                const nidx = npos * 4;
+                                
+                                // 如果相邻像素是透明的，则当前像素是边缘
+                                if (data[nidx + 3] === 0) {
+                                    isEdge = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (isEdge) {
+                            edgePixels.push({x, y, idx});
+                        }
+                    }
+                }
+            }
+            
+            // 对边缘像素应用平滑
+            for (const pixel of edgePixels) {
+                const {x, y, idx} = pixel;
+                
+                // 计算与透明区域的距离
+                let minDistance = radius;
+                
+                for (let dy = -radius; dy <= radius; dy++) {
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        
+                        // 检查边界
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const npos = ny * width + nx;
+                            const nidx = npos * 4;
+                            
+                            // 如果是透明像素
+                            if (data[nidx + 3] === 0) {
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                if (distance < minDistance) {
+                                    minDistance = distance;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // 基于距离设置透明度
+                const alphaFactor = minDistance / radius;
+                data[idx + 3] = Math.min(255, Math.round(255 * alphaFactor));
+            }
+        }
+        
+        function updateResultImage() {
+            // 将画布内容转换为数据URL并显示在结果图像中
+            resultImageElement.src = previewCanvas.toDataURL('image/png');
+        }
+        
+        function downloadImage() {
+            if (!resultImageElement.src) return;
+            
+            const a = document.createElement('a');
+            a.href = resultImageElement.src;
+            a.download = '去背景图片.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        function resetEditor() {
+                    if (!originalImage) return;
+                    
+                    drawOriginalImage();
+                    toleranceSlider.value = 30;
+                    alphaSlider.value = 100;
+                    smoothingSlider.value = 1;
+                    selectedBgColor = null;
+                    updateToleranceValue();
+                    updateAlphaValue();
+                    updateSmoothingValue();
+                }
+    </script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML 实时预览工具</title>
+    <style>
+        /* 稍后在这里添加 CSS 样式 */
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: column; /* 让按钮在文本域下方 */
+            width: 50%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #codeInput {
+            flex-grow: 1; /* 占据剩余空间 */
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            resize: none; /* 禁止用户调整大小 */
+            margin-bottom: 10px; /* 与按钮间距 */
+        }
+        #previewFrame {
+            width: 50%;
+            height: 100%;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        #clearButton {
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <textarea id="codeInput" placeholder="在此输入 HTML, CSS, JavaScript 代码..."></textarea>
+        <button id="clearButton">清空</button>
+        <button id="downloadPptButton" style="margin-left: 10px;">下载为PPT</button>
+    </div>
+    <iframe id="previewFrame" title="预览区"></iframe>
+
+    <script>
+        const codeInput = document.getElementById('codeInput');
+        const previewFrame = document.getElementById('previewFrame');
+        const clearButton = document.getElementById('clearButton');
+
+        // 实时更新预览
+        function updatePreview() {
+            const code = codeInput.value;
+            // 使用 srcdoc 来渲染 HTML 内容，这样可以执行其中的脚本和样式
+            // 对于简单的预览，这是比较安全和方便的方式
+            previewFrame.srcdoc = code;
+        }
+
+        // 监听输入事件
+        codeInput.addEventListener('input', updatePreview);
+
+        // 清空功能
+        clearButton.addEventListener('click', () => {
+            codeInput.value = ''; // 清空文本域
+            previewFrame.srcdoc = ''; // 清空 iframe
+        });
+
+        // 初始加载时也更新一次预览（如果 textarea 有默认值）
+        updatePreview();
+
+        const downloadPptButton = document.getElementById('downloadPptButton');
+
+        // --- HTML to PPTX Conversion Logic ---
+        function convertHexToRgb(hex) {
+            // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+            var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+                return r + r + g + g + b + b;
+            });
+
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function convertRgbToHex(rgbString) {
+            const match = rgbString.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);
+            if (!match) return '000000'; // Default to black if parsing fails
+            const r = parseInt(match[1]).toString(16).padStart(2, '0');
+            const g = parseInt(match[2]).toString(16).padStart(2, '0');
+            const b = parseInt(match[3]).toString(16).padStart(2, '0');
+            return `${r}${g}${b}`;
+        }
+
+
+        async function generateAndDownloadPpt() {
+            console.log("Starting PPT generation...");
+            // Ensure PptxGenJS is loaded
+            if (typeof PptxGenJS === 'undefined') {
+                 alert('PptxGenJS library is not loaded. Cannot generate PPT.');
+                 console.error('PptxGenJS is not defined.');
+                 return;
+            }
+
+            const pptx = new PptxGenJS();
+
+            // Set layout to 16x9 (approx 10 x 5.625 inches)
+            pptx.layout = 'LAYOUT_16x9';
+            const slideWidthInches = 10;
+            const slideHeightInches = 5.625; // Standard 16:9
+
+            const slide = pptx.addSlide();
+
+            const previewDocument = previewFrame.contentWindow.document;
+            const previewBody = previewDocument.body;
+
+            if (!previewBody || previewBody.innerHTML.trim() === '') {
+                alert('预览区内容为空，无法生成PPT。');
+                console.log("Preview area is empty.");
+                return;
+            }
+
+             // Add a background color to the slide matching the HTML body background
+            try {
+                const bodyStyles = previewDocument.defaultView.getComputedStyle(previewBody);
+                const bodyBgColor = bodyStyles.backgroundColor;
+                 if (bodyBgColor && bodyBgColor !== 'rgba(0, 0, 0, 0)' && bodyBgColor !== 'transparent') {
+                     const hexColor = convertRgbToHex(bodyBgColor);
+                     if (hexColor) {
+                        slide.background = { color: hexColor };
+                        console.log("Set slide background color:", hexColor);
+                     }
+                 }
+            } catch (e) {
+                 console.warn("Could not read preview body styles:", e);
+            }
+
+
+            // Get dimensions of the preview body for scaling calculations
+            // Use scrollWidth/scrollHeight to capture the full content dimensions
+            const bodyRect = previewBody.getBoundingClientRect(); // Gets dimensions relative to viewport
+            let contentWidthPx = previewBody.scrollWidth || bodyRect.width; // Fallback to bounding rect width
+            let contentHeightPx = previewBody.scrollHeight || bodyRect.height; // Fallback to bounding rect height
+
+             // Avoid division by zero if dimensions are somehow zero
+             if (contentWidthPx <= 0) contentWidthPx = 1;
+             if (contentHeightPx <= 0) contentHeightPx = 1;
+
+
+            console.log(`Preview Body Dimensions: scrollWidth=${contentWidthPx}px, scrollHeight=${contentHeightPx}px`);
+
+
+            // --- Recursive function to convert elements ---
+            // node: HTML Element node to convert
+            // slide: PptxGenJS Slide object
+            // parentPptRect: { x, y, w, h } object representing the calculated bounding box of the parent element on the PPT slide in inches
+            async function convertNodeToPptx(node, slide, parentPptRect) {
+                if (node.nodeType !== Node.ELEMENT_NODE) return; // Only process element nodes
+
+                 // Skip script and style tags themselves
+                 if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') {
+                    return;
+                 }
+
+                let styles;
+                try {
+                     styles = previewDocument.defaultView.getComputedStyle(node);
+                } catch (e) {
+                     console.warn("Could not get computed style for node:", node.tagName, e);
+                     return; // Skip node if styles can't be read
+                }
+
+                if (styles.display === 'none' || styles.visibility === 'hidden') return; // Skip hidden elements
+
+                const rect = node.getBoundingClientRect(); // Node's position/size relative to viewport
+                const nodeWpx = rect.width;
+                const nodeHpx = rect.height;
+
+                 // Get parent's bounding rect for relative calculation
+                 let parentRect;
+                 let parentWpx = contentWidthPx; // Default to full content width/height for root level elements
+                 let parentHpx = contentHeightPx;
+                 let nodeXRelativeToParentPx = rect.left - bodyRect.left + previewDocument.documentElement.scrollLeft; // Default relative to body scroll content
+                 let nodeYRelativeToParentPx = rect.top - bodyRect.top + previewDocument.documentElement.scrollTop;
+
+                 if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && node.parentNode !== previewBody) {
+                    parentRect = node.parentNode.getBoundingClientRect();
+                     // Ensure parent dimensions are not zero for division
+                     if (parentRect.width > 0 && parentRect.height > 0) {
+                         parentWpx = parentRect.width;
+                         parentHpx = parentRect.height;
+                         // Calculate position relative to parent's top-left corner
+                         nodeXRelativeToParentPx = rect.left - parentRect.left;
+                         nodeYRelativeToParentPx = rect.top - parentRect.top;
+                     } else {
+                         // Parent has zero dimensions, fall back to body relative positioning? Or skip? For now, log and use body relative.
+                         console.warn(`Parent node ${node.parentNode.tagName} has zero dimensions. Using body relative positioning for ${node.tagName}.`);
+                     }
+                 } else {
+                     // Node is a direct child of body or parent is not an element
+                     parentRect = bodyRect; // Use bodyRect as the reference parent
+                 }
+
+
+                // Calculate position and size on the PPT slide relative to the parent's PPT rectangle
+                let pptX = parentPptRect.x + (nodeXRelativeToParentPx / parentWpx) * parentPptRect.w;
+                let pptY = parentPptRect.y + (nodeYRelativeToParentPx / parentHpx) * parentPptRect.h;
+                let pptW = (nodeWpx / parentWpx) * parentPptRect.w;
+                let pptH = (nodeHpx / parentHpx) * parentPptRect.h;
+
+                 // Basic sanity check for dimensions, prevent zero or negative sizes, or NaN/Infinity
+                 if (pptW <= 0 || !isFinite(pptW)) pptW = 0.01;
+                 if (pptH <= 0 || !isFinite(pptH)) pptH = 0.01;
+                 if (!isFinite(pptX)) pptX = parentPptRect.x; // Fallback to parent x
+                 if (!isFinite(pptY)) pptY = parentPptRect.y; // Fallback to parent y
+
+
+                 // --- Clip to parent bounds (optional, might hide overflowing content) ---
+                 // pptX = Math.max(parentPptRect.x, pptX);
+                 // pptY = Math.max(parentPptRect.y, pptY);
+                 // pptW = Math.min(pptW, parentPptRect.x + parentPptRect.w - pptX);
+                 // pptH = Math.min(pptH, parentPptRect.y + parentPptRect.h - pptY);
+                 // if (pptW <= 0.01) pptW = 0.01;
+                 // if (pptH <= 0.01) pptH = 0.01;
+                 // --- End Clipping ---
+
+
+                 if (pptW <= 0.01) pptW = 0.01; // Re-check after potential clipping
+                 if (pptH <= 0.01) pptH = 0.01;
+                 if (!isFinite(pptX) || !isFinite(pptY) || !isFinite(pptW) || !isFinite(pptH)) {
+                    console.warn("Skipping element due to invalid dimensions/position:", node.tagName, { pptX, pptY, pptW, pptH });
+                    return;
+                 }
+
+                console.log(`Processing ${node.tagName}: HTML(x:${nodeXpx.toFixed(1)}, y:${nodeYpx.toFixed(1)}, w:${nodeWpx.toFixed(1)}, h:${nodeHpx.toFixed(1)}) -> PPT(x:${pptX.toFixed(2)}, y:${pptY.toFixed(2)}, w:${pptW.toFixed(2)}, h:${pptH.toFixed(2)})`);
+
+
+                // --- Element Specific Conversion ---
+                let shapeOptions = { x: pptX, y: pptY, w: pptW, h: pptH };
+                let textOptions = {};
+                let textContent = null;
+
+                // Background and Border (treat as shape first)
+                const bgColor = styles.backgroundColor;
+                const borderColor = styles.borderTopColor; // Assuming uniform border color
+                const borderWidth = parseFloat(styles.borderTopWidth);
+
+                let hasVisibleBackground = bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent';
+                let hasVisibleBorder = borderWidth > 0 && borderColor && borderColor !== 'rgba(0, 0, 0, 0)' && borderColor !== 'transparent';
+
+                if (hasVisibleBackground || hasVisibleBorder) {
+                    const currentShapeOptions = { ...shapeOptions }; // Clone base options
+                    if (hasVisibleBackground) {
+                        currentShapeOptions.fill = convertRgbToHex(bgColor);
+                        console.log(`  - BG Color: ${bgColor} -> ${currentShapeOptions.fill}`);
+                    } else {
+                        currentShapeOptions.fill = { type: 'none' }; // Explicitly no fill if only border
+                    }
+                    if (hasVisibleBorder) {
+                        const borderHexColor = convertRgbToHex(borderColor);
+                        const borderPt = Math.max(0.1, borderWidth * 0.75); // Ensure minimum width 0.1pt
+                        currentShapeOptions.line = { color: borderHexColor, width: borderPt };
+                        console.log(`  - Border: ${borderWidth}px ${borderColor} -> ${borderPt.toFixed(1)}pt ${borderHexColor}`);
+                    }
+
+                    // Rounded Corners
+                    const borderRadius = styles.borderRadius;
+                    if (borderRadius && borderRadius !== '0px') {
+                        const radiusPx = parseFloat(borderRadius);
+                         if (radiusPx > 0 && nodeWpx > 0 && nodeHpx > 0) {
+                            currentShapeOptions.rectRadius = Math.min(50, (radiusPx / Math.min(nodeWpx, nodeHpx)) * 100);
+                            console.log(`  - Border Radius: ${borderRadius} -> ${currentShapeOptions.rectRadius.toFixed(1)}%`);
+                         }
+                    }
+                     // Gradient - Complex to parse, skipping for now
+                     if (styles.backgroundImage && styles.backgroundImage.startsWith('linear-gradient')) {
+                         console.warn("  - Gradient background found, conversion not implemented yet.");
+                     }
+
+                    slide.addShape(pptx.shapes.RECTANGLE, currentShapeOptions);
+                }
+
+                // Text Content
+                let hasDirectText = false;
+                let combinedText = '';
+                for(let i=0; i<node.childNodes.length; i++) {
+                    if (node.childNodes[i].nodeType === Node.TEXT_NODE && node.childNodes[i].nodeValue.trim() !== '') {
+                        hasDirectText = true;
+                        combinedText += node.childNodes[i].nodeValue;
+                    }
+                }
+
+                if (hasDirectText && combinedText.trim()) {
+                    textContent = combinedText.trim(); // Use combined text from direct children
+                    textOptions.fontFace = styles.fontFamily.split(',')[0].trim().replace(/['"]/g, '');
+                    textOptions.fontSize = Math.max(6, parseFloat(styles.fontSize) * 0.75); // Min 6pt
+                    textOptions.color = convertRgbToHex(styles.color);
+                    textOptions.bold = parseInt(styles.fontWeight, 10) >= 700;
+                    textOptions.italic = styles.fontStyle === 'italic';
+                    // Basic alignment mapping
+                    textOptions.align = styles.textAlign === 'center' ? 'center' : styles.textAlign === 'right' ? 'right' : styles.textAlign === 'justify' ? 'justify' : 'left';
+                    textOptions.valign = styles.verticalAlign === 'middle' ? 'middle' : styles.verticalAlign === 'bottom' ? 'bottom' : 'top';
+
+                    const combinedOptions = { ...shapeOptions, ...textOptions };
+                    // Make text box transparent itself, rely on the shape drawn earlier for background/border
+                    combinedOptions.fill = { type: 'none' };
+                    combinedOptions.line = null;
+
+                    // Adjust text box slightly smaller than shape for padding (heuristic)
+                    const padding = 0.05; // Small padding in inches
+                    combinedOptions.x += padding;
+                    combinedOptions.y += padding;
+                    combinedOptions.w = Math.max(0.1, combinedOptions.w - 2 * padding); // Ensure minimum width
+                    // Remove explicit height, let PptxGenJS auto-fit based on width and font size
+                    // combinedOptions.h = Math.max(0.01, combinedOptions.h - 2 * padding);
+                    combinedOptions.autoFit = true; // Enable auto-fitting height (might need wrap option too)
+                    combinedOptions.wrap = true; // Ensure text wraps within the width
+
+
+                    console.log(`  - Adding Text: "${textContent.substring(0, 30)}...", Font: ${textOptions.fontSize.toFixed(1)}pt ${textOptions.fontFace}, Color: ${textOptions.color}, AutoFit: true`);
+                    try {
+                        slide.addText(textContent, combinedOptions);
+                    } catch (textErr) {
+                         console.error("Error adding text:", textContent, combinedOptions, textErr);
+                         // Try adding with minimal options as fallback
+                         try {
+                             slide.addText(textContent, {x: shapeOptions.x, y: shapeOptions.y, w: shapeOptions.w, h: shapeOptions.h, fontSize: 8, color:'FF0000'});
+                         } catch (fallbackErr) {}
+                    }
+                }
+
+                // Image Content
+                if (node.tagName === 'IMG') {
+                    const imgSrc = node.src;
+                    if (imgSrc) {
+                        console.log(`  - Adding Image: ${imgSrc.substring(0, 50)}...`);
+                        try {
+                            // Image loading in PptxGenJS is asynchronous internally but the addImage call itself is sync
+                            // It handles common formats and data URLs. Cross-origin issues might still occur.
+                             slide.addImage({ path: imgSrc, ...shapeOptions });
+                        } catch (imgErr) {
+                            console.error(`  - Error adding image ${imgSrc}:`, imgErr);
+                             slide.addText(`[Image Error: ${node.alt || imgSrc.substring(0,30)+'...'}]`, { ...shapeOptions, color: 'FF0000', fontSize: 8 });
+                        }
+                    }
+                }
+
+
+                // --- Recurse for Children ---
+                // Only recurse if the current node isn't primarily a text node (like P, H*)
+                // or an image node, to avoid processing children that are already part of the parent's content.
+                 // Define the bounding box for children, relative to this node's calculated PPT position/size
+                 const currentPptRect = { x: pptX, y: pptY, w: pptW, h: pptH };
+
+                 // --- Recurse for Children ---
+                 if (node.childNodes && node.childNodes.length > 0) {
+                     // Don't recurse into text nodes if we already added the text content
+                     // Don't recurse into IMG tags
+                     if (node.tagName !== 'IMG' && !hasDirectText) {
+                         console.log(`  - Recursing into children of ${node.tagName}`);
+                         for (let i = 0; i < node.childNodes.length; i++) {
+                             await convertNodeToPptx(node.childNodes[i], slide, currentPptRect); // Pass current node's PPT rect as parent context
+                         }
+                     } else if (node.tagName !== 'IMG' && hasDirectText) {
+                         console.log(`  - Node ${node.tagName} has direct text, skipping children recursion.`);
+                     } else if (node.tagName === 'IMG') {
+                         // console.log(`  - Node ${node.tagName} is an image, skipping children recursion.`);
+                     }
+                 } else if (node.tagName !== 'IMG' && hasDirectText) { // This else-if seems redundant now
+                     console.log(`  - Node ${node.tagName} has direct text, skipping children recursion for text overlap.`);
+                 }
+            }
+
+
+            // --- Start Conversion ---
+            try {
+                console.log("Starting DOM conversion...");
+                // Add loading indicator maybe?
+                downloadPptButton.textContent = '生成中...';
+                downloadPptButton.disabled = true;
+
+                // Initial call: Start with the children of the body, using the full slide dimensions as the initial parent rect
+                const initialParentRect = { x: 0, y: 0, w: slideWidthInches, h: slideHeightInches };
+                for (let i = 0; i < previewBody.childNodes.length; i++) {
+                     await convertNodeToPptx(previewBody.childNodes[i], slide, initialParentRect);
+                }
+                // await convertNodeToPptx(previewBody, slide, { x: 0, y: 0, w: slideWidthInches, h: slideHeightInches }); // Don't process body itself, just its children
+                console.log("DOM conversion finished.");
+
+                // --- Generate and Download ---
+                console.log("Generating PPTX file...");
+                pptx.writeFile({ fileName: 'html_preview_export.pptx' })
+                    .then(fileName => {
+                        console.log(`PPTX file "${fileName}" has been generated and downloaded.`);
+                        alert(`PPTX文件 "${fileName}" 已生成并开始下载。`);
+                    })
+                    .catch(err => {
+                        console.error("Error writing PPTX file:", err);
+                        alert("写入PPT文件失败，请查看控制台获取更多信息。\n" + err.message);
+                    })
+                    .finally(() => {
+                         // Reset button state
+                         downloadPptButton.textContent = '下载为PPT';
+                         downloadPptButton.disabled = false;
+                    });
+
+            } catch (error) {
+                console.error("Error during PPT generation process:", error);
+                alert("生成PPT时发生错误，请查看控制台获取更多信息。\n" + error.message);
+                 // Reset button state
+                 downloadPptButton.textContent = '下载为PPT';
+                 downloadPptButton.disabled = false;
+            }
+        } // end of generateAndDownloadPpt
+
+        // Ensure the DOM is fully loaded before adding the event listener
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const downloadPptButton = document.getElementById('downloadPptButton');
+            if (downloadPptButton) {
+                downloadPptButton.addEventListener('click', generateAndDownloadPpt);
+            } else {
+                console.error("Download PPT button not found after DOMContentLoaded!");
+            }
+        });
+
+    </script>
+    <!-- PptxGenJS depends on JSZip, so include JSZip first -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
+    <!-- PptxGenJS library script goes here, use defer to ensure execution after DOM parsing -->
+    <!-- Corrected CDN link using jsDelivr -->
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js" defer></script>
+</body>
+</html>

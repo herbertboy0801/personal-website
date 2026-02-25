@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本加密解密工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            height: 150px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .output-area {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .output-area label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .copy-button {
+            background-color: #28a745;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .copy-button:hover {
+            background-color: #218838;
+        }
+
+        /* Simple animation for output area */
+        .output-area textarea {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文本加密解密工具</h1>
+
+        <textarea id="inputText" placeholder="输入文本..."></textarea>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="processText('encrypt', 'unicode')">Unicode 加密</button>
+            <button class="btn-secondary" onclick="processText('decrypt', 'unicode')">Unicode 解密</button>
+            <br>
+            <button class="btn-primary" onclick="processText('encrypt', 'replace')">字符替换 加密</button>
+            <button class="btn-secondary" onclick="processText('decrypt', 'replace')">字符替换 解密</button>
+            <br>
+            <button class="btn-primary" onclick="processText('encrypt', 'base64')">Base64 加密</button>
+            <button class="btn-secondary" onclick="processText('decrypt', 'base64')">Base64 解密</button>
+            <br>
+            <button class="btn-secondary" onclick="processText('decrypt', 'auto')">自动检测解密</button>
+        </div>
+
+        <div class="output-area">
+            <label for="outputText">输出结果:</label>
+            <textarea id="outputText" readonly></textarea>
+            <button class="copy-button" onclick="copyOutput()">一键复制</button>
+        </div>
+    </div>
+
+    <script>
+        // Simple character replacement map
+        const replaceMap = {
+            'a': '!', 'b': '@', 'c': '#', 'd': '$', 'e': '%', 'f': '^', 'g': '&', 'h': '*', 'i': '(', 'j': ')',
+            'k': '-', 'l': '_', 'm': '=', 'n': '+', 'o': '[', 'p': ']', 'q': '{', 'r': '}', 's': ';', 't': ':',
+            'u': '"', 'v': "'", 'w': '<', 'x': '>', 'y': ',', 'z': '.', ' ': '/',
+            'A': '1', 'B': '2', 'C': '3', 'D': '4', 'E': '5', 'F': '6', 'G': '7', 'H': '8', 'I': '9', 'J': '0',
+            'K': '!', 'L': '@', 'M': '#', 'N': '$', 'O': '%', 'P': '^', 'Q': '&', 'R': '*', 'S': '(', 'T': ')',
+            'U': '-', 'V': '_', 'W': '=', 'X': '+', 'Y': '[', 'Z': ']',
+            '0': 'a', '1': 'b', '2': 'c', '3': 'd', '4': 'e', '5': 'f', '6': 'g', '7': 'h', '8': 'i', '9': 'j'
+        };
+
+        const reverseReplaceMap = Object.fromEntries(
+            Object.entries(replaceMap).map(([key, value]) => [value, key])
+        );
+
+        function unicodeEncode(text) {
+            return text.split('').map(char => {
+                const code = char.charCodeAt(0);
+                return '\\u' + code.toString(16).padStart(4, '0');
+            }).join('');
+        }
+
+        function unicodeDecode(text) {
+            return text.replace(/\\u([0-9a-fA-F]{4})/g, (match, group) => {
+                return String.fromCharCode(parseInt(group, 16));
+            });
+        }
+
+        function replaceEncrypt(text) {
+            return text.split('').map(char => replaceMap[char] || char).join('');
+        }
+
+        function replaceDecrypt(text) {
+             return text.split('').map(char => reverseReplaceMap[char] || char).join('');
+        }
+
+        function base64Encode(text) {
+            return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g,
+                function toSolidBytes(match, p1) {
+                    return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        function base64Decode(text) {
+            try {
+                return decodeURIComponent(atob(text).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+            } catch (e) {
+                console.error("Base64 decoding failed:", e);
+                return "解码失败：无效的Base64字符串";
+            }
+        }
+
+        function detectAndDecrypt(text) {
+            // Try Base64 first
+            try {
+                const decodedBase64 = base64Decode(text);
+                if (decodedBase64 !== "解码失败：无效的Base64字符串") {
+                     // Check if the decoded text looks like valid text (simple heuristic)
+                    if (decodedBase64.length > 0 && /[a-zA-Z0-9\s\u4e00-\u9fa5]/.test(decodedBase64)) {
+                         console.log("Detected Base64");
+                         return decodedBase64;
+                    }
+                }
+            } catch (e) {
+                console.log("Not Base64");
+            }
+
+            // Try Unicode
+            if (text.startsWith('\\u')) {
+                 try {
+                    const decodedUnicode = unicodeDecode(text);
+                    console.log("Detected Unicode");
+                    return decodedUnicode;
+                 } catch (e) {
+                    console.log("Not valid Unicode escape sequence");
+                 }
+            }
+
+            // Try Simple Replace
+            // A simple heuristic: check if the text contains characters from the replaceMap values
+            const replaceChars = Object.values(replaceMap);
+            if (text.split('').some(char => replaceChars.includes(char))) {
+                 try {
+                    const decodedReplace = replaceDecrypt(text);
+                    console.log("Detected Simple Replace");
+                    return decodedReplace;
+                 } catch (e) {
+                    console.log("Not Simple Replace");
+                 }
+            }
+
+
+            return "无法自动检测加密类型或解密失败";
+        }
+
+
+        function processText(mode, type) {
+            const inputText = document.getElementById('inputText').value;
+            const outputTextarea = document.getElementById('outputText');
+            let result = '';
+
+            if (mode === 'encrypt') {
+                if (type === 'unicode') {
+                    result = unicodeEncode(inputText);
+                } else if (type === 'replace') {
+                    result = replaceEncrypt(inputText);
+                } else if (type === 'base64') {
+                    result = base64Encode(inputText);
+                }
+            } else if (mode === 'decrypt') {
+                if (type === 'unicode') {
+                    result = unicodeDecode(inputText);
+                } else if (type === 'replace') {
+                    result = replaceDecrypt(inputText);
+                } else if (type === 'base64') {
+                    result = base64Decode(inputText);
+                } else if (type === 'auto') {
+                    result = detectAndDecrypt(inputText);
+                }
+            }
+
+            outputTextarea.value = result;
+        }
+
+        function copyOutput() {
+            const outputTextarea = document.getElementById('outputText');
+            outputTextarea.select();
+            outputTextarea.setSelectionRange(0, 99999); // For mobile devices
+
+            try {
+                navigator.clipboard.writeText(outputTextarea.value).then(() => {
+                    alert('结果已复制到剪贴板');
+                }, (err) => {
+                    console.error('复制失败: ', err);
+                    alert('复制失败，请手动复制');
+                });
+            } catch (err) {
+                console.error('复制失败: ', err);
+                alert('复制失败，请手动复制');
+            }
+        }
+    </script>
+</body>
+</html>
