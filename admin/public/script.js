@@ -76,6 +76,115 @@ async function handleLogout() {
     window.location.href = '/admin/login.html';
 }
 
+// --- Password Change ---
+function setupPasswordChange() {
+    const btn = document.getElementById('change-password-button');
+    const modal = document.getElementById('password-modal');
+    const form = document.getElementById('password-form');
+    const cancelBtn = document.getElementById('cancel-password-btn');
+    const closeBtn = modal ? modal.querySelector('.close-button') : null;
+    if (!btn || !modal || !form) return;
+
+    function openModal() { modal.classList.add('active'); }
+    function closeModal() {
+        modal.classList.remove('active');
+        form.reset();
+    }
+
+    btn.addEventListener('click', openModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (newPassword !== confirmPassword) {
+            showToast('两次输入的新密码不一致', 'error');
+            return;
+        }
+        if (newPassword.length < 6) {
+            showToast('新密码至少6位', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/change-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('密码修改成功', 'success');
+                closeModal();
+            } else {
+                showToast(data.message || '修改失败', 'error');
+            }
+        } catch (err) {
+            showToast('网络错误', 'error');
+        }
+    });
+}
+
+// --- Quick Link Edit for Blog ---
+async function quickEditLink(blogId) {
+    const listItem = blogList.querySelector(`.list-item[data-item-id="${blogId}"]`);
+    if (!listItem) return;
+
+    const itemData = JSON.parse(listItem.dataset.itemData);
+    const currentLink = itemData.link || '';
+
+    // Check if already editing
+    if (listItem.querySelector('.quick-link-input')) return;
+
+    const actionsDiv = listItem.querySelector('.item-actions');
+    const originalActions = actionsDiv.innerHTML;
+
+    actionsDiv.innerHTML = `
+        <input type="text" class="quick-link-input" value="${currentLink === '#' ? '' : currentLink}" placeholder="粘贴文章链接..." style="width:280px; font-size:0.85em; padding:4px 8px;">
+        <button class="btn-primary" onclick="saveQuickLink('${blogId}', this)" style="padding:4px 10px; font-size:0.82em;">保存</button>
+        <button onclick="cancelQuickLink(this, ${JSON.stringify(originalActions).replace(/"/g, '&quot;')})" style="padding:4px 10px; font-size:0.82em;">取消</button>
+    `;
+
+    const input = actionsDiv.querySelector('.quick-link-input');
+    input.focus();
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveQuickLink(blogId, input);
+        }
+        if (e.key === 'Escape') {
+            actionsDiv.innerHTML = originalActions;
+        }
+    });
+}
+
+async function saveQuickLink(blogId, el) {
+    const listItem = blogList.querySelector(`.list-item[data-item-id="${blogId}"]`);
+    if (!listItem) return;
+    const input = listItem.querySelector('.quick-link-input');
+    if (!input) return;
+
+    const newLink = input.value.trim() || '#';
+    const itemData = JSON.parse(listItem.dataset.itemData);
+    itemData.link = newLink;
+
+    const result = await postData('blog', itemData, blogId);
+    if (result) {
+        showToast('链接已更新', 'success');
+        const blogData = await fetchData('blog');
+        renderList('blog', blogData);
+    }
+}
+
+function cancelQuickLink(btn, originalHtml) {
+    const actionsDiv = btn.parentElement;
+    actionsDiv.innerHTML = originalHtml;
+}
+
 // Global variable for copy/paste
 let copiedJournalData = null;
 
@@ -308,6 +417,7 @@ function renderBlogItem(item, id) {
             </span>
         </div>
         <div class="item-actions">
+            <button onclick="quickEditLink('${id}')">设链接</button>
             <button onclick="editItem('blog', '${id}')">编辑</button>
             <button onclick="deleteItem('blog', '${id}')">删除</button>
         </div>
@@ -1474,6 +1584,8 @@ document.addEventListener('DOMContentLoaded', async () => {
    // --- Logout button handler ---
    const logoutBtn = document.getElementById('logout-button');
    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+
+   setupPasswordChange(); // Password change modal
 
    loadAllData(); // Load Works, Blog, Tools data and populate dropdowns
    updateGitStatusUI({ status: 'idle' });

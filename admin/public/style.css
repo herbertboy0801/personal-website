@@ -853,6 +853,13 @@ input[type="hidden"] {
     border-radius: 50%;
 }
 
+/* === Quick Link Edit === */
+.quick-link-input {
+    border: 1px solid var(--accent) !important;
+    border-radius: var(--radius);
+    box-shadow: 0 0 0 2px var(--accent-light);
+}
+
 /* === Responsive === */
 @media (max-width: 900px) {
     body {

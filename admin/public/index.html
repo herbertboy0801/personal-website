@@ -18,7 +18,7 @@
         <button data-target="#gallery-admin" class="nav-button">AI 绘图</button>
         <button data-target="#morning-journal-management" class="nav-button">晨间日记</button>
         <span class="nav-spacer"></span>
-        <!-- backup button removed: Turso handles data persistence -->
+        <button id="change-password-button" class="nav-util">修改密码</button>
         <button id="logout-button" class="nav-util logout">退出</button>
     </div>
 
@@ -373,6 +373,32 @@
                 <button type="button" id="confirm-cancel-btn">取消</button>
                 <button type="button" id="confirm-ok-btn" class="btn-primary">确定</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-button" data-modal="password-modal">&times;</span>
+            <h2>修改密码</h2>
+            <form id="password-form">
+                <div>
+                    <label for="current-password">当前密码:</label>
+                    <input type="password" id="current-password" required autocomplete="current-password">
+                </div>
+                <div>
+                    <label for="new-password">新密码:</label>
+                    <input type="password" id="new-password" required minlength="6" autocomplete="new-password">
+                </div>
+                <div>
+                    <label for="confirm-password">确认新密码:</label>
+                    <input type="password" id="confirm-password" required minlength="6" autocomplete="new-password">
+                </div>
+                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+                    <button type="button" id="cancel-password-btn">取消</button>
+                    <button type="submit" class="btn-primary">确认修改</button>
+                </div>
+            </form>
         </div>
     </div>
 
