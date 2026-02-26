@@ -1,0 +1,33 @@
+# Checkpoints Log - herbert-ai-website
+
+## 2026-02-26 10:53 | L-Migration Phase 0-3 Complete + Deployment
+
+### What was done
+- Migrated from GitHub Pages + Express to Vercel + Turso architecture
+- Created 7 Turso DB tables with indexes, migrated all data
+- Built 7 Vercel Serverless Functions (merged from original 17 to fit Hobby plan)
+- Updated all frontend pages to use fetch API instead of JS data files
+- Updated admin panel API paths (morningJournal -> journal)
+- Deployed to Vercel: https://personal-website-46pb.vercel.app/
+
+### Key fixes during deployment
+- Removed invalid `runtime: "@vercel/node@3"` from vercel.json
+- Moved api/lib/ to lib/ (Vercel counted lib files as functions)
+- Merged 4 auth endpoints into 1 api/auth.js (17 -> 7 functions)
+- Added vercel.json rewrites for sub-routes (/api/blog/:id -> /api/blog?id=:id)
+- Added manual .env.local parser to scripts (Node.js doesn't auto-load)
+
+### Evidence
+- All 7 API endpoints tested via WebFetch, data counts verified
+- Site loads at https://personal-website-46pb.vercel.app/
+- Git: 6 commits on main branch
+
+## 2026-02-26 11:00 | Admin Panel Enhancements
+
+### What was done
+- Added password change modal UI (nav button + modal form)
+- Added quick "设链接" button for blog items (inline link editing)
+- User confirmed password changed successfully
+
+### Evidence
+- Git commit: 27a2b66 feat: add password change UI and quick blog link editor

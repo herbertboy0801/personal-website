@@ -1,0 +1,229 @@
+{
+  "timestamp": "2026-02-26T10:53:35+08:00",
+  "project": {
+    "name": "herbert-ai-website",
+    "version": "2.0.0",
+    "description": "贺伯AI实战笔记 - Vercel + Turso 架构",
+    "language": "JavaScript (ESM)",
+    "framework": "Vercel Serverless Functions + Vanilla HTML/CSS/JS",
+    "database": "Turso (libSQL)"
+  },
+  "modules": [
+    {
+      "path": "api/",
+      "claudeMd": "api/CLAUDE.md",
+      "role": "Vercel Serverless API 端点（7 个函数，CRUD + 认证）",
+      "language": "JS (ESM)",
+      "entryFiles": [
+        "api/auth.js",
+        "api/blog.js",
+        "api/tools.js",
+        "api/gallery.js",
+        "api/works.js",
+        "api/journal.js",
+        "api/journal-settings.js"
+      ],
+      "interfaces": [
+        "POST /api/login",
+        "POST /api/logout",
+        "GET /api/auth-status",
+        "POST /api/change-password",
+        "GET/POST /api/blog",
+        "PUT/DELETE /api/blog/:id",
+        "POST /api/blog/featured",
+        "GET/POST /api/tools",
+        "PUT/DELETE /api/tools/:id",
+        "GET/POST /api/gallery",
+        "PUT/DELETE /api/gallery/:id",
+        "GET/POST /api/works",
+        "PUT/DELETE /api/works/:id",
+        "GET/POST /api/journal",
+        "PUT/DELETE /api/journal/:id",
+        "POST /api/journal/import",
+        "GET/PUT /api/journal-settings"
+      ],
+      "testDir": null,
+      "configFiles": [],
+      "fileCount": 7,
+      "scannedFiles": 7,
+      "coverage": "100%"
+    },
+    {
+      "path": "lib/",
+      "claudeMd": "lib/CLAUDE.md",
+      "role": "共享工具库（DB连接、JWT认证、响应、数据转换）",
+      "language": "JS (ESM)",
+      "entryFiles": [
+        "lib/db.js",
+        "lib/auth.js",
+        "lib/response.js",
+        "lib/transformers.js"
+      ],
+      "interfaces": [
+        "getDb()",
+        "createToken()",
+        "verifyToken()",
+        "requireAuth()",
+        "setAuthCookie()",
+        "clearAuthCookie()",
+        "parseCookie()",
+        "json()",
+        "error()",
+        "requireMethod()",
+        "blogFromDb/blogToDb",
+        "toolFromDb/toolToDb",
+        "galleryFromDb/galleryToDb",
+        "worksFromDb/worksToDb",
+        "journalFromDb/journalToDb",
+        "journalSettingsFromDb/journalSettingsToDb"
+      ],
+      "testDir": null,
+      "configFiles": [],
+      "fileCount": 4,
+      "scannedFiles": 4,
+      "coverage": "100%"
+    },
+    {
+      "path": "admin/",
+      "claudeMd": "admin/CLAUDE.md",
+      "role": "管理后台面板 + 迁移前遗留数据文件",
+      "language": "HTML/CSS/JS",
+      "entryFiles": [
+        "admin/public/index.html",
+        "admin/public/login.html",
+        "admin/public/script.js"
+      ],
+      "interfaces": [
+        "/admin (管理面板入口)",
+        "/admin/login (登录页)"
+      ],
+      "testDir": null,
+      "configFiles": [],
+      "fileCount": 11,
+      "scannedFiles": 3,
+      "coverage": "27%",
+      "note": "遗留数据文件仅记录路径，未深度读取内容"
+    },
+    {
+      "path": "scripts/",
+      "claudeMd": "scripts/CLAUDE.md",
+      "role": "数据库初始化与数据迁移脚本",
+      "language": "JS (ESM)",
+      "entryFiles": [
+        "scripts/setup-db.js",
+        "scripts/migrate-to-turso.js"
+      ],
+      "interfaces": [
+        "npm run setup-db",
+        "npm run migrate"
+      ],
+      "testDir": null,
+      "configFiles": [],
+      "fileCount": 2,
+      "scannedFiles": 2,
+      "coverage": "100%"
+    },
+    {
+      "path": "tools/",
+      "claudeMd": "tools/CLAUDE.md",
+      "role": "22+ 独立工具与游戏子页面（纯前端）",
+      "language": "HTML/CSS/JS",
+      "entryFiles": [
+        "tools/html_previewer.html",
+        "tools/qrcode_generator.html",
+        "tools/snake-game/index.html",
+        "tools/my-raiden-game/index.html"
+      ],
+      "interfaces": [],
+      "testDir": null,
+      "configFiles": [],
+      "fileCount": 32,
+      "scannedFiles": 0,
+      "coverage": "0%",
+      "note": "独立页面，仅记录清单，未读取内容。各工具互不依赖。"
+    }
+  ],
+  "rootFiles": {
+    "pages": [
+      "index.html",
+      "blog.html",
+      "tools.html",
+      "ai-drawings.html",
+      "morning-journal-view.html",
+      "404.html"
+    ],
+    "scripts": [
+      "morning-journal-view.js"
+    ],
+    "styles": [
+      "style.css",
+      "morning-journal-view.css"
+    ],
+    "config": [
+      "package.json",
+      "vercel.json",
+      ".gitignore"
+    ]
+  },
+  "database": {
+    "type": "Turso (libSQL)",
+    "tables": [
+      "blog_posts",
+      "tools",
+      "gallery",
+      "featured_works",
+      "morning_journal",
+      "journal_settings",
+      "auth_config"
+    ],
+    "schemaFile": "scripts/setup-db.js"
+  },
+  "environmentVariables": [
+    "TURSO_DATABASE_URL",
+    "TURSO_AUTH_TOKEN",
+    "JWT_SECRET"
+  ],
+  "scanSummary": {
+    "totalSourceFiles": 68,
+    "scannedFiles": 35,
+    "coveragePercent": 51,
+    "coreModuleCoverage": "100% (api, lib, scripts 全部深度读取)",
+    "truncated": false,
+    "ignoredPatterns": [
+      "node_modules/",
+      ".env",
+      ".env.local",
+      ".vercel/",
+      "assets/*.jpg",
+      "assets/*.png",
+      "assets/*.webp",
+      "tools/snake-game/netlify/functions/node_modules/**",
+      "tools/*/assets/audio/*"
+    ],
+    "gaps": [
+      {
+        "module": "admin/",
+        "missing": ["遗留数据文件内容未深度读取"],
+        "priority": "low",
+        "reason": "数据已迁移到 Turso，文件仅供参考"
+      },
+      {
+        "module": "tools/",
+        "missing": ["各工具页面内容未读取"],
+        "priority": "low",
+        "reason": "独立页面，互不依赖，按需扫描即可"
+      },
+      {
+        "module": "root",
+        "missing": ["blog.html, tools.html, ai-drawings.html, 404.html 未读取"],
+        "priority": "medium",
+        "reason": "前端展示页面，可按需补扫"
+      }
+    ],
+    "nextScanSuggestions": [
+      "admin/public/script.js 全文分析（超大 SPA 文件，~100KB）",
+      "root HTML 页面 (blog.html, tools.html, ai-drawings.html) 前端交互逻辑",
+      "tools/ 各子工具按需深度扫描"
+    ]
+  }
+}
