@@ -22,16 +22,16 @@ body { line-height: 1.6; }
   text-align: center;
 }
 .journal-header h1 {
-  font-size: 1.5rem; font-weight: 800; color: #f1f5f9;
+  font-size: 1.5rem; font-weight: 800; color: var(--text-primary);
   margin: 0 0 6px;
 }
 .journal-header p {
-  font-size: 0.88rem; color: #6b7280; margin: 0;
+  font-size: 0.88rem; color: var(--text-muted); margin: 0;
 }
 
 /* --- 目标进度条 --- */
 .goal-banner {
-  background: linear-gradient(135deg, #0a1628 0%, #1a365d 40%, #2b6cb0 75%, #1e4a6e 100%);
+  background: var(--gradient-card-banner);
   color: #fff;
   padding: 10px 20px;
   font-size: 0.88rem;
@@ -68,13 +68,13 @@ body { line-height: 1.6; }
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
   background: rgba(22,25,44,0.8);
-  color: #c8cdd8;
+  color: var(--text-body);
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 .date-navigation button:hover {
   background: rgba(212,168,83,0.1);
-  color: #f1f5f9;
+  color: var(--text-primary);
   border-color: rgba(212,168,83,0.3);
 }
 .date-navigation button:disabled {
@@ -89,7 +89,7 @@ body { line-height: 1.6; }
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
   background: rgba(22,25,44,0.8);
-  color: #f1f5f9;
+  color: var(--text-primary);
   cursor: pointer;
   text-align: center;
   width: 160px;
@@ -134,7 +134,7 @@ body { line-height: 1.6; }
 .section-title {
   display: flex;
   align-items: center;
-  color: #d4a853;
+  color: var(--amber);
   font-size: 0.92rem;
   margin: 0;
   font-weight: 700;
@@ -149,7 +149,7 @@ body { line-height: 1.6; }
 .section-content {
   padding: 4px 20px 14px 20px;
   line-height: 1.7;
-  color: #c8cdd8;
+  color: var(--text-body);
   font-size: 0.9rem;
 }
 .section-content p {
@@ -159,21 +159,21 @@ body { line-height: 1.6; }
   margin-bottom: 0;
 }
 .section-content em {
-  color: #4b5563;
+  color: var(--text-dim);
   font-style: italic;
 }
 
 /* --- 空状态 --- */
 .no-entry {
   text-align: center;
-  color: #4b5563;
+  color: var(--text-dim);
   padding: 50px 20px;
   font-size: 0.92rem;
 }
 
 /* --- Flatpickr 深色主题覆盖 --- */
 .flatpickr-calendar {
-  background: #1a1d35 !important;
+  background: var(--bg-input) !important;
   border: 1px solid rgba(255,255,255,0.08) !important;
   border-radius: 12px !important;
   box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
@@ -183,32 +183,32 @@ body { line-height: 1.6; }
   border-radius: 12px 12px 0 0;
 }
 .flatpickr-months .flatpickr-month {
-  color: #f1f5f9 !important;
-  fill: #f1f5f9 !important;
+  color: var(--text-primary) !important;
+  fill: var(--text-primary) !important;
 }
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
-  color: #7a8194 !important;
-  fill: #7a8194 !important;
+  color: var(--text-subtle) !important;
+  fill: var(--text-subtle) !important;
 }
 .flatpickr-months .flatpickr-prev-month:hover,
 .flatpickr-months .flatpickr-next-month:hover {
-  color: #d4a853 !important;
-  fill: #d4a853 !important;
+  color: var(--amber) !important;
+  fill: var(--amber) !important;
 }
 .flatpickr-current-month .flatpickr-monthDropdown-months {
   background: transparent !important;
-  color: #f1f5f9 !important;
+  color: var(--text-primary) !important;
 }
 .flatpickr-current-month input.cur-year {
-  color: #f1f5f9 !important;
+  color: var(--text-primary) !important;
 }
 span.flatpickr-weekday {
-  color: #7a8194 !important;
+  color: var(--text-subtle) !important;
   font-weight: 600;
 }
 .flatpickr-day {
-  color: #c8cdd8 !important;
+  color: var(--text-body) !important;
   border-radius: 8px !important;
 }
 .flatpickr-day:hover {
@@ -219,30 +219,30 @@ span.flatpickr-weekday {
   border-color: rgba(212,168,83,0.4) !important;
 }
 .flatpickr-day.selected {
-  background: linear-gradient(135deg, #d4a853, #2b6cb0) !important;
+  background: var(--gradient-brand) !important;
   border-color: transparent !important;
   color: #fff !important;
 }
 .flatpickr-day.prevMonthDay,
 .flatpickr-day.nextMonthDay {
-  color: #3b3f54 !important;
+  color: var(--text-disabled) !important;
 }
 .flatpickr-day.flatpickr-disabled {
-  color: #2a2d42 !important;
+  color: var(--text-disabled-deep) !important;
 }
 
 /* 有日记记录的日期高亮 */
 .flatpickr-day.has-journal-entry {
   background: rgba(212,168,83,0.15) !important;
   border-color: rgba(212,168,83,0.3) !important;
-  color: #e8c170 !important;
+  color: var(--amber-light) !important;
   font-weight: 700;
 }
 .flatpickr-day.has-journal-entry:hover {
   background: rgba(212,168,83,0.25) !important;
 }
 .flatpickr-day.selected.has-journal-entry {
-  background: linear-gradient(135deg, #d4a853, #2b6cb0) !important;
+  background: var(--gradient-brand) !important;
   border-color: transparent !important;
   color: #fff !important;
 }

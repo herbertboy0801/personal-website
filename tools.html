@@ -13,26 +13,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="style.css">
-  <style>
-    .tools-main { flex: 1; padding-bottom: 60px; }
-    .tools-header { margin-bottom: 24px; }
-    .tools-header h1 { font-size: 1.4rem; color: var(--text-primary); margin: 0 0 4px; font-weight: 800; }
-    .tools-header p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
-    .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .tool-card { display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; text-decoration: none; color: inherit; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
-    .tool-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-card); border-color: var(--border-hover); }
-    .tool-banner { padding: 20px 16px; background: var(--gradient-card-banner); display: flex; align-items: center; justify-content: center; position: relative; }
-    .tool-banner::after { content:''; position: absolute; bottom: 0; left: 0; right: 0; height: 16px; background: linear-gradient(to bottom, transparent, var(--bg-card)); }
-    .tool-icon { font-size: 2rem; position: relative; z-index: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
-    .tool-body { padding: 14px 16px 18px; flex: 1; display: flex; flex-direction: column; }
-    .tool-name { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
-    .tool-desc { font-size: 0.78rem; color: #7a8194; line-height: 1.5; margin: 0 0 12px; flex: 1; }
-    .tool-cta { font-size: 0.8rem; font-weight: 600; color: var(--amber); }
-    .tool-card:hover .tool-cta { color: var(--amber-light); }
-    .tool-tag { display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: var(--amber-glow); color: var(--amber); margin-bottom: 8px; }
-    @media (max-width: 768px) { .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
-    @media (max-width: 480px) { .tools-grid { grid-template-columns: 1fr; } }
-  </style>
 </head>
 <body>
 
