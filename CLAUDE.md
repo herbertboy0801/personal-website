@@ -11,6 +11,7 @@
 - **数据库**：Turso (libSQL) 云端 SQLite，7 张表
 - **认证**：JWT (jose) + httpOnly Cookie + bcryptjs 密码哈希 + IP 限流
 - **部署**：Vercel（`vercel dev` 本地开发，`vercel` 部署）
+- **线上地址**：https://personal-website-lac-omega-21.vercel.app/
 
 ### 技术栈
 
