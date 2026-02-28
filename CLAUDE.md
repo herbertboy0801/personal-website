@@ -128,6 +128,21 @@ JWT_SECRET=your-secret-at-least-32-chars
 
 ## 变更记录 (Changelog)
 
+### 2026-02-28 - Phase 5: 集成测试 + 清理
+- 验证 7 个 API 端点 GET 正常，写操作认证保护正确
+- 响应式布局验证：6 个页面 × 3 断点（1440/768/375px）= 18 张截图全部通过
+- 可访问性修复：浮动社交图标添加 aria-label，侧栏 h3/h4 → p 标签修复标题层级
+- 安全确认：.env.local 已在 .gitignore，无环境变量泄露
+- PROJECT.md 标记 Phase 0-5 全部完成
+
+### 2026-02-28 - Phase 4: CSS 统一与视觉增强
+- 新增 13 个 CSS 变量到 `:root`（徽章色、输入框背景、禁用色等）
+- 提取 4 个 HTML 文件的内联 `<style>` 到 style.css（blog 74行 + tools 19行 + gallery 48行 + 404 18行）
+- morning-journal-view.css 29 个硬编码 hex 替换为 CSS 变量引用
+- 添加响应式断点（1024/768/480px）
+- 视觉增强：页面渐入动画、focus-visible、自定义滚动条、文字选中色
+- style.css 从 817 行扩展到 1129 行
+
 ### 2026-02-26 - 初始架构文档生成
 - 由 init-architect 工作流自动生成根级与模块级 CLAUDE.md
 - 生成 `.claude/index.json` 索引文件
