@@ -34,7 +34,7 @@
 
   <div class="page-wrapper">
     <aside class="sidebar">
-      <h3>文章筛选</h3>
+      <p class="sidebar-title">文章筛选</p>
       <ul class="cat-list" id="catList"></ul>
     </aside>
     <section class="blog-main">
@@ -95,11 +95,11 @@
       if (featuredCount > 0) {
         html += '<li><a href="#" data-filter="featured"><span class="cat-icon">⭐</span>精选推荐<span class="cat-count">' + featuredCount + '</span></a></li>';
       }
-      html += '</ul><h4>文章分类</h4><ul class="cat-list">';
+      html += '</ul><p class="sidebar-subtitle">文章分类</p><ul class="cat-list">';
       Object.keys(categories).forEach(function(c) {
         html += '<li><a href="#" data-filter="category:' + c + '"><span class="cat-icon">' + (categoryIcons[c] || '📂') + '</span>' + (categoryNames[c] || c) + '<span class="cat-count">' + categories[c] + '</span></a></li>';
       });
-      html += '</ul><h4>文章来源</h4><ul class="cat-list">';
+      html += '</ul><p class="sidebar-subtitle">文章来源</p><ul class="cat-list">';
       var sourceIcons = { '公众号': '💬', '小红书': '📕' };
       Object.keys(sources).forEach(function(s) {
         html += '<li><a href="#" data-filter="source:' + s + '"><span class="cat-icon">' + (sourceIcons[s] || '📂') + '</span>' + s + '<span class="cat-count">' + sources[s] + '</span></a></li>';
